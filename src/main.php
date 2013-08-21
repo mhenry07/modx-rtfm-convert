@@ -1,18 +1,25 @@
 <?php
 require '../vendor/autoload.php';
 
-// FIXED: strip &Acirc;
+// FIXED: strip &Acirc; (injected before &nbsp;)
 //  * passing qp->html() to create a second qp object seemed to contribute to this
 //  * and using html() or innerHTML() versus writeHTML()
-// TODO: self-closing tags (br, hr, img, input, meta, etc.)
+//  * why?
+//  * maybe it's an issue with the console I'm using?
+//  * it seems to happen in cases where an nbsp utf-8 character is output to the console instead of an &nbsp; entity
+//  * file output is ok
+// DONE: indent/tidy
+// DONE: self-closing tags (br, hr, img, input, meta, etc.)
 //  * see http://www.w3.org/TR/html5/syntax.html#void-elements
-// TODO: indent/tidy
-// TODO: get contents of div.wiki-content
+//  * handled by tidy option output-xhtml
+// DONE: get contents of div.wiki-content
+//  * handled by tidy option show-body-only
 // TODO: warn about certain cases
 
-//$source = 'http://oldrtfm.modx.com/display/revolution20/Tag+Syntax';
-$source = '../data/tag-syntax.html';
-//$source = 'http://oldrtfm.modx.com/display/revolution20/Server+Requirements';
+//$src = 'http://oldrtfm.modx.com/display/revolution20/Tag+Syntax';
+$src = '../data/tag-syntax.html';
+//$src = 'http://oldrtfm.modx.com/display/revolution20/Server+Requirements';
+$dest = '../data/dest.html';
 
 $options = array(
     'encoding' => 'utf-8',
@@ -23,7 +30,7 @@ function isComment($index, $item) {
 }
 
 // strip carriage returns to prevent &#13; in output
-$doc_string = str_replace(chr(13), '', file_get_contents($source));
+$doc_string = str_replace(chr(13), '', file_get_contents($src));
 
 $doc = htmlqp($doc_string, null, $options);
 
@@ -51,7 +58,6 @@ $content->contents()
     ->filterCallback('isComment')
     ->remove();
 
-// for some reason it's generating some &Acirc; entities
 $content->remove('style');
 $content->remove('div.Scrollbar');
 $content->remove('div.plugin_pagetree');
@@ -62,8 +68,9 @@ if ($content->firstChild()->is('p > br.atl-forced-newline:only-child'))
 $content->find('br.atl-forced-newline')->removeClass('atl-forced-newline');
 
 // TODO: test
-//$content->find('font')->contents()->unwrap();
+$content->find('font')->contents()->unwrap();
 
+// convert presentational elements to semantic alternatives
 $replaceTags = array(
     'b' => 'strong',
     'i' => 'em',
@@ -72,6 +79,13 @@ foreach ($replaceTags as $oldTag => $contentTag) {
     $content->find($oldTag)
         ->wrap("<{$contentTag}></{$contentTag}>")
         ->contents()->unwrap();
+}
+
+// fix improperly nested lists
+$nestedLists = $content->find('ol > ol, ol > ul, ul > ol, ul > ul');
+foreach ($nestedLists as $list) {
+    $prevLi = $list->prev('li')->branch();
+    $list->detach()->attach($prevLi);
 }
 
 // tables
@@ -114,7 +128,8 @@ $content->contents()->unwrap();
  * html() and innerHTML() allow us to get a specific fragment
  *  with self-closing br tags (e.g. <br/>)
  *  but it self-closes anchor tags (<a name=""/>)
- *  and it inserts weird characters
+ *  and it uses raw &nbsp; characters instead of entities
+ *  which causes weird characters to be displayed on console
  */
-//print $content->top()->find('body')->innerHTML();
-$content->writeHTML('../data/dest.html');
+
+$content->writeHTML($dest);

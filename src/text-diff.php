@@ -5,6 +5,7 @@ require '../vendor/autoload.php';
 use SebastianBergmann\Diff\Differ;
 
 // Note: it took ~1:40 (one hour and forty minutes) to run the script all the way through the first time
+// With all the pages cached, it only took about 4 minutes.
 
 //$urlPath = '/display/revolution20/Tag+Syntax';
 $oldBaseUrl = 'http://oldrtfm.modx.com';
@@ -61,8 +62,8 @@ class rtfmData {
     }
 
     public function getMissingPreCount() {
-        if (!empty($this->oldPreElementCount) &&
-            !empty($this->newPreElementCount))
+        if (!isset($this->oldPreElementCount) &&
+            !isset($this->newPreElementCount))
             return $this->oldPreElementCount - $this->newPreElementCount;
         return '';
     }
@@ -410,10 +411,12 @@ function generateTextDiffsForAllSpaces($tocDir, $useCached) {
     return $rtfmDataArray;
 }
 
+$startTime = microtime(true);
+
 // make sure csv file is writable before starting
-if (fopen($csvFile, 'w') === false)
+if (($fp = fopen($csvFile, 'w')) === false)
     exit(1);
-fclose($csvFile);
+fclose($fp);
 
 //diff($urlPath, true);
 //$rtfmData = array();
@@ -421,3 +424,7 @@ fclose($csvFile);
 $rtfmData = generateTextDiffsForAllSpaces($tocDir, true);
 $csv = new RtfmDataCsv($csvFile);
 $csv->writeCsv($rtfmData);
+
+$totalTime = microtime(true) - $startTime;
+$minutes = number_format($totalTime / 60, 3);
+echo "\nExecution time: {$minutes} minutes\n";

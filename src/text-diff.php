@@ -18,17 +18,28 @@ $tocDir = '../oldrtfm-toc';
 class rtfmData {
     public $urlPath;
     public $title;
+    public $space;
     public $newId;
     public $newUrlPath;
-    public $textDiffStat;
     public $newTextLineCount;
     public $oldTextLineCount;
     public $newLastEditDate;
     public $localDir;
     public $errorMsg;
+    private $textDiffStat;
 
     public function __construct($urlPath) {
         $this->urlPath = $urlPath;
+    }
+
+    public function getTextDiffStat() {
+        if (empty($this->textDiffStat))
+            $this->textDiffStat = new DiffStat('', '');
+        return $this->textDiffStat;
+    }
+
+    public function setTextDiffStat($diffStat) {
+        $this->textDiffStat = $diffStat;
     }
 
     public function addError($msg) {
@@ -47,8 +58,8 @@ class rtfmData {
 }
 
 class DiffStat {
-    private $added;
-    private $deleted;
+    private $insertions;
+    private $deletions;
     private $name;
 
     public function __construct($diff, $name) {
@@ -58,32 +69,28 @@ class DiffStat {
 
     protected function parse($diff) {
         $chunks = preg_split('/^@@[^@]+@@$/m', $diff);
-        $added = 0;
-        $deleted = 0;
+        $insertions = 0;
+        $deletions = 0;
         // skip header
         for ($i = 1; $i < count($chunks); $i++) {
             $chunk = $chunks[$i];
-            $added += preg_match_all('/^\+/m', $chunk);
-            $deleted += preg_match_all('/^\-/m', $chunk);
+            $insertions += preg_match_all('/^\+/m', $chunk);
+            $deletions += preg_match_all('/^\-/m', $chunk);
         }
-        $this->added = $added;
-        $this->deleted = $deleted;
+        $this->insertions = $insertions;
+        $this->deletions = $deletions;
     }
 
     public function formatNumstat() {
-        return "{$this->added} insertions(+), {$this->deleted} deletions(-), {$this->name}";
+        return "{$this->insertions} insertions(+), {$this->deletions} deletions(-), {$this->name}";
     }
 
-    public function getAdded() {
-        return $this->added;
+    public function getInsertions() {
+        return $this->insertions;
     }
 
-    public function getDeleted() {
-        return $this->deleted;
-    }
-
-    public function getTotalChanges() {
-        return $this->added + $this->deleted;
+    public function getDeletions() {
+        return $this->deletions;
     }
 
     public function getName() {
@@ -108,9 +115,9 @@ class RtfmDataCsv {
     }
 
     protected function writeHeader() {
-        $headings = array('Path', 'Title', 'New ID', 'Old Url', 'New Url',
-            'Insertions(+)', 'Deletions(-)', 'Old # Lines', 'New # Lines',
-            'New Last Edit Date', 'Local Directory', 'Errors');
+        $headings = array('Path', 'Title', 'Space', 'New ID', 'Old Url',
+            'New Url', 'Insertions(+)', 'Deletions(-)', 'Old # Lines',
+            'New # Lines', 'New Last Edit Date', 'Local Directory', 'Errors');
         $this->handle = fopen($this->filename, 'w');
         if ($this->handle === false) {
             $last_error = error_get_last();
@@ -121,11 +128,11 @@ class RtfmDataCsv {
 
     protected function writeRow($rtfmDataItem) {
         $d = $rtfmDataItem;
-        $stat = $d->textDiffStat;
-        $fields = array($d->urlPath, $d->title, $d->newId, $d->getNewUrl(),
-            $d->getOldUrl(), $stat->getAdded(), $stat->getDeleted(),
-            $d->oldTextLineCount, $d->newTextLineCount, $d->newLastEditDate,
-            realpath($d->localDir), $d->errorMsg);
+        $stat = $d->getTextDiffStat();
+        $fields = array($d->urlPath, $d->title, $d->space, $d->newId,
+            $d->getNewUrl(), $d->getOldUrl(), $stat->getInsertions(),
+            $stat->getDeletions(), $d->oldTextLineCount, $d->newTextLineCount,
+            $d->newLastEditDate, realpath($d->localDir), $d->errorMsg);
         fputcsv($this->handle, $fields);
     }
 
@@ -160,6 +167,10 @@ function getTocHrefs($tocFile) {
             $hrefs[] = $href;
     }
     return $hrefs;
+}
+
+function getConfluenceSpace($oldHtml) {
+    return htmlqp($oldHtml, '#confluence-space-key')->attr('content');
 }
 
 function getSubstringBetween($str, $startStr, $endStr) {
@@ -282,7 +293,7 @@ function cleanUpWhitespace($str) {
 function getFilePath($path, $filename) {
     $dir = str_replace('/display', '', $path);
     if (preg_match('@/pages/viewpage\.action\?pageId=(\d+)@', $path, $matches) === 1)
-        $dir = 'pageId_' . $matches[1];
+        $dir = '/pageId/' . $matches[1];
     return $GLOBALS['baseDataPath'] . $dir . '/' . $filename;
 }
 
@@ -304,8 +315,11 @@ function getRtfmText($baseUrl, $path, $newOrOld, $useCached, $rtfmData) {
         $fullHtml = getWebPage($baseUrl, $path);
         file_put_contents($fullHtmlFilename, $fullHtml);
     }
-    if ($newOrOld == 'new')
+    if ($newOrOld == 'new') {
         parseNewPageInfo($fullHtml, $rtfmData);
+    } else {
+        $rtfmData->space = getConfluenceSpace($fullHtml);
+    }
 
     $content = getContent($fullHtml, $newOrOld);
     $tidy = tidyHtml($content);
@@ -339,8 +353,9 @@ function diff($urlPath, $useCached, $rtfmData) {
     $diff = $differ->diff($oldText, $newText);
     file_put_contents(getFilePath($urlPath, "text.diff"), $diff);
 
-    $rtfmData->textDiffStat = new DiffStat($diff, $urlPath . ' (text)');
-    echo $rtfmData->textDiffStat->formatNumstat() . PHP_EOL;
+    $diffStat = new DiffStat($diff, $urlPath . ' (text)');
+    $rtfmData->setTextDiffStat($diffStat);
+    echo $diffStat->formatNumstat() . PHP_EOL;
 
     return $diff;
 }

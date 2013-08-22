@@ -4,22 +4,24 @@ require '../vendor/autoload.php';
 
 use SebastianBergmann\Diff\Differ;
 
-// TODO: generate csv of diff stats
-
-$urlPath = '/display/revolution20/Tag+Syntax';
-$tocFile = 'community.html';
+//$urlPath = '/display/revolution20/Tag+Syntax';
 $oldBaseUrl = 'http://oldrtfm.modx.com';
 $newBaseUrl = 'http://rtfm.modx.com';
 
 $baseDataPath = '../data';
+$csvFile = $baseDataPath . '/data.csv';
+$tocDir = '../oldrtfm-toc';
+//$tocFile = $tocDir . '/community.html';
 
 class rtfmData {
     public $urlPath;
     public $title;
-    public $localDir;
-    public $textDiffStat;
     public $newId;
     public $newUrlPath;
+    public $textDiffStat;
+    public $newTextLineCount;
+    public $oldTextLineCount;
+    public $localDir;
     public $errorMsg;
 
     public function __construct($urlPath) {
@@ -28,8 +30,16 @@ class rtfmData {
 
     public function addError($msg) {
         if (!empty($this->errorMsg))
-            $this->errorMsg .= PHP_EOL;
+            $this->errorMsg .= '; ';
         $this->errorMsg .= $msg;
+    }
+
+    public function getOldUrl() {
+        return $GLOBALS['oldBaseUrl'] . $this->urlPath;
+    }
+
+    public function getNewUrl() {
+        return $GLOBALS['newBaseUrl'] . $this->newUrlPath;
     }
 }
 
@@ -69,8 +79,57 @@ class DiffStat {
         return $this->deleted;
     }
 
+    public function getTotalChanges() {
+        return $this->added + $this->deleted;
+    }
+
     public function getName() {
         return $this->name;
+    }
+}
+
+class RtfmDataCsv {
+    private $filename;
+    private $handle;
+
+    public function __construct($filename) {
+        $this->filename = $filename;
+    }
+
+    protected function writeHeader() {
+        $headings = array('Path', 'Title', 'New ID', 'Old Url', 'New Url',
+            'Insertions', 'Deletions', 'Old # Lines', 'New # Lines',
+            'Local Directory', 'Errors');
+        $this->handle = fopen($this->filename, 'w');
+        fputcsv($this->handle, $headings);
+    }
+
+    protected function writeRow($rtfmDataItem) {
+        $d = $rtfmDataItem;
+        $stat = $d->textDiffStat;
+        $fields = array($d->urlPath, $d->title, $d->newId, $d->getNewUrl(),
+            $d->getOldUrl(), $stat->getAdded(), $stat->getDeleted(),
+            $d->oldTextLineCount, $d->newTextLineCount, realpath($d->localDir),
+            $d->errorMsg);
+        fputcsv($this->handle, $fields);
+    }
+
+    protected function end() {
+        if (!is_null($this->handle))
+            fclose($this->handle);
+        $this->handle = null;
+    }
+
+    public function writeCsv($rtfmDataArray) {
+        echo "\nwriting data to {$this->filename}\n";
+        $this->writeHeader();
+        foreach ($rtfmDataArray as $rtfmDataItem)
+            $this->writeRow($rtfmDataItem);
+        $this->end();
+    }
+
+    public function __destruct() {
+        $this->end();
     }
 }
 
@@ -127,12 +186,12 @@ function getWebPage($baseUrl, $path) {
     return stripCarriageReturns($html);
 }
 
-function formatNewPageInfo($fullHtml) {
+function parseNewPageInfo($fullHtml, $rtfmData) {
     $qp = htmlqp($fullHtml, 'body');
-    $title = $qp->find('.body-section .content section header h1')->text();
-    $pageId = $qp->attr('data-page-id');
-    $uri = $qp->attr('data-uri');
-    return "New page info:\n\ttitle: {$title}\n\tpage-id: {$pageId}\n\turi: {$uri}\n";
+    $rtfmData->title = $qp->find('.body-section .content section header h1')->text();
+    $rtfmData->newId = $qp->attr('data-page-id');
+    $rtfmData->newUrlPath = $qp->attr('data-uri');
+    echo "New page info:\n\ttitle: {$rtfmData->title}\n\tpage-id: {$rtfmData->newId}\n\turi: {$rtfmData->newUrlPath}\n";
 }
 
 function getNewRtfmContent($html) {
@@ -204,10 +263,11 @@ function getFilePath($path, $filename) {
 }
 
 function getRtfmText($baseUrl, $path, $newOrOld, $useCached, $rtfmData) {
-    if (!file_exists($rtfmData->localDir))
-        mkdir($$rtfmData->localDir, 0777, true);
+    $localDir = $rtfmData->localDir;
+    if (!file_exists($localDir))
+        mkdir($localDir, 0777, true);
 
-    $fullHtmlFilename = getFilePath($path, "full.{$newOrOld}.html");
+    $fullHtmlFilename = getFilePath($path, "original.{$newOrOld}.html");
     if ($useCached && file_exists($fullHtmlFilename)) {
         echo "Loading {$baseUrl}{$path} from cache" . PHP_EOL;
         $fullHtml = file_get_contents($fullHtmlFilename);
@@ -217,19 +277,23 @@ function getRtfmText($baseUrl, $path, $newOrOld, $useCached, $rtfmData) {
         file_put_contents($fullHtmlFilename, $fullHtml);
     }
     if ($newOrOld == 'new')
-        echo formatNewPageInfo($fullHtml);
+        parseNewPageInfo($fullHtml, $rtfmData);
 
     $content = getContent($fullHtml, $newOrOld);
-    file_put_contents(getFilePath($path, "content.{$newOrOld}.html"), $content);
-
     $tidy = tidyHtml($content);
-    file_put_contents(getFilePath($path, "tidy.{$newOrOld}.html"), $tidy);
+    file_put_contents(getFilePath($path, "content.{$newOrOld}.html"), $tidy);
 
     $text = getTextContent($tidy);
     $trimmed = cleanUpWhitespace($text);
-    file_put_contents(getFilePath($path, "text.{$newOrOld}.txt"), $trimmed);
+    file_put_contents(getFilePath($path, "content.{$newOrOld}.txt"), $trimmed);
 
     return $trimmed;
+}
+
+function calcLineCount($str) {
+    if ($str === '')
+        return 0;
+    return substr_count($str, "\n") + 1;
 }
 
 function diff($urlPath, $useCached, $rtfmData) {
@@ -239,6 +303,9 @@ function diff($urlPath, $useCached, $rtfmData) {
 
     $oldText = getRtfmText($GLOBALS['oldBaseUrl'], $urlPath, 'old', $useCached, $rtfmData);
     $newText = getRtfmText($GLOBALS['newBaseUrl'], $urlPath, 'new', $useCached, $rtfmData);
+
+    $rtfmData->oldTextLineCount = calcLineCount($oldText);
+    $rtfmData->newTextLineCount = calcLineCount($newText);
 
     $differ = new Differ;
     $diff = $differ->diff($oldText, $newText);
@@ -250,21 +317,30 @@ function diff($urlPath, $useCached, $rtfmData) {
     return $diff;
 }
 
-function generateTextDiffsForRtfmSpace($spaceTocFile, $useCached) {
+function generateTextDiffsForRtfmSpace($spaceTocFile, $useCached, $rtfmDataArray) {
     echo "\nGetting hrefs from {$spaceTocFile}\n\n";
-    $rtfmData = array();
     $hrefs = getHrefs($spaceTocFile);
     foreach ($hrefs as $href) {
-        $rtfmDatum = new rtfmData($href);
-        $rtfmData[]= $rtfmDatum;
+        $rtfmDataItem = new rtfmData($href);
+        $rtfmDataArray[]= $rtfmDataItem;
         try {
-            diff($href, $useCached, $rtfmDatum);
-        } catch (RtfmException $e) {
+            diff($href, $useCached, $rtfmDataItem);
+        } catch (Exception $e) {
             echo 'Caught exception: ',  $e->getMessage(), PHP_EOL;
-            $rtfmDatum->addError($e->getMessage());
+            $rtfmDataItem->addError($e->getMessage());
         }
     }
 }
 
+function generateTextDiffsForAllSpaces($tocDir, $useCached) {
+    $rtfmDataArray = array();
+    foreach (glob($tocDir . '/*.html') as $filename)
+        generateTextDiffsForRtfmSpace($filename, $useCached, $rtfmDataArray);
+    return $rtfmDataArray;
+}
+
 //diff($urlPath, true);
-generateTextDiffsForRtfmSpace($tocFile, true);
+//$rtfmData = generateTextDiffsForRtfmSpace($tocFile, true);
+$rtfmData = generateTextDiffsForAllSpaces($tocDir, true);
+$csv = new RtfmDataCsv($csvFile);
+$csv->writeCsv($rtfmData);

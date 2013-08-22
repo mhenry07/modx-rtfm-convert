@@ -18,11 +18,13 @@ $tocDir = '../oldrtfm-toc';
 class rtfmData {
     public $urlPath;
     public $title;
-    public $space;
+    public $spaceKey;
     public $newId;
     public $newUrlPath;
     public $newTextLineCount;
     public $oldTextLineCount;
+    public $newPreElementCount;
+    public $oldPreElementCount;
     public $newLastEditDate;
     public $localDir;
     public $errorMsg;
@@ -53,7 +55,16 @@ class rtfmData {
     }
 
     public function getNewUrl() {
+        if (empty($this->newUrlPath))
+            return '';
         return $GLOBALS['newBaseUrl'] . $this->newUrlPath;
+    }
+
+    public function getMissingPreCount() {
+        if (!empty($this->oldPreElementCount) &&
+            !empty($this->newPreElementCount))
+            return $this->oldPreElementCount - $this->newPreElementCount;
+        return '';
     }
 }
 
@@ -68,6 +79,8 @@ class DiffStat {
     }
 
     protected function parse($diff) {
+        if (empty($diff))
+            return;
         $chunks = preg_split('/^@@[^@]+@@$/m', $diff);
         $insertions = 0;
         $deletions = 0;
@@ -115,9 +128,11 @@ class RtfmDataCsv {
     }
 
     protected function writeHeader() {
-        $headings = array('Path', 'Title', 'Space', 'New ID', 'Old Url',
+        $headings = array('Path', 'Title', 'Space Key', 'New ID', 'Old Url',
             'New Url', 'Insertions(+)', 'Deletions(-)', 'Old # Lines',
-            'New # Lines', 'New Last Edit Date', 'Local Directory', 'Errors');
+            'New # Lines', 'Old # Pre Blocks', 'New # Pre Blocks',
+            '# Missing Pre Blocks', 'New Last Edit Date', 'Local Directory',
+            'Errors');
         $this->handle = fopen($this->filename, 'w');
         if ($this->handle === false) {
             $last_error = error_get_last();
@@ -129,10 +144,12 @@ class RtfmDataCsv {
     protected function writeRow($rtfmDataItem) {
         $d = $rtfmDataItem;
         $stat = $d->getTextDiffStat();
-        $fields = array($d->urlPath, $d->title, $d->space, $d->newId,
-            $d->getNewUrl(), $d->getOldUrl(), $stat->getInsertions(),
+        $fields = array($d->urlPath, $d->title, $d->spaceKey, $d->newId,
+            $d->getOldUrl(), $d->getNewUrl(), $stat->getInsertions(),
             $stat->getDeletions(), $d->oldTextLineCount, $d->newTextLineCount,
-            $d->newLastEditDate, realpath($d->localDir), $d->errorMsg);
+            $d->oldPreElementCount, $d->newPreElementCount,
+            $d->getMissingPreCount(), $d->newLastEditDate,
+            realpath($d->localDir), $d->errorMsg);
         fputcsv($this->handle, $fields);
     }
 
@@ -169,7 +186,7 @@ function getTocHrefs($tocFile) {
     return $hrefs;
 }
 
-function getConfluenceSpace($oldHtml) {
+function getConfluenceSpaceKey($oldHtml) {
     return htmlqp($oldHtml, '#confluence-space-key')->attr('content');
 }
 
@@ -224,6 +241,16 @@ function parseNewPageInfo($fullHtml, $rtfmData) {
     if ($lastEditDate !== '')
         $rtfmData->newLastEditDate = $lastEditDate;
     echo "New page info:\n\ttitle: {$rtfmData->title}\n\tpage-id: {$rtfmData->newId}\n\turi: {$rtfmData->newUrlPath}\n";
+}
+
+function getPreBlockCount($content, $rtfmData, $newOrOld) {
+    $count = htmlqp($content)->find('pre')->size();
+    if ($newOrOld == 'new') {
+        $rtfmData->newPreElementCount = $count;
+    } else {
+        $rtfmData->oldPreElementCount = $count;
+    }
+    return $count;
 }
 
 function getNewRtfmContent($html) {
@@ -318,12 +345,13 @@ function getRtfmText($baseUrl, $path, $newOrOld, $useCached, $rtfmData) {
     if ($newOrOld == 'new') {
         parseNewPageInfo($fullHtml, $rtfmData);
     } else {
-        $rtfmData->space = getConfluenceSpace($fullHtml);
+        $rtfmData->spaceKey = getConfluenceSpaceKey($fullHtml);
     }
 
     $content = getContent($fullHtml, $newOrOld);
     $tidy = tidyHtml($content);
     file_put_contents(getFilePath($path, "content.{$newOrOld}.html"), $tidy);
+    getPreBlockCount($tidy, $rtfmData, $newOrOld);
 
     $text = getTextContent($tidy);
     $trimmed = cleanUpWhitespace($text);
@@ -381,6 +409,11 @@ function generateTextDiffsForAllSpaces($tocDir, $useCached) {
         generateTextDiffsForRtfmSpace($tocFile, $useCached, $rtfmDataArray);
     return $rtfmDataArray;
 }
+
+// make sure csv file is writable before starting
+if (fopen($csvFile, 'w') === false)
+    exit(1);
+fclose($csvFile);
 
 //diff($urlPath, true);
 //$rtfmData = array();

@@ -62,8 +62,8 @@ class rtfmData {
     }
 
     public function getMissingPreCount() {
-        if (!isset($this->oldPreElementCount) &&
-            !isset($this->newPreElementCount))
+        if (isset($this->oldPreElementCount) &&
+            isset($this->newPreElementCount))
             return $this->oldPreElementCount - $this->newPreElementCount;
         return '';
     }

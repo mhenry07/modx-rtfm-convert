@@ -280,9 +280,10 @@ function cleanUpWhitespace($str) {
 }
 
 function getFilePath($path, $filename) {
+    $dir = str_replace('/display', '', $path);
     if (preg_match('@/pages/viewpage\.action\?pageId=(\d+)@', $path, $matches) === 1)
-        return "pageId_{$matches[1]}/{$filename}";
-    return $GLOBALS['baseDataPath'] . str_replace('/display', '', $path) . '/' . $filename;
+        $dir = 'pageId_' . $matches[1];
+    return $GLOBALS['baseDataPath'] . $dir . '/' . $filename;
 }
 
 function getRtfmText($baseUrl, $path, $newOrOld, $useCached, $rtfmData) {

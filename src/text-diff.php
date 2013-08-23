@@ -233,7 +233,7 @@ function parseLastEditDate($newQp) {
 
 function parseOldPageInfo($fullHtml, $rtfmData) {
     $qp = htmlqp($fullHtml);
-    $rtfmData->title = $qp->find('#title-text')->text();
+    $rtfmData->title = trim($qp->find('#title-text')->text());
     $rtfmData->spaceKey = $qp->find('#confluence-space-key')->attr('content');
 }
 

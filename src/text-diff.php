@@ -10,7 +10,7 @@
 // Note: it took ~1:40 (one hour and forty minutes) to run the script all the way through the first time
 // With all the pages cached, it only took about 4 minutes.
 
-// TODO: refactor rtfmData into rtfmSiteData['old'] and rtfmSiteData['new']
+// TODO: refactor RtfmData into RtfmSiteData['old'] and RtfmSiteData['new']
 
 require '../vendor/autoload.php';
 
@@ -25,7 +25,7 @@ $csvFile = $baseDataPath . '/data.csv';
 $tocDir = '../oldrtfm-toc';
 //$tocFile = $tocDir . '/community.html';
 
-class rtfmData {
+class RtfmData {
     public $title;
     public $spaceKey;
     public $newId;
@@ -50,7 +50,7 @@ class rtfmData {
         return $this->textDiffStat;
     }
 
-    public function setTextDiffStat($diffStat) {
+    public function setTextDiffStat(DiffStat $diffStat) {
         $this->textDiffStat = $diffStat;
     }
 
@@ -129,7 +129,7 @@ class RtfmDataCsv {
         $this->filename = $filename;
     }
 
-    public function writeCsv($rtfmDataArray) {
+    public function writeCsv(array $rtfmDataArray) {
         echo "\nwriting data to {$this->filename}\n";
         $this->writeHeader();
         foreach ($rtfmDataArray as $rtfmDataItem)
@@ -151,7 +151,7 @@ class RtfmDataCsv {
         fputcsv($this->handle, $headings);
     }
 
-    protected function writeRow($rtfmDataItem) {
+    protected function writeRow(RtfmData $rtfmDataItem) {
         $d = $rtfmDataItem;
         $stat = $d->getTextDiffStat();
         $fields = array($d->title, $d->spaceKey, $d->newId, $d->urlPath,
@@ -211,7 +211,7 @@ function getSubstringBetween($str, $startStr, $endStr) {
 }
 
 // fix improperly nested lists
-function fixNestedLists($qp) {
+function fixNestedLists(\QueryPath\DOMQuery $qp) {
     $nestedLists = $qp->find('ol > ol, ol > ul, ul > ol, ul > ul');
     foreach ($nestedLists as $list) {
         $prevLi = $list->prev('li')->branch();
@@ -230,7 +230,7 @@ function getWebPage($baseUrl, $path) {
 }
 
 // Format: <h5>Last edited by <name> on <MMM D, YYYY>. </h5>
-function parseLastEditDate($newQp) {
+function parseLastEditDate(\QueryPath\DOMQuery $newQp) {
     $text = $newQp->find('.body-section .content section header h5')->text();
     $pattern = '/Last edited by .* on \s*\b(.*)\b\s*\.\s*$/';
     if (preg_match($pattern, $text, $matches) === 1)
@@ -238,13 +238,13 @@ function parseLastEditDate($newQp) {
     return '';
 }
 
-function parseOldPageInfo($fullHtml, $rtfmData) {
+function parseOldPageInfo($fullHtml, RtfmData $rtfmData) {
     $qp = htmlqp($fullHtml);
     $rtfmData->title = trim($qp->find('#title-text')->text());
     $rtfmData->spaceKey = $qp->find('#confluence-space-key')->attr('content');
 }
 
-function parseNewPageInfo($fullHtml, $rtfmData) {
+function parseNewPageInfo($fullHtml, RtfmData $rtfmData) {
     $qp = htmlqp($fullHtml, 'body');
     $rtfmData->title = $qp->find('.body-section .content section header h1')->text();
     $rtfmData->newId = $qp->attr('data-page-id');
@@ -255,7 +255,7 @@ function parseNewPageInfo($fullHtml, $rtfmData) {
     echo "New page info:\n\ttitle: {$rtfmData->title}\n\tpage-id: {$rtfmData->newId}\n\turi: {$rtfmData->newUrlPath}\n";
 }
 
-function parsePageInfo($fullHtml, $rtfmData, $newOrOld) {
+function parsePageInfo($fullHtml, RtfmData $rtfmData, $newOrOld) {
     if ($newOrOld == 'new') {
         parseNewPageInfo($fullHtml, $rtfmData);
     } else {
@@ -263,7 +263,7 @@ function parsePageInfo($fullHtml, $rtfmData, $newOrOld) {
     }
 }
 
-function getPreBlockCount($content, $rtfmData, $newOrOld) {
+function getPreBlockCount($content, RtfmData $rtfmData, $newOrOld) {
     $count = htmlqp($content)->find('pre')->size();
     if ($newOrOld == 'new') {
         $rtfmData->newPreElementCount = $count;
@@ -276,7 +276,6 @@ function getPreBlockCount($content, $rtfmData, $newOrOld) {
 function getNewRtfmContent($html) {
     $contentStart = '<!-- start content -->';
     $contentEnd = '<!-- end content -->';
-    $tempFile = $GLOBALS['baseDataPath'] . '/temp.new.html';
 
     $content = getSubstringBetween($html, $contentStart, $contentEnd);
     if ($content === false)
@@ -344,7 +343,7 @@ function getFilePath($path, $filename) {
     return $GLOBALS['baseDataPath'] . $dir . '/' . $filename;
 }
 
-function getRtfmText($baseUrl, $path, $newOrOld, $useCached, $rtfmData) {
+function getRtfmText($baseUrl, $path, $newOrOld, $useCached, RtfmData $rtfmData) {
     $localDir = $rtfmData->localDir;
     if (!file_exists($localDir)) {
         if (mkdir($localDir, 0777, true) === false) {
@@ -382,7 +381,7 @@ function calcLineCount($str) {
     return substr_count($str, "\n") + 1;
 }
 
-function diff($urlPath, $useCached, $rtfmData) {
+function diff($urlPath, $useCached, RtfmData $rtfmData) {
     echo "\nGenerating diff for {$urlPath}\n";
     $rtfmData->localDir = getFilePath($urlPath, '');
     echo "Local directory {$rtfmData->localDir}\n";
@@ -404,11 +403,11 @@ function diff($urlPath, $useCached, $rtfmData) {
     return $diff;
 }
 
-function generateTextDiffsForRtfmSpace($tocFile, $useCached, &$rtfmDataArray) {
+function generateTextDiffsForRtfmSpace($tocFile, $useCached, array &$rtfmDataArray) {
     echo "\nGetting hrefs from {$tocFile}\n\n";
     $hrefs = getTocHrefs($tocFile);
     foreach ($hrefs as $href) {
-        $rtfmDataItem = new rtfmData($href);
+        $rtfmDataItem = new RtfmData($href);
         $rtfmDataArray[]= $rtfmDataItem;
         try {
             diff($href, $useCached, $rtfmDataItem);

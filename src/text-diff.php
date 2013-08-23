@@ -7,6 +7,8 @@ use SebastianBergmann\Diff\Differ;
 // Note: it took ~1:40 (one hour and forty minutes) to run the script all the way through the first time
 // With all the pages cached, it only took about 4 minutes.
 
+// TODO: refactor rtfmData into rtfmSiteData['old'] and rtfmSiteData['new']
+
 //$urlPath = '/display/revolution20/Tag+Syntax';
 $oldBaseUrl = 'http://oldrtfm.modx.com';
 $newBaseUrl = 'http://rtfm.modx.com';
@@ -187,10 +189,6 @@ function getTocHrefs($tocFile) {
     return $hrefs;
 }
 
-function getConfluenceSpaceKey($oldHtml) {
-    return htmlqp($oldHtml, '#confluence-space-key')->attr('content');
-}
-
 function getSubstringBetween($str, $startStr, $endStr) {
     $startPos = strpos($str, $startStr);
     if ($startPos === false)
@@ -233,6 +231,12 @@ function parseLastEditDate($newQp) {
     return '';
 }
 
+function parseOldPageInfo($fullHtml, $rtfmData) {
+    $qp = htmlqp($fullHtml);
+    $rtfmData->title = $qp->find('#title-text')->text();
+    $rtfmData->spaceKey = $qp->find('#confluence-space-key')->attr('content');
+}
+
 function parseNewPageInfo($fullHtml, $rtfmData) {
     $qp = htmlqp($fullHtml, 'body');
     $rtfmData->title = $qp->find('.body-section .content section header h1')->text();
@@ -242,6 +246,14 @@ function parseNewPageInfo($fullHtml, $rtfmData) {
     if ($lastEditDate !== '')
         $rtfmData->newLastEditDate = $lastEditDate;
     echo "New page info:\n\ttitle: {$rtfmData->title}\n\tpage-id: {$rtfmData->newId}\n\turi: {$rtfmData->newUrlPath}\n";
+}
+
+function parsePageInfo($fullHtml, $rtfmData, $newOrOld) {
+    if ($newOrOld == 'new') {
+        parseNewPageInfo($fullHtml, $rtfmData);
+    } else {
+        parseOldPageInfo($fullHtml, $rtfmData);
+    }
 }
 
 function getPreBlockCount($content, $rtfmData, $newOrOld) {
@@ -343,11 +355,7 @@ function getRtfmText($baseUrl, $path, $newOrOld, $useCached, $rtfmData) {
         $fullHtml = getWebPage($baseUrl, $path);
         file_put_contents($fullHtmlFilename, $fullHtml);
     }
-    if ($newOrOld == 'new') {
-        parseNewPageInfo($fullHtml, $rtfmData);
-    } else {
-        $rtfmData->spaceKey = getConfluenceSpaceKey($fullHtml);
-    }
+    parsePageInfo($fullHtml, $rtfmData, $newOrOld);
 
     $content = getContent($fullHtml, $newOrOld);
     $tidy = tidyHtml($content);
@@ -373,9 +381,9 @@ function diff($urlPath, $useCached, $rtfmData) {
     echo "Local directory {$rtfmData->localDir}\n";
 
     $oldText = getRtfmText($GLOBALS['oldBaseUrl'], $urlPath, 'old', $useCached, $rtfmData);
-    $newText = getRtfmText($GLOBALS['newBaseUrl'], $urlPath, 'new', $useCached, $rtfmData);
-
     $rtfmData->oldTextLineCount = calcLineCount($oldText);
+
+    $newText = getRtfmText($GLOBALS['newBaseUrl'], $urlPath, 'new', $useCached, $rtfmData);
     $rtfmData->newTextLineCount = calcLineCount($newText);
 
     $differ = new Differ;

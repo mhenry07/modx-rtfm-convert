@@ -15,6 +15,8 @@ require '../vendor/autoload.php';
 // DONE: get contents of div.wiki-content
 //  * handled by tidy option show-body-only
 // TODO: warn about certain cases
+//  * empty see also
+//  * unrecognized cases
 
 //$src = 'http://oldrtfm.modx.com/display/revolution20/Tag+Syntax';
 $src = '../data/tag-syntax.html';

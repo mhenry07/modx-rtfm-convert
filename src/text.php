@@ -14,5 +14,6 @@ $options = array(
     'convert_from_encoding' => 'utf-8',
     'convert_to_encoding' => 'utf-8');
 
+/** @var \QueryPath\DOMQuery $qpDoc */
 $qpDoc = qp($src, null, $options);
 file_put_contents($dest, $qpDoc->text());

@@ -1,5 +1,6 @@
 {
   "require": {
-    "querypath/QueryPath": ">=2.0.0"
+    "querypath/QueryPath": ">=2.0.0",
+	"sebastian/diff": "*"
   }
 }

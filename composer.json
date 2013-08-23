@@ -1,6 +1,7 @@
 {
   "require": {
     "querypath/QueryPath": ">=2.0.0",
-	"sebastian/diff": "*"
+	"sebastian/diff": "*",
+    "phpunit/phpunit": "3.7.24"
   }
 }

@@ -1,13 +1,20 @@
 <?php
 
-require '../vendor/autoload.php';
-
-use SebastianBergmann\Diff\Differ;
+/**
+ * text-diff.php attempts to process all pages from oldrtfm.modx.com and
+ * rtfm.modx.com, get contents, get some info and statistics, extract and
+ * normalize the text so it can do a diff between the old and new page, and
+ * exports a bunch of info to a .csv.
+ */
 
 // Note: it took ~1:40 (one hour and forty minutes) to run the script all the way through the first time
 // With all the pages cached, it only took about 4 minutes.
 
 // TODO: refactor rtfmData into rtfmSiteData['old'] and rtfmSiteData['new']
+
+require '../vendor/autoload.php';
+
+use SebastianBergmann\Diff\Differ;
 
 //$urlPath = '/display/revolution20/Tag+Syntax';
 $oldBaseUrl = 'http://oldrtfm.modx.com';
@@ -19,10 +26,10 @@ $tocDir = '../oldrtfm-toc';
 //$tocFile = $tocDir . '/community.html';
 
 class rtfmData {
-    public $urlPath;
     public $title;
     public $spaceKey;
     public $newId;
+    public $urlPath;
     public $newUrlPath;
     public $newTextLineCount;
     public $oldTextLineCount;
@@ -131,11 +138,11 @@ class RtfmDataCsv {
     }
 
     protected function writeHeader() {
-        $headings = array('Path', 'Title', 'Space Key', 'New ID', 'Old Url',
+        $headings = array('Title', 'Space Key', 'New ID', 'Path', 'Old Url',
             'New Url', 'Insertions(+)', 'Deletions(-)', 'Old # Lines',
             'New # Lines', 'Old # Pre Blocks', 'New # Pre Blocks',
-            '# Missing Pre Blocks', 'New Last Edit Date', 'Local Directory',
-            'Errors');
+            '# Missing Pre Blocks', 'New Last Edit Date', 'Errors',
+            'Local Directory');
         $this->handle = fopen($this->filename, 'w');
         if ($this->handle === false) {
             $last_error = error_get_last();
@@ -147,12 +154,12 @@ class RtfmDataCsv {
     protected function writeRow($rtfmDataItem) {
         $d = $rtfmDataItem;
         $stat = $d->getTextDiffStat();
-        $fields = array($d->urlPath, $d->title, $d->spaceKey, $d->newId,
+        $fields = array($d->title, $d->spaceKey, $d->newId, $d->urlPath,
             $d->getOldUrl(), $d->getNewUrl(), $stat->getInsertions(),
             $stat->getDeletions(), $d->oldTextLineCount, $d->newTextLineCount,
             $d->oldPreElementCount, $d->newPreElementCount,
             $d->getMissingPreCount(), $d->newLastEditDate,
-            realpath($d->localDir), $d->errorMsg);
+            $d->errorMsg, realpath($d->localDir));
         fputcsv($this->handle, $fields);
     }
 

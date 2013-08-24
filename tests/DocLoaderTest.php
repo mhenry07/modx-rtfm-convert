@@ -14,6 +14,13 @@ class DocLoaderTest extends \PHPUnit_Framework_TestCase {
 
         $page = $docLoader->get('http://www.google.com/');
         $this->assertInternalType('string', $page);
-        $this->assertStringStartsWith('<!doctype html>', $page);
+        $this->assertContains('<html', $page);
+    }
+
+    public function testGetShouldThrowRtfmExceptionOnError() {
+        $docLoader = new DocLoader();
+
+        $this->setExpectedException('\RtfmConvert\RtfmException');
+        $docLoader->get('http://localhost/invalid-url');
     }
 }

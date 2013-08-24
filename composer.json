@@ -3,5 +3,10 @@
     "querypath/QueryPath": ">=2.0.0",
 	"sebastian/diff": "*",
     "phpunit/phpunit": "3.7.24"
+  },
+  "autoload": {
+    "psr-0": {
+      "RtfmConvert": "src/"
+    }
   }
 }

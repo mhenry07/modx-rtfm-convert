@@ -39,11 +39,9 @@ function isComment($index, DOMNode $item) {
 // strip carriage returns to prevent &#13; in output
 $doc_string = str_replace(chr(13), '', file_get_contents($src));
 
-/** @var \QueryPath\DOMQuery $doc */
 $doc = htmlqp($doc_string, null, $options);
 
 // strip everything except for title from head
-/** @var \QueryPath\DOMQuery head */
 $head = $doc->find('head')->branch();
 $title = $head->find('title')->get();
 $head->contents()->not($title)->remove();
@@ -55,7 +53,6 @@ $doc->find('body')
     ->removeAttr('id')
     ->removeAttr('class');
 
-/** @var \QueryPath\DOMQuery $content */
 $content = $doc->find('div.wiki-content')->branch();
 
 // strip element and comment siblings of .wiki-content
@@ -92,10 +89,7 @@ foreach ($replaceTags as $oldTag => $contentTag) {
 }
 
 // fix improperly nested lists
-/**
- * @var \QueryPath\DOMQuery $nestedLists
- * @var  \QueryPath\DOMQuery $list
- */
+/** @var  \QueryPath\DOMQuery $list */
 $nestedLists = $content->find('ol > ol, ol > ul, ul > ol, ul > ul');
 foreach ($nestedLists as $list) {
     $prevLi = $list->prev('li')->branch();
@@ -109,7 +103,6 @@ $content->find('th.confluenceTh')->removeClass('confluenceTh');
 $content->find('td.confluenceTd')->removeClass('confluenceTd');
 
 // code panel
-/** @var \QueryPath\DOMQuery $codePanel */
 $codePanel = $content->find('.code.panel');
 $codePanel->find('div.codeHeader')
     ->contents()->wrap('<p></p>');
@@ -120,7 +113,6 @@ $codePanel->find('div.codeHeader, div.codeContent')
     ->contents()->unwrap()->unwrap();
 
 // asides
-/** @var \QueryPath\DOMQuery $panelMacro */
 $aside_types = array('danger', 'info', 'note', 'tip', 'warning');
 $panelMacro = $content->find('div.panelMacro');
 foreach ($aside_types as $type)

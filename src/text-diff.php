@@ -10,7 +10,7 @@
 // Note: it took ~1:40 (one hour and forty minutes) to run the script all the way through the first time
 // With all the pages cached, it only took about 4 minutes.
 
-// TODO: refactor rtfmData into rtfmSiteData['old'] and rtfmSiteData['new']
+// TODO: refactor RtfmData into RtfmSiteData['old'] and RtfmSiteData['new']
 
 require '../vendor/autoload.php';
 
@@ -25,7 +25,7 @@ $csvFile = $baseDataPath . '/data.csv';
 $tocDir = '../oldrtfm-toc';
 //$tocFile = $tocDir . '/community.html';
 
-class rtfmData {
+class RtfmData {
     public $title;
     public $spaceKey;
     public $newId;
@@ -40,36 +40,43 @@ class rtfmData {
     public $errorMsg;
     private $textDiffStat;
 
+    /** @param string $urlPath */
     public function __construct($urlPath) {
         $this->urlPath = $urlPath;
     }
 
+    /** @return DiffStat */
     public function getTextDiffStat() {
         if (empty($this->textDiffStat))
             $this->textDiffStat = new DiffStat('', '');
         return $this->textDiffStat;
     }
 
-    public function setTextDiffStat($diffStat) {
+    /** @param DiffStat $diffStat */
+    public function setTextDiffStat(DiffStat $diffStat) {
         $this->textDiffStat = $diffStat;
     }
 
+    /** @param string $msg */
     public function addError($msg) {
         if (!empty($this->errorMsg))
             $this->errorMsg .= '; ';
         $this->errorMsg .= $msg;
     }
 
+    /** @return string */
     public function getOldUrl() {
         return $GLOBALS['oldBaseUrl'] . $this->urlPath;
     }
 
+    /** @return string */
     public function getNewUrl() {
         if (empty($this->newUrlPath))
             return '';
         return $GLOBALS['newBaseUrl'] . $this->newUrlPath;
     }
 
+    /** @return int|string */
     public function getMissingPreCount() {
         if (isset($this->oldPreElementCount) &&
             isset($this->newPreElementCount))
@@ -83,6 +90,10 @@ class DiffStat {
     private $deletions;
     private $name;
 
+    /**
+     * @param string $diff
+     * @param string $name
+     */
     public function __construct($diff, $name) {
         $this->name = $name;
         $this->parse($diff);
@@ -104,18 +115,22 @@ class DiffStat {
         $this->deletions = $deletions;
     }
 
+    /** @return string */
     public function formatNumstat() {
         return "{$this->insertions} insertions(+), {$this->deletions} deletions(-), {$this->name}";
     }
 
+    /** @return int */
     public function getInsertions() {
         return $this->insertions;
     }
 
+    /** @return int */
     public function getDeletions() {
         return $this->deletions;
     }
 
+    /** @return string */
     public function getName() {
         return $this->name;
     }
@@ -125,11 +140,13 @@ class RtfmDataCsv {
     private $filename;
     private $handle;
 
+    /** @param string $filename */
     public function __construct($filename) {
         $this->filename = $filename;
     }
 
-    public function writeCsv($rtfmDataArray) {
+    /** @param RtfmData[] $rtfmDataArray */
+    public function writeCsv(array $rtfmDataArray) {
         echo "\nwriting data to {$this->filename}\n";
         $this->writeHeader();
         foreach ($rtfmDataArray as $rtfmDataItem)
@@ -151,7 +168,7 @@ class RtfmDataCsv {
         fputcsv($this->handle, $headings);
     }
 
-    protected function writeRow($rtfmDataItem) {
+    protected function writeRow(RtfmData $rtfmDataItem) {
         $d = $rtfmDataItem;
         $stat = $d->getTextDiffStat();
         $fields = array($d->title, $d->spaceKey, $d->newId, $d->urlPath,
@@ -173,20 +190,33 @@ class RtfmDataCsv {
 class RtfmException extends Exception {
 }
 
+/**
+ * @param string $str
+ * @return string
+ */
 function stripCarriageReturns($str) {
     return str_replace(chr(13), '', $str);
 }
 
+/**
+ * @param string $tocDir
+ * @return string[]
+ */
 function getRtfmTocFiles($tocDir) {
     return glob($tocDir . '/*.html');
 }
 
-// get all hrefs from a MODX oldrtfm table of contents file
-// excluding anchors
+/**
+ * get all hrefs from a MODX oldrtfm table of contents file
+ * excluding anchors
+ * @param string $tocFile
+ * @return string[]
+ */
 function getTocHrefs($tocFile) {
     $hrefs = array();
     $html = stripCarriageReturns(file_get_contents($tocFile));
 
+    /** @var \QueryPath\DOMQuery $link */
     $doc = htmlqp($html);
     foreach ($doc->find('.plugin_pagetree_children_span a') as $link) {
         $href = $link->attr('href');
@@ -196,6 +226,12 @@ function getTocHrefs($tocFile) {
     return $hrefs;
 }
 
+/**
+ * @param string $str
+ * @param string $startStr
+ * @param string $endStr
+ * @return string|bool
+ */
 function getSubstringBetween($str, $startStr, $endStr) {
     $startPos = strpos($str, $startStr);
     if ($startPos === false)
@@ -210,8 +246,12 @@ function getSubstringBetween($str, $startStr, $endStr) {
     return substr($str, $startPos, $len);
 }
 
-// fix improperly nested lists
-function fixNestedLists($qp) {
+/**
+ * fix improperly nested lists
+ * @param \QueryPath\DOMQuery $qp
+ */
+function fixNestedLists(\QueryPath\DOMQuery $qp) {
+    /** @var \QueryPath\DOMQuery $list */
     $nestedLists = $qp->find('ol > ol, ol > ul, ul > ol, ul > ul');
     foreach ($nestedLists as $list) {
         $prevLi = $list->prev('li')->branch();
@@ -219,6 +259,12 @@ function fixNestedLists($qp) {
     }
 }
 
+/**
+ * @param string $baseUrl
+ * @param string $path
+ * @return string
+ * @throws RtfmException
+ */
 function getWebPage($baseUrl, $path) {
     $url = $baseUrl . $path;
     $html = file_get_contents($url);
@@ -229,8 +275,12 @@ function getWebPage($baseUrl, $path) {
     return stripCarriageReturns($html);
 }
 
-// Format: <h5>Last edited by <name> on <MMM D, YYYY>. </h5>
-function parseLastEditDate($newQp) {
+/**
+ * Format: <h5>Last edited by {name} on {MMM D, YYYY}. </h5>
+ * @param \QueryPath\DOMQuery $newQp
+ * @return string
+ */
+function parseLastEditDate(\QueryPath\DOMQuery $newQp) {
     $text = $newQp->find('.body-section .content section header h5')->text();
     $pattern = '/Last edited by .* on \s*\b(.*)\b\s*\.\s*$/';
     if (preg_match($pattern, $text, $matches) === 1)
@@ -238,13 +288,21 @@ function parseLastEditDate($newQp) {
     return '';
 }
 
-function parseOldPageInfo($fullHtml, $rtfmData) {
+/**
+ * @param string $fullHtml
+ * @param RtfmData $rtfmData
+ */
+function parseOldPageInfo($fullHtml, RtfmData $rtfmData) {
     $qp = htmlqp($fullHtml);
     $rtfmData->title = trim($qp->find('#title-text')->text());
     $rtfmData->spaceKey = $qp->find('#confluence-space-key')->attr('content');
 }
 
-function parseNewPageInfo($fullHtml, $rtfmData) {
+/**
+ * @param string $fullHtml
+ * @param $rtfmData
+ */
+function parseNewPageInfo($fullHtml, RtfmData $rtfmData) {
     $qp = htmlqp($fullHtml, 'body');
     $rtfmData->title = $qp->find('.body-section .content section header h1')->text();
     $rtfmData->newId = $qp->attr('data-page-id');
@@ -255,7 +313,12 @@ function parseNewPageInfo($fullHtml, $rtfmData) {
     echo "New page info:\n\ttitle: {$rtfmData->title}\n\tpage-id: {$rtfmData->newId}\n\turi: {$rtfmData->newUrlPath}\n";
 }
 
-function parsePageInfo($fullHtml, $rtfmData, $newOrOld) {
+/**
+ * @param string $fullHtml
+ * @param RtfmData $rtfmData
+ * @param string $newOrOld
+ */
+function parsePageInfo($fullHtml, RtfmData $rtfmData, $newOrOld) {
     if ($newOrOld == 'new') {
         parseNewPageInfo($fullHtml, $rtfmData);
     } else {
@@ -263,7 +326,13 @@ function parsePageInfo($fullHtml, $rtfmData, $newOrOld) {
     }
 }
 
-function getPreBlockCount($content, $rtfmData, $newOrOld) {
+/**
+ * @param string $content
+ * @param RtfmData $rtfmData
+ * @param string $newOrOld
+ * @return int
+ */
+function getPreBlockCount($content, RtfmData $rtfmData, $newOrOld) {
     $count = htmlqp($content)->find('pre')->size();
     if ($newOrOld == 'new') {
         $rtfmData->newPreElementCount = $count;
@@ -273,10 +342,14 @@ function getPreBlockCount($content, $rtfmData, $newOrOld) {
     return $count;
 }
 
+/**
+ * @param string $html
+ * @return string|bool
+ * @throws RtfmException
+ */
 function getNewRtfmContent($html) {
     $contentStart = '<!-- start content -->';
     $contentEnd = '<!-- end content -->';
-    $tempFile = $GLOBALS['baseDataPath'] . '/temp.new.html';
 
     $content = getSubstringBetween($html, $contentStart, $contentEnd);
     if ($content === false)
@@ -289,6 +362,10 @@ function getNewRtfmContent($html) {
     return $content;
 }
 
+/**
+ * @param string $html
+ * @return string|bool
+ */
 function getOldRtfmContent($html) {
     $tempFile = $GLOBALS['baseDataPath'] . '/temp.old.html';
 
@@ -303,12 +380,21 @@ function getOldRtfmContent($html) {
     return $content;
 }
 
+/**
+ * @param string $html
+ * @param string $newOrOld
+ * @return string|bool
+ */
 function getContent($html, $newOrOld) {
     if ($newOrOld == 'new') 
         return getNewRtfmContent($html);
     return getOldRtfmContent($html);
 }
 
+/**
+ * @param string $html
+ * @return string
+ */
 function tidyHtml($html) {
     $config = array(
         'output-xhtml' => true,
@@ -324,10 +410,18 @@ function tidyHtml($html) {
     return $tidy->repairString($html, $config, 'utf8');
 }
 
+/**
+ * @param string $html
+ * @return mixed
+ */
 function getTextContent($html) {
     return htmlqp($html)->text();
 }
 
+/**
+ * @param string $str
+ * @return string
+ */
 function cleanUpWhitespace($str) {
     $nbsp = mb_convert_encoding('&nbsp;', 'UTF-8', 'HTML-ENTITIES');
     $str = preg_replace('/[' . $nbsp . ']/u', ' ', $str);
@@ -337,6 +431,11 @@ function cleanUpWhitespace($str) {
     return trim($str);
 }
 
+/**
+ * @param string $path
+ * @param string $filename
+ * @return string
+ */
 function getFilePath($path, $filename) {
     $dir = str_replace('/display', '', $path);
     if (preg_match('@/pages/viewpage\.action\?pageId=(\d+)@', $path, $matches) === 1)
@@ -344,7 +443,16 @@ function getFilePath($path, $filename) {
     return $GLOBALS['baseDataPath'] . $dir . '/' . $filename;
 }
 
-function getRtfmText($baseUrl, $path, $newOrOld, $useCached, $rtfmData) {
+/**
+ * @param string $baseUrl
+ * @param string $path
+ * @param string $newOrOld
+ * @param bool $useCached
+ * @param RtfmData $rtfmData
+ * @return string
+ * @throws RtfmException
+ */
+function getRtfmText($baseUrl, $path, $newOrOld, $useCached, RtfmData $rtfmData) {
     $localDir = $rtfmData->localDir;
     if (!file_exists($localDir)) {
         if (mkdir($localDir, 0777, true) === false) {
@@ -376,13 +484,23 @@ function getRtfmText($baseUrl, $path, $newOrOld, $useCached, $rtfmData) {
     return $trimmed;
 }
 
+/**
+ * @param string $str
+ * @return int
+ */
 function calcLineCount($str) {
     if ($str === '')
         return 0;
     return substr_count($str, "\n") + 1;
 }
 
-function diff($urlPath, $useCached, $rtfmData) {
+/**
+ * @param string $urlPath
+ * @param bool $useCached
+ * @param RtfmData $rtfmData
+ * @return string
+ */
+function diff($urlPath, $useCached, RtfmData $rtfmData) {
     echo "\nGenerating diff for {$urlPath}\n";
     $rtfmData->localDir = getFilePath($urlPath, '');
     echo "Local directory {$rtfmData->localDir}\n";
@@ -404,11 +522,16 @@ function diff($urlPath, $useCached, $rtfmData) {
     return $diff;
 }
 
-function generateTextDiffsForRtfmSpace($tocFile, $useCached, &$rtfmDataArray) {
+/**
+ * @param string $tocFile
+ * @param bool $useCached
+ * @param RtfmData[] $rtfmDataArray
+ */
+function generateTextDiffsForRtfmSpace($tocFile, $useCached, array &$rtfmDataArray) {
     echo "\nGetting hrefs from {$tocFile}\n\n";
     $hrefs = getTocHrefs($tocFile);
     foreach ($hrefs as $href) {
-        $rtfmDataItem = new rtfmData($href);
+        $rtfmDataItem = new RtfmData($href);
         $rtfmDataArray[]= $rtfmDataItem;
         try {
             diff($href, $useCached, $rtfmDataItem);
@@ -419,6 +542,11 @@ function generateTextDiffsForRtfmSpace($tocFile, $useCached, &$rtfmDataArray) {
     }
 }
 
+/**
+ * @param string $tocDir
+ * @param bool $useCached
+ * @return RtfmData[]
+ */
 function generateTextDiffsForAllSpaces($tocDir, $useCached) {
     $rtfmDataArray = array();
     foreach (getRtfmTocFiles($tocDir) as $tocFile)
@@ -433,6 +561,7 @@ if (($fp = fopen($csvFile, 'w')) === false)
     exit(1);
 fclose($fp);
 
+/** @var RtfmData[] $rtfmData */
 //diff($urlPath, true);
 //$rtfmData = array();
 //generateTextDiffsForRtfmSpace($tocFile, true, $rtfmData);

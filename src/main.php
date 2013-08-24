@@ -27,7 +27,12 @@ $options = array(
     'encoding' => 'utf-8',
     'convert_to_encoding' => 'utf-8');
 
-function isComment($index, $item) {
+/**
+ * @param int $index
+ * @param DOMNode $item
+ * @return bool
+ */
+function isComment($index, DOMNode $item) {
     return $item->nodeType === XML_COMMENT_NODE;
 }
 
@@ -84,6 +89,7 @@ foreach ($replaceTags as $oldTag => $contentTag) {
 }
 
 // fix improperly nested lists
+/** @var  \QueryPath\DOMQuery $list */
 $nestedLists = $content->find('ol > ol, ol > ul, ul > ol, ul > ul');
 foreach ($nestedLists as $list) {
     $prevLi = $list->prev('li')->branch();

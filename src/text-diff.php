@@ -333,7 +333,7 @@ function parsePageInfo($fullHtml, RtfmData $rtfmData, $newOrOld) {
  * @return int
  */
 function getPreBlockCount($content, RtfmData $rtfmData, $newOrOld) {
-    $count = htmlqp($content)->find('pre')->size();
+    $count = htmlqp($content)->find('pre')->count();
     if ($newOrOld == 'new') {
         $rtfmData->newPreElementCount = $count;
     } else {

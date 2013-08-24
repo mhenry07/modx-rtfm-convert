@@ -216,10 +216,7 @@ function getTocHrefs($tocFile) {
     $hrefs = array();
     $html = stripCarriageReturns(file_get_contents($tocFile));
 
-    /**
-     * @var \QueryPath\DOMQuery $doc
-     * @var \QueryPath\DOMQuery $link
-     */
+    /** @var \QueryPath\DOMQuery $link */
     $doc = htmlqp($html);
     foreach ($doc->find('.plugin_pagetree_children_span a') as $link) {
         $href = $link->attr('href');
@@ -254,10 +251,7 @@ function getSubstringBetween($str, $startStr, $endStr) {
  * @param \QueryPath\DOMQuery $qp
  */
 function fixNestedLists(\QueryPath\DOMQuery $qp) {
-    /**
-     * @var \QueryPath\DOMQuery $nestedLists
-     * @var \QueryPath\DOMQuery $list
-     */
+    /** @var \QueryPath\DOMQuery $list */
     $nestedLists = $qp->find('ol > ol, ol > ul, ul > ol, ul > ul');
     foreach ($nestedLists as $list) {
         $prevLi = $list->prev('li')->branch();
@@ -299,7 +293,6 @@ function parseLastEditDate(\QueryPath\DOMQuery $newQp) {
  * @param RtfmData $rtfmData
  */
 function parseOldPageInfo($fullHtml, RtfmData $rtfmData) {
-    /** @var \QueryPath\DOMQuery $qp */
     $qp = htmlqp($fullHtml);
     $rtfmData->title = trim($qp->find('#title-text')->text());
     $rtfmData->spaceKey = $qp->find('#confluence-space-key')->attr('content');
@@ -310,7 +303,6 @@ function parseOldPageInfo($fullHtml, RtfmData $rtfmData) {
  * @param $rtfmData
  */
 function parseNewPageInfo($fullHtml, RtfmData $rtfmData) {
-    /** @var \QueryPath\DOMQuery $qp */
     $qp = htmlqp($fullHtml, 'body');
     $rtfmData->title = $qp->find('.body-section .content section header h1')->text();
     $rtfmData->newId = $qp->attr('data-page-id');
@@ -377,7 +369,6 @@ function getNewRtfmContent($html) {
 function getOldRtfmContent($html) {
     $tempFile = $GLOBALS['baseDataPath'] . '/temp.old.html';
 
-    /** @var \QueryPath\DOMQuery $qp */
     $qp = htmlqp($html, 'div.wiki-content');
     $qp->find('script')->remove();
     $qp->find('style')->remove();

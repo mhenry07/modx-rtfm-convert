@@ -34,28 +34,43 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
         $this->assertContains('<html', $page);
     }
 
-    public function testGetUrlShouldThrowRtfmExceptionOnError() {
+    public function testGetShouldThrowRtfmExceptionWhenPageNotFound() {
         $this->setExpectedException('\RtfmConvert\RtfmException');
         $this->pageLoader->get('http://localhost/invalid-url');
     }
 
-    public function testGetWithCacheFileShouldLoadCacheFile() {
+    public function testGetShouldLoadCache() {
         $this->writeTempFile('PageLoader.get', 'local');
 
         $page = $this->pageLoader->get(self::RTFM_MODX_COM, $this->tempFile);
         $this->assertStringEqualsFile($this->tempFile, $page);
     }
 
-    public function testGetWithCacheFileShouldLoadUrlWhenFileNotFound() {
-        $filename = 'non-existent-file';
-        $this->requireFileNotExist($filename);
-        $this->requireWorkingUrl(self::RTFM_MODX_COM);
-
-        $page = $this->pageLoader->get(self::RTFM_MODX_COM, $filename);
+    public function testGetShouldLoadUrlWhenCacheNotFound() {
+        $page = $this->getAndCachePage(self::RTFM_MODX_COM, 'non-existent-file');
         $this->assertContains('<html', $page);
     }
 
+    /**
+     * Depends on testGetShouldLoadUrlWhenCacheNotFound
+     * but the @ depends annotation doesn't work since {@see tearDown()}
+     * deletes the cache file.
+     */
+    public function testGetShouldWriteCache() {
+        $page = $this->getAndCachePage(self::RTFM_MODX_COM, 'cache.html');
+
+        $this->assertFileExists($this->tempFile);
+        $this->assertEquals($page, file_get_contents($this->tempFile));
+    }
+
     // helper methods
+    protected function getAndCachePage($url, $filename) {
+        $this->requireWorkingUrl($url);
+        $this->deleteTempFile($filename);
+
+        return $this->pageLoader->get($url, $this->tempFile);
+    }
+
     protected function requireWorkingUrl($url) {
         $ch = curl_init($url);
 
@@ -68,9 +83,10 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
         $this->markTestSkipped("Test requires that the URL '{$url}' works. (Status code: {$retcode})");
     }
 
-    protected function requireFileNotExist($filename) {
-        if (file_exists($filename))
-            $this->markTestSkipped("Test requires that the file '{$filename}' not exist.");
+    protected function deleteTempFile($filename) {
+        $this->tempFile = self::DATA_DIR . $filename;
+        if (file_exists($this->tempFile))
+            unlink($this->tempFile);
     }
 
     protected function writeTempFile($filename, $contents) {

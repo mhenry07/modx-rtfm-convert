@@ -9,7 +9,7 @@ namespace RtfmConvert;
 
 class PageLoaderTest extends \PHPUnit_Framework_TestCase {
     const DATA_DIR = '../../data/test/';
-    const WWW_GOOGLE_COM = 'http://www.google.com/';
+    const RTFM_MODX_COM = 'http://rtfm.modx.com/';
 
     /** @var PageLoader */
     private $pageLoader;
@@ -28,8 +28,8 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testGetShouldRetrieveWebPage() {
-        $this->requireWorkingUrl(self::WWW_GOOGLE_COM);
-        $page = $this->pageLoader->get(self::WWW_GOOGLE_COM);
+        $this->requireWorkingUrl(self::RTFM_MODX_COM);
+        $page = $this->pageLoader->get(self::RTFM_MODX_COM);
         $this->assertInternalType('string', $page);
         $this->assertContains('<html', $page);
     }
@@ -39,27 +39,19 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
         $this->pageLoader->get('http://localhost/invalid-url');
     }
 
-    public function testGetShouldLoadLocalFile() {
+    public function testGetWithCacheFileShouldLoadCacheFile() {
         $this->writeTempFile('PageLoader.get', 'local');
 
-        $page = $this->pageLoader->get($this->tempFile);
+        $page = $this->pageLoader->get(self::RTFM_MODX_COM, $this->tempFile);
         $this->assertStringEqualsFile($this->tempFile, $page);
     }
 
-    public function testGetWithTwoSourcesShouldLoadSource1WhenFound() {
-        $this->requireWorkingUrl(self::WWW_GOOGLE_COM);
-        $this->writeTempFile('PageLoader.get', 'local');
-
-        $page = $this->pageLoader->get($this->tempFile, self::WWW_GOOGLE_COM);
-        $this->assertStringEqualsFile($this->tempFile, $page);
-    }
-
-    public function testGetWithTwoSourcesShouldLoadSource2WhenFileNotFound() {
+    public function testGetWithCacheFileShouldLoadUrlWhenFileNotFound() {
         $filename = 'non-existent-file';
         $this->requireFileNotExist($filename);
-        $this->requireWorkingUrl(self::WWW_GOOGLE_COM);
+        $this->requireWorkingUrl(self::RTFM_MODX_COM);
 
-        $page = $this->pageLoader->get($filename, self::WWW_GOOGLE_COM);
+        $page = $this->pageLoader->get(self::RTFM_MODX_COM, $filename);
         $this->assertContains('<html', $page);
     }
 

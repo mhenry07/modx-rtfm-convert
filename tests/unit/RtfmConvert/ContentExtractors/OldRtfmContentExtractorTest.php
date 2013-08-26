@@ -7,7 +7,7 @@
 namespace RtfmConvert\ContentExtractors;
 
 
-// TODO: test utf-8 & entities
+// TODO: handle incomplete content (i.e. missing /div for .wiki-content)
 class OldRtfmContentExtractorTest extends \PHPUnit_Framework_TestCase {
     const WIKI_CONTENT_FORMAT = <<<'EOT'
 <!DOCTYPE html>
@@ -28,8 +28,8 @@ EOT;
         $source = $this->formatTestData($expected);
 
         $extractor = new OldRtfmContentExtractor();
-        $wikiContent = $extractor->extract($source);
-        $this->assertEquals($expected, trim($wikiContent));
+        $extracted = $extractor->extract($source);
+        $this->assertEquals($expected, trim($extracted));
     }
 
     public function testExtractShouldReturnHtmlWikiContent() {
@@ -44,8 +44,8 @@ EOT;
         $source = $this->formatTestData($expected);
 
         $extractor = new OldRtfmContentExtractor();
-        $wikiContent = $extractor->extract($source);
-        $this->assertHtmlStringEquals($expected, $wikiContent);
+        $extracted = $extractor->extract($source);
+        $this->assertHtmlStringEquals($expected, $extracted);
     }
 
     public function testExtractShouldRemoveWikiContentComment() {
@@ -54,8 +54,8 @@ EOT;
         $source = $this->formatTestData("{$comment}\n{$expected}");
 
         $extractor = new OldRtfmContentExtractor();
-        $wikiContent = $extractor->extract($source);
-        $this->assertEquals($expected, trim($wikiContent));
+        $extracted = $extractor->extract($source);
+        $this->assertEquals($expected, trim($extracted));
     }
 
     public function testExtractShouldRemoveStyleFromContent() {
@@ -69,8 +69,8 @@ EOT;
         $source = $this->formatTestData("{$expected}\n{$style}");
 
         $extractor = new OldRtfmContentExtractor();
-        $wikiContent = $extractor->extract($source);
-        $this->assertEquals($expected, trim($wikiContent));
+        $extracted = $extractor->extract($source);
+        $this->assertEquals($expected, trim($extracted));
     }
 
     public function testExtractShouldRemoveScriptFromContent() {
@@ -86,18 +86,81 @@ EOT;
         $source = $this->formatTestData("{$expected}\n{$script}");
 
         $extractor = new OldRtfmContentExtractor();
-        $wikiContent = $extractor->extract($source);
-        $this->assertEquals($expected, trim($wikiContent));
+        $extracted = $extractor->extract($source);
+        $this->assertEquals($expected, trim($extracted));
+    }
+
+    public function testExtractMissingContentShouldThrowException() {
+        $source = <<<'EOT'
+<!DOCTYPE html>
+<html>
+<head>
+<title>Test</title>
+</head>
+<body>
+EOT;
+
+        $extractor = new OldRtfmContentExtractor();
+        $this->setExpectedException('\RtfmConvert\RtfmException');
+        $extractor->extract($source);
+    }
+
+    public function testExtractShouldPreserveExpectedEntities() {
+        $expected = '<p>&amp; &gt; &lt; &nbsp;</p>';
+        $source = $this->formatTestData($expected);
+
+        $extractor = new OldRtfmContentExtractor();
+        $extracted = $extractor->extract($source);
+        $this->assertEquals($expected, trim($extracted));
+    }
+
+    // should this test &apos; and &quot;?
+    public function testExtractShouldConvertExpectedEntities() {
+        $expected = '<p>! \' ( * + - [ ] ^ _ ~ –</p>';
+        $content = '<p>&#33; &#39; &#40; &#42; &#43; &#45; &#91; &#93; &#94; &#95; &#126; &#8211;</p>';
+        $source = $this->formatTestData($content);
+
+        $extractor = new OldRtfmContentExtractor();
+        $extracted = $extractor->extract($source);
+        $this->assertEquals($expected, trim($extracted));
+    }
+
+    public function testExtractShouldReturnUtf8() {
+        $checkmark = html_entity_decode('&#x2713;', ENT_HTML401, 'UTF-8'); // ✓
+        $expected = "<p>{$checkmark}</p>";
+        $content = '<p>&#x2713;</p>';
+        $source = $this->formatTestData($content);
+
+        $extractor = new OldRtfmContentExtractor();
+        $extracted = $extractor->extract($source);
+        $this->assertNotEquals($expected,
+            trim(iconv('UTF-8', 'ISO-8859-1//IGNORE', $extracted)));
+//            trim(mb_convert_encoding($extracted, 'ISO-8859-1', 'UTF-8')));
+        $this->assertEquals($expected, trim($extracted));
+    }
+
+    public function testExtractShouldNotReturnCrAsEntity() {
+        $source = "<html><body><div class=\"wiki-content\"><p>\r\n</p></div></body></html>";
+
+        $extractor = new OldRtfmContentExtractor();
+        $extracted = $extractor->extract($source);
+        $this->assertNotContains('&#13;', $extracted);
+        $this->assertRegExp('#^<p>\r?\n</p>$#', trim($extracted));
+    }
+
+    public function testExtractShouldNormalizeAttributeQuotes() {
+        $expected = '<p id="no-quote" class="single-quote"></p>';
+        $content = "<p id=no-quote class='single-quote'></p>";
+        $source = $this->formatTestData($content);
+
+        $extractor = new OldRtfmContentExtractor();
+        $extracted = $extractor->extract($source);
+        $this->assertEquals($expected, trim($extracted));
     }
 
     // helper methods
     protected function formatTestData($contentHtml) {
-        return $this->preFormat(
-            sprintf(self::WIKI_CONTENT_FORMAT, $contentHtml));
-    }
-
-    protected function preFormat($str) {
-        return str_replace("\r\n", "\n", $str);
+        return sprintf(self::WIKI_CONTENT_FORMAT, $contentHtml);
     }
 
 //    protected function tidy($html) {
@@ -111,6 +174,12 @@ EOT;
 //        return $tidy->repairString($html, $tidyConfig);
 //    }
 
+    /**
+     * @see \PHPUnit_Framework_Assert::assertTag()
+     * @param $expectedHtml
+     * @param $actualHtml
+     * @param string $message
+     */
     protected function assertHtmlStringEquals($expectedHtml, $actualHtml, $message = '') {
         $expectedElement = htmlqp($expectedHtml, 'body')->get(0);
         $actualElement = htmlqp($actualHtml, 'body')->get(0);

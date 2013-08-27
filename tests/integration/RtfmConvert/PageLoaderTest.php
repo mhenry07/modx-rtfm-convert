@@ -1,12 +1,12 @@
 <?php
 /**
- * User: mhenry
- * Date: 8/23/13
- * Time: 6:53 PM
+ * @author: Mike Henry
  */
 
 namespace RtfmConvert;
 
+
+// TODO: add feature to ignore cache
 class PageLoaderTest extends \PHPUnit_Framework_TestCase {
     const DATA_DIR = '../../data/test/';
     const RTFM_MODX_COM = 'http://rtfm.modx.com/';
@@ -34,9 +34,42 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
         $this->assertContains('<html', $page);
     }
 
+    // TODO: handle rtfm.modx.com page not found (returns 200,
+    // but body[data-page-id="2"] and
+    // section.body-section .content section header h1.text == "Page Not Found")
     public function testGetShouldThrowRtfmExceptionWhenPageNotFound() {
         $this->setExpectedException('\RtfmConvert\RtfmException');
-        $this->pageLoader->get('http://localhost/invalid-url');
+        $this->pageLoader->get('http://oldrtfm.modx.com/404');
+    }
+
+    public function testGetShouldThrowRtfmExceptionWhenNewRtfmPageNotFound() {
+        $this->setExpectedException('\RtfmConvert\RtfmException');
+        $this->pageLoader->get('http://rtfm.modx.com/404');
+    }
+
+    public function testGetShouldThrowRtfmExceptionWhenPageIncomplete() {
+        $curl = $this->getMock('\RtfmConvert\CurlWrapper');
+        $curl->expects($this->any())->method('exec')
+            ->will($this->returnValue('<htm'));
+        $curl->expects($this->any())->method('setinfoArray')
+            ->will($this->returnValue(true));
+        $getinfoMap = array(
+            array(CURLINFO_HTTP_CODE, 200),
+            array(CURLINFO_CONTENT_LENGTH_DOWNLOAD, 999)
+        );
+        $curl->expects($this->any())->method('getinfo')
+            ->will($this->returnValueMap($getinfoMap));
+
+        $pageLoader = new PageLoader($curl);
+        $this->setExpectedException('\RtfmConvert\RtfmException');
+//            'downloaded size does not match Content-Length header');
+        $pageLoader->get('http://oldrtfm.modx.com/display/revolution20/Tag+Syntax');
+    }
+
+    public function testGetShouldRetrievePageWhenPageComplete() {
+        $page = $this->pageLoader->get('http://oldrtfm.modx.com/display/revolution20/Tag+Syntax');
+        $this->assertInternalType('string', $page);
+        $this->assertContains('<html', $page);
     }
 
     public function testGetShouldLoadCache() {
@@ -52,9 +85,9 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
     }
 
     /**
-     * Depends on testGetShouldLoadUrlWhenCacheNotFound
-     * but the @ depends annotation doesn't work since {@see tearDown()}
-     * deletes the cache file.
+     * @depends testGetShouldLoadUrlWhenCacheNotFound
+     * Note: since tearDown() deletes the cache file, we have to re-perform
+     * the act step from testGetShouldLoadUrlWhenCacheNotFound.
      */
     public function testGetShouldWriteCache() {
         $page = $this->getAndCachePage(self::RTFM_MODX_COM, 'cache.html');

@@ -22,7 +22,7 @@ class OldRtfmContentExtractor implements ContentExtractorInterface {
         $qp = htmlqp($html, 'div.wiki-content');
         if ($qp->count() === 0)
             throw new \RtfmConvert\RtfmException('Unable to locate div.wiki-content.');
-        $qp->remove('script, style');
+        $qp->remove('script, style, div.Scrollbar');
 
         $content = '';
         /** @var \QueryPath\DOMQuery $item */

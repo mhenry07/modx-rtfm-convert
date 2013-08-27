@@ -92,6 +92,19 @@ EOT;
         $this->assertEquals($expected, trim($extracted));
     }
 
+    public function testExtractShouldRemoveScrollbarFromContent() {
+        $expected = 'content';
+        $scrollbar = <<<'EOT'
+<div class="Scrollbar"><table class='ScrollbarTable'><tr><td class='ScrollbarPrevIcon'><a href="/display/revolution20/Structuring+Your+Site"><img border='0' align='middle' src='/images/icons/back_16.gif' width='16' height='16'></a></td><td width='33%' class='ScrollbarPrevName'><a href="/display/revolution20/Structuring+Your+Site">Structuring Your Site</a>&nbsp;</td><td width='33%' class='ScrollbarParent'><sup><a href="/display/revolution20/Making+Sites+with+MODx"><img border='0' align='middle' src='/images/icons/up_16.gif' width='8' height='8'></a></sup><a href="/display/revolution20/Making+Sites+with+MODx">Making Sites with MODx</a></td><td width='33%' class='ScrollbarNextName'>&nbsp;<a href="/display/revolution20/Customizing+Content">Customizing Content</a></td><td class='ScrollbarNextIcon'><a href="/display/revolution20/Customizing+Content"><img border='0' align='middle' src='/images/icons/forwd_16.gif' width='16' height='16'></a></td></tr></table></div>
+EOT;
+
+        $source = $this->formatTestData("{$expected}\n{$scrollbar}");
+
+        $extractor = new OldRtfmContentExtractor();
+        $extracted = $extractor->extract($source);
+        $this->assertEquals($expected, trim($extracted));
+    }
+
     public function testExtractMissingContentShouldThrowException() {
         $source = <<<'EOT'
 <!DOCTYPE html>

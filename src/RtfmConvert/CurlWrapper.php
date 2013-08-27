@@ -33,7 +33,6 @@ class CurlWrapper {
         $errno = curl_errno($this->ch);
         if ($errno !== 0) {
             $errorMessage = curl_error($this->ch);
-            echo "cURL error ({$errno}): {$errorMessage}";
             throw new RtfmException("cURL error ({$errno}): {$errorMessage}");
         }
         return $result;

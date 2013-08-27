@@ -34,17 +34,17 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
         $this->assertContains('<html', $page);
     }
 
-    // TODO: handle rtfm.modx.com page not found (returns 200,
-    // but body[data-page-id="2"] and
-    // section.body-section .content section header h1.text == "Page Not Found")
-    public function testGetShouldThrowRtfmExceptionWhenPageNotFound() {
-        $this->setExpectedException('\RtfmConvert\RtfmException');
-        $this->pageLoader->get('http://oldrtfm.modx.com/404');
+    public function testGetShouldRetrieveRedirectedWebPage() {
+        $url = "http://rtfm.modx.com/display/revolution20/Tag+Syntax";
+        $this->requireWorkingUrl($url);
+        $page = $this->pageLoader->get($url);
+        $this->assertInternalType('string', $page);
+        $this->assertContains('<html', $page);
     }
 
-    public function testGetShouldThrowRtfmExceptionWhenNewRtfmPageNotFound() {
+    public function testGetShouldThrowRtfmExceptionWhenPageNotFound() {
         $this->setExpectedException('\RtfmConvert\RtfmException');
-        $this->pageLoader->get('http://rtfm.modx.com/404');
+        $this->pageLoader->get('http://rtfm.modx.com/invalid-page');
     }
 
     public function testGetShouldThrowRtfmExceptionWhenPageIncomplete() {

@@ -73,12 +73,12 @@ class PageLoader {
         ));
         $output = $curl->exec();
         $httpCode = $curl->getinfo(CURLINFO_HTTP_CODE);
-        $contentLengthHeader = $curl->getinfo(CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+        $contentLengthHeader = intval($curl->getinfo(CURLINFO_CONTENT_LENGTH_DOWNLOAD));
         $curl->close();
 
         if ($output === false)
             throw new RtfmException("Failed to retrieve url (code {$httpCode}): {$url}");
-        if (!is_null($contentLengthHeader) && $contentLengthHeader != -1 &&
+        if (!is_null($contentLengthHeader) && $contentLengthHeader > 0 &&
             strlen($output) != $contentLengthHeader) {
             $downloadBytes = strlen($output);
             throw new RtfmException("Bytes downloaded ({$downloadBytes}) does not match Content-Length header ({$contentLengthHeader})");

@@ -7,8 +7,10 @@
 namespace RtfmConvert\ContentExtractors;
 
 
+require_once('RtfmConvert/HtmlTestCase.php');
+
 // TODO: handle incomplete content (i.e. missing /div for .wiki-content)
-class OldRtfmContentExtractorTest extends \PHPUnit_Framework_TestCase {
+class OldRtfmContentExtractorTest extends \RtfmConvert\HtmlTestCase {
     const WIKI_CONTENT_FORMAT = <<<'EOT'
 <!DOCTYPE html>
 <html>
@@ -173,30 +175,4 @@ EOT;
 //            'output-bom' => false);
 //        return $tidy->repairString($html, $tidyConfig);
 //    }
-
-    /**
-     * @see \PHPUnit_Framework_Assert::assertTag()
-     * @param $expectedHtml
-     * @param $actualHtml
-     * @param string $message
-     */
-    protected function assertHtmlStringEquals($expectedHtml, $actualHtml, $message = '') {
-        $expectedElement = htmlqp($expectedHtml, 'body')->get(0);
-        $actualElement = htmlqp($actualHtml, 'body')->get(0);
-
-        $expectedHtmlTrimmed = trim($expectedHtml);
-        $actualHtmlTrimmed = trim($actualHtml);
-        $formattedMessage = <<<EOT
-{$message}
-Expected HTML:
-{$expectedHtmlTrimmed}
-
-Actual HTML:
-{$actualHtmlTrimmed}
-
-EOT;
-
-        $this->assertEqualXMLStructure($expectedElement, $actualElement, true,
-            $formattedMessage);
-    }
 }

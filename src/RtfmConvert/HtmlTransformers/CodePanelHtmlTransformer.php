@@ -14,14 +14,15 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
     public function generateStatistics($isTransforming = false) {
         if (is_null($this->stats)) return;
         $matches = $this->find();
-        $this->addCountStat('.code.panel', $matches, $isTransforming);
-        $this->addCountStat('.code.panel .codeHeader',
-            $matches->find('.codeHeader'), $isTransforming);
-        $this->addCountStat('.code.panel pre:has(span[class^="code-"])',
-            $matches->find('.code.panel pre')->has('span[class^="code-"]'),
+        $this->stats->addCountStat('.code.panel', $matches->count(),
             $isTransforming);
-        $this->addCountStat('.code.panel pre:has(:not(span[class^="code-"]))',
-            $matches->find('.code.panel pre')->has(':not(span[class^="code-"])'),
+        $this->stats->addCountStat('.code.panel .codeHeader',
+            $matches->find('.codeHeader')->count(), $isTransforming);
+        $this->stats->addCountStat('.code.panel pre:has(span[class^="code-"])',
+            $matches->find('.code.panel pre')->has('span[class^="code-"]')->count(),
+            $isTransforming);
+        $this->stats->addCountStat('.code.panel pre:has(:not(span[class^="code-"]))',
+            $matches->find('.code.panel pre')->has(':not(span[class^="code-"])')->count(),
             false, true);
     }
 
@@ -36,21 +37,5 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
         $codePanels->find('div.codeHeader, div.codeContent')
             ->contents()->unwrap()->unwrap();
         return $this->qp;
-    }
-
-    /**
-     * @param string $label
-     * @param \QueryPath\DOMQuery $qp
-     * @param bool $isTransforming
-     * @param bool $warnIfFound
-     */
-    private function addCountStat($label, $qp, $isTransforming, $warnIfFound = false) {
-        $count = $qp->count();
-        $isWarning = $warnIfFound;
-        if ($count === 0) {
-            $isTransforming = false;
-            $isWarning = false;
-        }
-        return $this->stats->add($label, $count, $isTransforming, $isWarning);
     }
 }

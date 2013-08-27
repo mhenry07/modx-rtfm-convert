@@ -25,6 +25,12 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
      * @param string $message
      */
     protected function assertHtmlEquals($expectedHtml, $actualHtml, $message = '') {
+        // prevent objects from being altered
+        if (is_object($expectedHtml))
+            $expectedHtml = clone $expectedHtml;
+        if (is_object($actualHtml))
+            $actualHtml = clone $actualHtml;
+
         $expectedElement = htmlqp($expectedHtml, 'body')->get(0);
         $actualElement = htmlqp($actualHtml, 'body')->get(0);
 

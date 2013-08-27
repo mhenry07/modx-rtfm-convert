@@ -47,7 +47,7 @@ EOT;
 
         $extractor = new OldRtfmContentExtractor();
         $extracted = $extractor->extract($source);
-        $this->assertHtmlStringEquals($expected, $extracted);
+        $this->assertHtmlEquals($expected, $extracted);
     }
 
     public function testExtractShouldRemoveWikiContentComment() {

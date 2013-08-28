@@ -10,13 +10,15 @@ namespace RtfmConvert;
  */
 class PageLoader {
     private $curlWrapper;
+    private $stats;
 
-    function __construct($curlWrapper = null) {
+    function __construct(CurlWrapper $curlWrapper = null, PageStatistics $stats = null) {
         if (!is_null($curlWrapper)) {
             $this->curlWrapper = $curlWrapper;
         } else {
             $this->curlWrapper = new CurlWrapper();
         }
+        $this->stats = $stats;
     }
 
     /**
@@ -32,9 +34,12 @@ class PageLoader {
      * @return string Returns the contents of the response.
      */
     public function get($url, $cacheFile = null) {
+        $this->addStat('url', $url);
         $source = $url;
-        if (!is_null($cacheFile) && file_exists($cacheFile))
+        if (!is_null($cacheFile) && file_exists($cacheFile)) {
             $source = $cacheFile;
+            $this->addStat('using cache', true);
+        }
 
         try {
             $contents = $this->getContents($source);
@@ -76,14 +81,25 @@ class PageLoader {
         $contentLengthHeader = intval($curl->getinfo(CURLINFO_CONTENT_LENGTH_DOWNLOAD));
         $curl->close();
 
+        $this->addStat('http status code', $httpCode,
+            $httpCode >= 400 || $output === false);
         if ($output === false)
             throw new RtfmException("Failed to retrieve url (code {$httpCode}): {$url}");
+
+        $downloadBytes = strlen($output);
+        $this->addStat('content length header', $contentLengthHeader);
+        $this->addStat('downloaded bytes', $downloadBytes,
+            $contentLengthHeader > 0 && $downloadBytes != $contentLengthHeader);
         if (!is_null($contentLengthHeader) && $contentLengthHeader > 0 &&
-            strlen($output) != $contentLengthHeader) {
-            $downloadBytes = strlen($output);
+            $downloadBytes != $contentLengthHeader) {
             throw new RtfmException("Bytes downloaded ({$downloadBytes}) does not match Content-Length header ({$contentLengthHeader})");
         }
 
         return $output;
+    }
+
+    private function addStat($label, $value, $isWarning = false) {
+        if (!is_null($this->stats))
+            $this->stats->add($label, $value, false, $isWarning);
     }
 }

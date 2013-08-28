@@ -13,16 +13,20 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
 
     /** @var PageLoader */
     private $pageLoader;
+    /** @var PageStatistics */
+    private $stats;
 
     private $tempFile;
 
     public function setUp() {
-        $this->pageLoader = new PageLoader();
+        $this->stats = new PageStatistics();
+        $this->pageLoader = new PageLoader(new CurlWrapper(), $this->stats);
         if (!file_exists(self::DATA_DIR))
             mkdir(self::DATA_DIR, 0777, true);
     }
 
     public function tearDown() {
+        echo '\nStats: ', print_r($this->stats->getStats());
         if (isset($this->tempFile) && file_exists($this->tempFile))
             unlink($this->tempFile);
     }
@@ -60,7 +64,7 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
         $curl->expects($this->any())->method('getinfo')
             ->will($this->returnValueMap($getinfoMap));
 
-        $pageLoader = new PageLoader($curl);
+        $pageLoader = new PageLoader($curl, $this->stats);
         $this->setExpectedException('\RtfmConvert\RtfmException');
 //            'downloaded size does not match Content-Length header');
         $pageLoader->get('http://oldrtfm.modx.com/display/revolution20/Tag+Syntax');

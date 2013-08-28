@@ -32,7 +32,7 @@ EOT;
         $this->assertHtmlEquals($expected, $result);
     }
 
-    public function testTransformShouldRemoveAtlForcedNewlineClass() {
+    public function testTransformShouldRemoveAtlForcedNewlineClassInP() {
         $html = <<<'EOT'
 <p>Welcome</p>
 <p><br class="atl-forced-newline" /></p>
@@ -43,6 +43,22 @@ EOT;
 <p>Welcome</p>
 <p><br /></p>
 <h3><a name="BasicInstallation-SeeAlso"></a>See Also</h3>
+EOT;
+
+        $transformer = new BrAtlForcedNewlineHtmlTransformer($html);
+        $result = $transformer->transform();
+        $this->assertHtmlEquals($expected, $result);
+    }
+
+    public function testTransformShouldRemoveAtlForcedNewlineClassInTable() {
+        $html = <<<'EOT'
+<table><tr><td>[[*field]]
+<br class="atl-forced-newline" /></td></tr></table>
+EOT;
+
+        $expected = <<<'EOT'
+<table><tr><td>[[*field]]
+<br /></td></tr></table>
 EOT;
 
         $transformer = new BrAtlForcedNewlineHtmlTransformer($html);

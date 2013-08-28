@@ -17,7 +17,6 @@ abstract class AbstractHtmlTransformer {
         $this->stats = $stats;
     }
 
-    abstract public function find();
     abstract public function generateStatistics($isTransforming = false);
     abstract public function transform();
 

@@ -7,9 +7,6 @@ namespace RtfmConvert\HtmlTransformers;
 
 
 class BrAtlForcedNewlineHtmlTransformer extends AbstractHtmlTransformer {
-    public function find() {
-        return $this->qp->find('br.atl-forced-newline');
-    }
 
     // should I add stats for first & last?
     public function generateStatistics($isTransforming = false) {
@@ -23,7 +20,7 @@ class BrAtlForcedNewlineHtmlTransformer extends AbstractHtmlTransformer {
             $this->qp->firstChild()->remove();
         if ($this->qp->lastChild()->is('p > br.atl-forced-newline:only-child'))
             $this->qp->lastChild()->remove();
-        $this->find()->removeAttr('class');
+        $this->qp->find('br.atl-forced-newline')->removeAttr('class');
         return $this->qp;
     }
 }

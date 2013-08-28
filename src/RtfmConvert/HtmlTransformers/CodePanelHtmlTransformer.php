@@ -14,10 +14,8 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
     public function generateStatistics($isTransforming = false) {
         if (is_null($this->stats)) return;
         $matches = $this->find();
-        $this->stats->addCountStat('.code.panel', $matches->count(),
-            $isTransforming);
-        $this->stats->addCountStat('.code.panel .codeHeader',
-            $matches->find('.codeHeader')->count(), $isTransforming);
+        $this->addSimpleStat('.code.panel', $isTransforming);
+        $this->addSimpleStat('.code.panel .codeHeader', $isTransforming);
         $this->stats->addCountStat('.code.panel pre:has(span[class^="code-"])',
             $matches->find('.code.panel pre')->has('span[class^="code-"]')->count(),
             $isTransforming);

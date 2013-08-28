@@ -8,8 +8,6 @@ namespace RtfmConvert\HtmlTransformers;
 
 use RtfmConvert\PageStatistics;
 
-require_once('RtfmConvert/HtmlTestCase.php');
-
 class CodePanelHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
 
     public function testTransformShouldKeepNonCodeContent() {

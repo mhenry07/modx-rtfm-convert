@@ -20,4 +20,11 @@ abstract class AbstractHtmlTransformer {
     abstract public function find();
     abstract public function generateStatistics($isTransforming = false);
     abstract public function transform();
+
+    protected function addSimpleStat($selector, $isTransforming = false,
+                                     $warnIfFound = false, $isRequired = false) {
+        $this->stats->addCountStat($selector,
+            $this->qp->find($selector)->count(),
+            $isTransforming, $warnIfFound, $isRequired);
+    }
 }

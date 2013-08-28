@@ -14,9 +14,7 @@ class BrAtlForcedNewlineHtmlTransformer extends AbstractHtmlTransformer {
     // should I add stats for first & last?
     public function generateStatistics($isTransforming = false) {
         if (is_null($this->stats)) return;
-        $matches = $this->find();
-        $this->stats->addCountStat('br.atl-forced-newline', $matches->count(),
-            $isTransforming);
+        $this->addSimpleStat('br.atl-forced-newline', $isTransforming);
     }
 
     public function transform() {

@@ -9,6 +9,9 @@ namespace RtfmConvert\HtmlTransformers;
 use RtfmConvert\PageStatistics;
 
 class CodePanelHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
+    public function setUp() {
+        $this->stats = new PageStatistics();
+    }
 
     public function testTransformShouldKeepNonCodeContent() {
         $html = '<h2>Title</h2><p>Text</p>';
@@ -133,21 +136,13 @@ EOT;
 EOT;
 
         $transformed = true;
-        $expectedStats = array(
-            array('label' => '.code.panel', 'value' => 1, 'transformed' => $transformed, 'warning' => false),
-            array('label' => '.code.panel .codeHeader', 'value' => 1, 'transformed' => $transformed, 'warning' => false),
-            array('label' => '.code.panel pre:has(span[class^="code-"])', 'value' => 0, 'transformed' => false, 'warning' => false)
-        );
 
-        $stats = new PageStatistics();
-        $transformer = new CodePanelHtmlTransformer($sourceHtml, $stats);
+        $transformer = new CodePanelHtmlTransformer($sourceHtml, $this->stats);
         $transformer->generateStatistics($transformed);
-        $statsArray = $stats->getStats();
-        foreach ($expectedStats as $expectedStat) {
-            $key = $expectedStat['label'];
-            $this->assertArrayHasKey($key, $statsArray);
-            $this->assertEquals($expectedStat, $statsArray[$key]);
-        }
+
+        $this->assertStat('.code.panel', 1, $transformed);
+        $this->assertStat('.code.panel .codeHeader', 1, $transformed);
+        $this->assertStat('.code.panel pre:has(span[class^="code-"])', 0, false);
     }
 
     /**
@@ -160,16 +155,9 @@ EOT;
 </div></div>
 EOT;
 
-        $expectedStat = array('label' => '.code.panel pre:has(span[class^="code-"])', 'value' => 1, 'transformed' => true, 'warning' => false);
-
-        $stats = new PageStatistics();
-        $transformer = new CodePanelHtmlTransformer($sourceHtml, $stats);
+        $transformer = new CodePanelHtmlTransformer($sourceHtml, $this->stats);
         $transformer->generateStatistics(true);
-
-        $statsArray = $stats->getStats();
-        $key = $expectedStat['label'];
-        $this->assertArrayHasKey($key, $statsArray);
-        $this->assertEquals($expectedStat, $statsArray[$key]);
+        $this->assertStat('.code.panel pre:has(span[class^="code-"])', 1, true);
     }
 
     /**
@@ -182,15 +170,8 @@ EOT;
 </div></div>
 EOT;
 
-        $expectedStat = array('label' => '.code.panel pre:has(:not(span[class^="code-"]))', 'value' => 1, 'transformed' => false, 'warning' => true);
-
-        $stats = new PageStatistics();
-        $transformer = new CodePanelHtmlTransformer($sourceHtml, $stats);
+        $transformer = new CodePanelHtmlTransformer($sourceHtml, $this->stats);
         $transformer->generateStatistics();
-
-        $statsArray = $stats->getStats();
-        $key = $expectedStat['label'];
-        $this->assertArrayHasKey($key, $statsArray);
-        $this->assertEquals($expectedStat, $statsArray[$key]);
+        $this->assertStat('.code.panel pre:has(:not(span[class^="code-"]))', 1, false, true);
     }
 }

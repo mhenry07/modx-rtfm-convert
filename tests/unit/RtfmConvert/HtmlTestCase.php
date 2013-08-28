@@ -7,6 +7,13 @@ namespace RtfmConvert;
 
 
 class HtmlTestCase extends \PHPUnit_Framework_TestCase {
+    /** @var PageStatistics */
+    protected $stats;
+
+    public function setUp() {
+        $this->stats = new PageStatistics();
+    }
+
     /**
      * This can take any type that htmlqp() can take for $expectedHtml and
      * $actualHtml. (See qp()):
@@ -23,6 +30,8 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
      * @param string|\QueryPath\DOMQuery|\DOMDocument|\SimpleXMLElement|\DOMNode|\DOMNode[] $expectedHtml
      * @param string|\QueryPath\DOMQuery|\DOMDocument|\SimpleXMLElement|\DOMNode|\DOMNode[] $actualHtml
      * @param string $message
+     *
+     * @todo handle empty string for actualHtml (htmlqp('') returns null)
      */
     protected function assertHtmlEquals($expectedHtml, $actualHtml, $message = '') {
         // prevent objects from being altered
@@ -48,7 +57,21 @@ Actual HTML:
 EOT;
         }
 
+        $this->assertNotNull($actualHtml);
         $this->assertEqualXMLStructure($expectedElement, $actualElement, true,
             $message);
+    }
+
+    public function assertStat($expectedLabel, $expectedValue, $expectedTransformed = null, $expectedWarning = null) {
+        if (is_null($this->stats))
+            $this->fail('the test class requires a valid PageStatistics object');
+        $statsArray = $this->stats->getStats();
+        $this->assertArrayHasKey($expectedLabel, $statsArray);
+        $stat = $statsArray[$expectedLabel];
+        $this->assertEquals($expectedValue, $stat['value']);
+        if (!is_null($expectedTransformed))
+            $this->assertEquals($expectedTransformed, $stat['transformed']);
+        if (!is_null($expectedWarning))
+            $this->assertEquals($expectedWarning, $stat['warning']);
     }
 }

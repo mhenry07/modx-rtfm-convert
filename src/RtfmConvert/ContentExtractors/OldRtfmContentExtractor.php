@@ -7,20 +7,22 @@
 namespace RtfmConvert\ContentExtractors;
 
 use \QueryPath;
+use RtfmConvert\PageStatistics;
 
 
 class OldRtfmContentExtractor extends AbstractContentExtractor {
 
     /**
      * @param string $html
+     * @param \RtfmConvert\PageStatistics $stats
      * @throws \RtfmConvert\RtfmException
      * @return string
      *
      * See notes from 8/26.
      */
-    public function extract($html) {
+    public function extract($html, PageStatistics $stats = null) {
         $qp = htmlqp($html, 'div.wiki-content');
-        $this->generateDomStatistics($qp, true);
+        $this->generateDomStatistics($qp, $stats);
         if ($qp->count() === 0)
             throw new \RtfmConvert\RtfmException('Unable to locate div.wiki-content.');
         $qp->remove('script, style, div.Scrollbar');
@@ -31,7 +33,7 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
             $content .= $qp->document()->saveHTML($item->get(0));
         }
 
-        $this->generateTextStatistics($content, true);
+        $this->generateTextStatistics($content, $stats);
         $content = $this->removeWikiContentComment($content);
         $content = $this->restoreNbspEntities($content);
 
@@ -56,48 +58,51 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
     }
 
     private function generateDomStatistics(\QueryPath\DOMQuery $qp,
-                                           $isTransforming = false) {
-        if (is_null($this->stats)) return;
+                                           PageStatistics $stats = null) {
+        if (is_null($stats)) return;
 
+        $isTransforming = true;
         $content = $qp->top('#content');
 
         // page metadata
-        $this->stats->add('pageId', $content->find('#pageId')->attr('value'));
-        $this->stats->add('pageTitle',
+        $stats->add('pageId', $content->find('#pageId')->attr('value'));
+        $stats->add('pageTitle',
             $content->find('input[title="pageTitle"]')->first()->attr('value'));
-        $this->stats->add('spaceKey', $content->find('#spaceKey')->attr('value'));
-        $this->stats->add('spaceName',
+        $stats->add('spaceKey', $content->find('#spaceKey')->attr('value'));
+        $stats->add('spaceName',
             $content->find('input[title="spaceName"]')->first()->attr('value'));
         $modificationInfo = $content
             ->find('.page-metadata .page-metadata-modification-info')
             ->first();
         $modificationInfo->remove('.noprint');
-        $this->stats->add('modification-info', trim($modificationInfo->text()));
+        $stats->add('modification-info', trim($modificationInfo->text()));
 
         // stats
         $wikiContent = $content->find('div.wiki-content');
-        $this->stats->addCountStat('div.wiki-content', $wikiContent->count(),
+        $stats->addCountStat('div.wiki-content', $wikiContent->count(),
             $isTransforming, false, true);
-        $this->stats->addCountStat('script',
+        $stats->addCountStat('script',
             $wikiContent->find('script')->count(), $isTransforming);
-        $this->stats->addCountStat('style',
+        $stats->addCountStat('style',
             $wikiContent->find('style')->count(), $isTransforming);
-        $this->stats->addCountStat('div.Scrollbar',
+        $stats->addCountStat('div.Scrollbar',
             $wikiContent->find('div.Scrollbar')->count(), $isTransforming);
     }
 
-    private function generateTextStatistics($html, $isTransforming = false) {
-        if (is_null($this->stats)) return;
+    private function generateTextStatistics($html,
+                                            PageStatistics $stats = null) {
+        if (is_null($stats)) return;
+        $isTransforming = true;
 
         $wikiContentCommentCount = substr_count($html, '<!-- wiki content -->');
-        $this->stats->addCountStat('comments: wiki content',
+        $stats->addCountStat('comments: wiki content',
             $wikiContentCommentCount, $isTransforming);
-        $this->stats->addCountStat('comments: others',
+        $stats->addCountStat('comments: others',
             substr_count($html, '<!--') - $wikiContentCommentCount,
             false, true);
 
         $nbsp = html_entity_decode('&nbsp;', ENT_HTML401, 'UTF-8');
-        $this->stats->addCountStat('entities: nbsp',
+        $stats->addCountStat('entities: nbsp',
             substr_count($html, $nbsp), $isTransforming);
     }
 }

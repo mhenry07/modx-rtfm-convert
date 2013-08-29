@@ -27,10 +27,6 @@ class OldRtfmContentExtractorTest extends \RtfmConvert\HtmlTestCase {
 </html>
 EOT;
 
-    public function setUp() {
-        $this->stats = new PageStatistics();
-    }
-
     public function testExtractShouldReturnSimpleWikiContent() {
         $expected = 'content';
         $source = $this->formatTestData($expected);
@@ -244,8 +240,9 @@ EOT;
 </html>
 EOT;
 
-        $extractor = new OldRtfmContentExtractor($this->stats);
-        $extractor->extract($source);
+        $this->stats = new PageStatistics();
+        $extractor = new OldRtfmContentExtractor();
+        $extractor->extract($source, $this->stats);
         $this->assertStat('pageId', $pageId);
         $this->assertStat('pageTitle', $pageTitle);
         $this->assertStat('spaceKey', $spaceKey);

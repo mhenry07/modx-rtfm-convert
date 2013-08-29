@@ -7,12 +7,14 @@
 namespace RtfmConvert\ContentExtractors;
 
 
+use RtfmConvert\PageStatistics;
+
 require_once('RtfmConvert/HtmlTestCase.php');
 
 // TODO: handle incomplete content (i.e. missing /div for .wiki-content)
 class OldRtfmContentExtractorTest extends \RtfmConvert\HtmlTestCase {
     const WIKI_CONTENT_FORMAT = <<<'EOT'
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
 <title>Test</title>
@@ -24,6 +26,10 @@ class OldRtfmContentExtractorTest extends \RtfmConvert\HtmlTestCase {
 </body>
 </html>
 EOT;
+
+    public function setUp() {
+        $this->stats = new PageStatistics();
+    }
 
     public function testExtractShouldReturnSimpleWikiContent() {
         $expected = 'content';
@@ -107,7 +113,7 @@ EOT;
 
     public function testExtractMissingContentShouldThrowException() {
         $source = <<<'EOT'
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
 <title>Test</title>
@@ -163,14 +169,88 @@ EOT;
         $this->assertRegExp('#^<p>\r?\n</p>$#', trim($extracted));
     }
 
-    public function testExtractShouldNormalizeAttributeQuotes() {
-        $expected = '<p id="no-quote" class="single-quote"></p>';
-        $content = "<p id=no-quote class='single-quote'></p>";
-        $source = $this->formatTestData($content);
+    public function testExtractShouldGetPageInfo() {
+        $pageId = '18678050';
+        $pageTitle = 'Page Title';
+        $spaceKey = 'revolution20';
+        $spaceName = 'MODx Revolution 2.x';
+        $source = <<<EOT
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>{$pageTitle} - {$spaceName} - MODX Documentation</title>
+    <meta id="confluence-space-key" name="confluence-space-key" content="{$spaceKey}">
+</head>
+<body>
+<div id="main" >
+    <div id="navigation" class="content-navigation view">
+        <fieldset class="hidden parameters">
+            <input type="hidden" id="pageId" value="{$pageId}">
+        </fieldset>
+    </div>
 
-        $extractor = new OldRtfmContentExtractor();
-        $extracted = $extractor->extract($source);
-        $this->assertEquals($expected, trim($extracted));
+    <h1 id="title-heading" class="pagetitle">
+                    <a href="/display/{$spaceKey}"><img class="logo global custom" src="/download/attachments/9109505/global.logo?version=2&modificationDate=1356105314000" alt=""></a>
+		<span id="title-text">
+					            <a href="/display/{$spaceKey}/Home">{$pageTitle}</a>
+    				</span>
+    </h1>
+
+    <div id="content" class="page view">
+<fieldset class="hidden parameters">
+    <input type="hidden" title="pageTitle" value="{$pageTitle}"/>
+    <input type="hidden" title="spaceKey" value="{$spaceKey}"/>
+    <input type="hidden" title="spaceName" value="{$spaceName}"/>
+</fieldset>
+
+<div class="page-metadata">
+        <ul>
+                            <li class="page-metadata-item noprint">
+    <a  id="content-metadata-page-restrictions" href="#"  class="page-metadata-icon page-restrictions"   title="Page restrictions apply. Click the lock icon to view or edit the restriction.">
+                   <span>Page restrictions apply</span></a>        </li>
+                        <li class="page-metadata-modification-info">
+                                    Added by <a href="/display/~splittingred"
+                          class="url fn"
+                   >Shaun McCormick</a>, last edited by <a href="/display/~smashingred"
+                          class="url fn"
+                   >Jay Gilmore</a> on Sep 28, 2012
+                                                                <span class="noprint">&nbsp;(<a id="view-change-link" href="/pages/diffpages.action?pageId=18678050&originalId=41484505">view change</a>)</span>
+                                                </li>
+                            <li class="show-hide-comment-link">
+                    <a id="show-version-comment" class="inline-control-link" href="#">show comment</a>
+                    <a id="hide-version-comment" class="inline-control-link" style="display:none;" href="#">hide comment</a>
+                </li>
+                    </ul>
+          <div id="version-comment" class="noteMacro" style="display: none;">
+      <strong>Comment:</strong>
+      Migrated MODx to MODX where applicable<br />
+  </div>
+    </div>
+
+        <div class="wiki-content">
+        </div>
+
+<fieldset class="hidden parameters">
+    <legend>Labels parameters</legend>
+    <input type="hidden" id="editLabel" value="Edit">
+    <input type="hidden" id="addLabel" value="Add Labels">
+    <input type="hidden" id="domainName" value="http://oldrtfm.modx.com">
+    <input type="hidden" id="pageId" value="{$pageId}">
+    <input type="hidden" id="spaceKey" value="{$spaceKey}">
+</fieldset>
+    </div>
+</div>
+</body>
+</html>
+EOT;
+
+        $extractor = new OldRtfmContentExtractor($this->stats);
+        $extractor->extract($source);
+        $this->assertStat('pageId', $pageId);
+        $this->assertStat('pageTitle', $pageTitle);
+        $this->assertStat('spaceKey', $spaceKey);
+        $this->assertStat('spaceName', $spaceName);
+        $this->assertStat('modification-info', 'Added by Shaun McCormick, last edited by Jay Gilmore on Sep 28, 2012');
     }
 
     // helper methods

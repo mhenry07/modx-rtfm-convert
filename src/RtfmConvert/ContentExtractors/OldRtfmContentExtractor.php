@@ -58,7 +58,24 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
     private function generateDomStatistics(\QueryPath\DOMQuery $qp,
                                            $isTransforming = false) {
         if (is_null($this->stats)) return;
-        $wikiContent = $qp->top()->find('div.wiki-content');
+
+        $content = $qp->top('#content');
+
+        // page metadata
+        $this->stats->add('pageId', $content->find('#pageId')->attr('value'));
+        $this->stats->add('pageTitle',
+            $content->find('input[title="pageTitle"]')->first()->attr('value'));
+        $this->stats->add('spaceKey', $content->find('#spaceKey')->attr('value'));
+        $this->stats->add('spaceName',
+            $content->find('input[title="spaceName"]')->first()->attr('value'));
+        $modificationInfo = $content
+            ->find('.page-metadata .page-metadata-modification-info')
+            ->first();
+        $modificationInfo->remove('.noprint');
+        $this->stats->add('modification-info', trim($modificationInfo->text()));
+
+        // stats
+        $wikiContent = $content->find('div.wiki-content');
         $this->stats->addCountStat('div.wiki-content', $wikiContent->count(),
             $isTransforming, false, true);
         $this->stats->addCountStat('script',

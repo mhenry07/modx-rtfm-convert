@@ -56,6 +56,21 @@ class PageData {
     }
 
     /**
+     * @param $label
+     * @param $count
+     * @param bool $isTransformed
+     * @param bool $warnIfFound
+     * @param bool $isRequired
+     */
+    public function addCountStat($label, $count, $isTransformed = false,
+                                 $warnIfFound = false, $isRequired = false) {
+        if (is_null($this->stats))
+            return;
+        $this->stats->addCountStat($label, $count, $isTransformed,
+            $warnIfFound, $isRequired);
+    }
+
+    /**
      * @param string $selector
      * @param bool $isTransforming
      * @param bool $warnIfFound

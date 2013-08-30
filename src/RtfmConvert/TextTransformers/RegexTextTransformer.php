@@ -25,10 +25,8 @@ class RegexTextTransformer extends AbstractTextTransformer {
         $subject = is_string($input) ? $input : $input->getHtmlString();
         $result = preg_replace($this->pattern, $this->replacement, $subject,
             -1, $count);
-        if (!is_null($this->statLabel) && is_object($input) &&
-            !is_null($input->getStats()))
-            $input->getStats()->addCountStat($this->statLabel, $count,
-                $count > 0);
+        if (!is_null($this->statLabel) && is_object($input))
+            $input->addCountStat($this->statLabel, $count, $count > 0);
         return $result;
     }
 }

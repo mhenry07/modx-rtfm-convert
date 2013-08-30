@@ -24,10 +24,8 @@ class ReplaceTextTransformer extends AbstractTextTransformer {
     public function transform($input) {
         $subject = is_string($input) ? $input : $input->getHtmlString();
         $result = str_replace($this->search, $this->replace, $subject, $count);
-        if (!is_null($this->statLabel) && is_object($input) &&
-            !is_null($input->getStats()))
-            $input->getStats()->addCountStat($this->statLabel, $count,
-                $count > 0);
+        if (!is_null($this->statLabel) && is_object($input))
+            $input->addCountStat($this->statLabel, $count, $count > 0);
         return $result;
     }
 }

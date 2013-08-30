@@ -29,10 +29,10 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
         $qp = $pageData->getHtmlQuery();
         $pageData->addSimpleStat('.code.panel', true);
         $pageData->addSimpleStat('.code.panel .codeHeader', true);
-        $pageData->getStats()->addCountStat('.code.panel pre:has(span[class^="code-"])',
+        $pageData->addCountStat('.code.panel pre:has(span[class^="code-"])',
             $qp->find('.code.panel pre')->has('span[class^="code-"]')->count(),
             true);
-        $pageData->getStats()->addCountStat('.code.panel pre:has(:not(span[class^="code-"]))',
+        $pageData->addCountStat('.code.panel pre:has(:not(span[class^="code-"]))',
             $qp->find('.code.panel pre')->has(':not(span[class^="code-"])')->count(),
             false, true);
     }

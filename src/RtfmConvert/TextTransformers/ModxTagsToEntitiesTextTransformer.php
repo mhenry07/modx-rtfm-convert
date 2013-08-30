@@ -7,11 +7,7 @@
 namespace RtfmConvert\TextTransformers;
 
 
-use RtfmConvert\PageData;
-use RtfmConvert\ProcessorOperationInterface;
-
-class ModxTagsToEntitiesTextTransformer implements
-    TextTransformerInterface, ProcessorOperationInterface {
+class ModxTagsToEntitiesTextTransformer extends AbstractTextTransformer {
 
     /**
      * Transform MODX special characters to HTML entities. Specifically,
@@ -23,16 +19,5 @@ class ModxTagsToEntitiesTextTransformer implements
         $patterns = array('/\[/', '/\]/');
         $replacements = array('&#91;', '&#93;');
         return preg_replace($patterns, $replacements, $input);
-    }
-
-    /**
-     * @param PageData $pageData
-     * @return PageData
-     */
-    function process(PageData $pageData) {
-        return new PageData(
-            $this->transform($pageData->getHtmlString()),
-            $pageData->getStats()
-        );
     }
 }

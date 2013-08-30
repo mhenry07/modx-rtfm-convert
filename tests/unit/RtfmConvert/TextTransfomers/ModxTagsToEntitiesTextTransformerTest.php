@@ -4,10 +4,8 @@
  * Date: 8/25/13
  */
 
-namespace RtfmConvert;
+namespace RtfmConvert\TextTransformers;
 
-
-use RtfmConvert\TextTransformers\ModxTagsToEntitiesTextTransformer;
 
 class ModxTagsToTextTransformerTest extends \PHPUnit_Framework_TestCase {
     /** @var ModxTagsToEntitiesTextTransformer */

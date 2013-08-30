@@ -4,10 +4,8 @@
  * Date: 8/25/13
  */
 
-namespace RtfmConvert;
+namespace RtfmConvert\TextTransformers;
 
-
-use RtfmConvert\TextTransformers\CrlfToLfTextTransformer;
 
 class CrlfToLfTextTransformerTest extends \PHPUnit_Framework_TestCase {
     /** @var CrlfToLfTextTransformer */

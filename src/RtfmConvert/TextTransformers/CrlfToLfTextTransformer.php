@@ -7,7 +7,11 @@
 namespace RtfmConvert\TextTransformers;
 
 
-class CrlfToLfTextTransformer implements TextTransformerInterface {
+use RtfmConvert\PageData;
+use RtfmConvert\ProcessorOperationInterface;
+
+class CrlfToLfTextTransformer implements
+    TextTransformerInterface, ProcessorOperationInterface {
 
     /**
      * Clean up line endings from $str by converting CR+LF to LF.
@@ -16,5 +20,16 @@ class CrlfToLfTextTransformer implements TextTransformerInterface {
      */
     function transform($input) {
         return preg_replace('/\r\n/', "\n", $input);
+    }
+
+    /**
+     * @param PageData $pageData
+     * @return PageData
+     */
+    function process(PageData $pageData) {
+        return new PageData(
+            $this->transform($pageData->getHtmlString()),
+            $pageData->getStats()
+        );
     }
 }

@@ -12,6 +12,7 @@ namespace RtfmConvert\TextTransformers;
  */
 class ModxTagsToEntitiesTextTransformer extends ReplaceTextTransformer {
     public function __construct() {
-        parent::__construct(array('[', ']'), array('&#91;', '&#93;'));
+        parent::__construct(array('[', ']'), array('&#91;', '&#93;'),
+            'entities: MODX tags');
     }
 }

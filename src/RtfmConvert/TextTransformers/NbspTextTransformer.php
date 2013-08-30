@@ -13,6 +13,6 @@ namespace RtfmConvert\TextTransformers;
 class NbspTextTransformer extends ReplaceTextTransformer {
     public function __construct() {
         $nbsp = html_entity_decode('&nbsp;', ENT_HTML401, 'UTF-8');
-        parent::__construct($nbsp, '&nbsp;');
+        parent::__construct($nbsp, '&nbsp;', 'entities: nbsp');
     }
 }

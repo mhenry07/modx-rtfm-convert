@@ -90,10 +90,5 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         $stats->addCountStat('comments: others',
             substr_count($html, '<!--') - $wikiContentCommentCount,
             false, true);
-
-        // TODO: move nbsp stats to NbspTextTransformer
-        $nbsp = html_entity_decode('&nbsp;', ENT_HTML401, 'UTF-8');
-        $stats->addCountStat('entities: nbsp',
-            substr_count($html, $nbsp));
     }
 }

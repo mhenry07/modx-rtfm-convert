@@ -6,6 +6,8 @@
 namespace RtfmConvert\HtmlTransformers;
 
 
+use RtfmConvert\PageData;
+
 class BrAtlForcedNewlineHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
 
     public function testTransformShouldRemoveFirstBrAtlForcedNewline() {
@@ -15,8 +17,9 @@ class BrAtlForcedNewlineHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
 {$expected}
 EOT;
 
-        $transformer = new BrAtlForcedNewlineHtmlTransformer($html);
-        $result = $transformer->transform();
+        $pageData = new PageData($html);
+        $transformer = new BrAtlForcedNewlineHtmlTransformer();
+        $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
     }
 
@@ -27,8 +30,9 @@ EOT;
 <p><br class="atl-forced-newline" /></p>
 EOT;
 
-        $transformer = new BrAtlForcedNewlineHtmlTransformer($html);
-        $result = $transformer->transform();
+        $pageData = new PageData($html);
+        $transformer = new BrAtlForcedNewlineHtmlTransformer();
+        $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
     }
 
@@ -45,8 +49,9 @@ EOT;
 <h3><a name="BasicInstallation-SeeAlso"></a>See Also</h3>
 EOT;
 
-        $transformer = new BrAtlForcedNewlineHtmlTransformer($html);
-        $result = $transformer->transform();
+        $pageData = new PageData($html);
+        $transformer = new BrAtlForcedNewlineHtmlTransformer();
+        $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
     }
 
@@ -61,8 +66,9 @@ EOT;
 <br /></td></tr></table>
 EOT;
 
-        $transformer = new BrAtlForcedNewlineHtmlTransformer($html);
-        $result = $transformer->transform();
+        $pageData = new PageData($html);
+        $transformer = new BrAtlForcedNewlineHtmlTransformer();
+        $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
     }
 }

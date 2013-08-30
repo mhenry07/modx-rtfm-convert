@@ -54,4 +54,19 @@ class PageData {
     public function getStats() {
         return $this->stats;
     }
+
+    /**
+     * @param string $selector
+     * @param bool $isTransforming
+     * @param bool $warnIfFound
+     * @param bool $isRequired
+     */
+    public function addSimpleStat($selector, $isTransforming = false,
+                                  $warnIfFound = false, $isRequired = false) {
+        if (is_null($this->stats))
+            return;
+        $qp = $this->getHtmlQuery();
+        $this->stats->addCountStat($selector, $qp->find($selector)->count(),
+            $isTransforming, $warnIfFound, $isRequired);
+    }
 }

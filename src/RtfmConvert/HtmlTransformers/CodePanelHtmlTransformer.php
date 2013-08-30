@@ -6,11 +6,14 @@
 namespace RtfmConvert\HtmlTransformers;
 
 
+use RtfmConvert\PageData;
+
 class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
 
-    public function transform() {
-        $this->generateStatistics(true);
-        $codePanels = $this->qp->find('.code.panel');
+    public function transform(PageData $pageData) {
+        $this->generateStatistics($pageData);
+        $qp = $pageData->getHtmlQuery();
+        $codePanels = $qp->find('.code.panel');
         $codePanels->find('div.codeHeader')
             ->wrapInner('<p></p>');
         $codePanels->find('pre.code-java')
@@ -18,18 +21,19 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             ->find('span[class^="code-"]')->contents()->unwrap();
         $codePanels->find('div.codeHeader, div.codeContent')
             ->contents()->unwrap()->unwrap();
-        return $this->qp;
+        return $qp;
     }
 
-    protected function generateStatistics($isTransforming = false) {
-        if (is_null($this->stats)) return;
-        $this->addSimpleStat('.code.panel', $isTransforming);
-        $this->addSimpleStat('.code.panel .codeHeader', $isTransforming);
-        $this->stats->addCountStat('.code.panel pre:has(span[class^="code-"])',
-            $this->qp->find('.code.panel pre')->has('span[class^="code-"]')->count(),
-            $isTransforming);
-        $this->stats->addCountStat('.code.panel pre:has(:not(span[class^="code-"]))',
-            $this->qp->find('.code.panel pre')->has(':not(span[class^="code-"])')->count(),
+    protected function generateStatistics(PageData $pageData) {
+        if (is_null($pageData->getStats())) return;
+        $qp = $pageData->getHtmlQuery();
+        $pageData->addSimpleStat('.code.panel', true);
+        $pageData->addSimpleStat('.code.panel .codeHeader', true);
+        $pageData->getStats()->addCountStat('.code.panel pre:has(span[class^="code-"])',
+            $qp->find('.code.panel pre')->has('span[class^="code-"]')->count(),
+            true);
+        $pageData->getStats()->addCountStat('.code.panel pre:has(:not(span[class^="code-"]))',
+            $qp->find('.code.panel pre')->has(':not(span[class^="code-"])')->count(),
             false, true);
     }
 }

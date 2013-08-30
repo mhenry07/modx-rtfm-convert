@@ -6,21 +6,23 @@
 namespace RtfmConvert\HtmlTransformers;
 
 
+use RtfmConvert\PageData;
+
 class BrAtlForcedNewlineHtmlTransformer extends AbstractHtmlTransformer {
 
-    public function transform() {
-        $this->generateStatistics(true);
-        if ($this->qp->firstChild()->is('p > br.atl-forced-newline:only-child'))
-            $this->qp->firstChild()->remove();
-        if ($this->qp->lastChild()->is('p > br.atl-forced-newline:only-child'))
-            $this->qp->lastChild()->remove();
-        $this->qp->find('br.atl-forced-newline')->removeAttr('class');
-        return $this->qp;
+    public function transform(PageData $pageData) {
+        $this->generateStatistics($pageData);
+        $qp = $pageData->getHtmlQuery();
+        if ($qp->firstChild()->is('p > br.atl-forced-newline:only-child'))
+            $qp->firstChild()->remove();
+        if ($qp->lastChild()->is('p > br.atl-forced-newline:only-child'))
+            $qp->lastChild()->remove();
+        $qp->find('br.atl-forced-newline')->removeAttr('class');
+        return $qp;
     }
 
     // should I add stats for first & last?
-    protected function generateStatistics($isTransforming = false) {
-        if (is_null($this->stats)) return;
-        $this->addSimpleStat('br.atl-forced-newline', $isTransforming);
+    protected function generateStatistics(PageData $pageData) {
+        $pageData->addSimpleStat('br.atl-forced-newline', true);
     }
 }

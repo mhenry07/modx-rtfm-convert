@@ -6,34 +6,36 @@
 namespace RtfmConvert\HtmlTransformers;
 
 
+use RtfmConvert\PageData;
+
 class FormattingElementHtmlTransformer extends AbstractHtmlTransformer {
 
-    public function transform() {
-        $this->generateStatistics(true);
-        $this->qp->find('font')->contents()->unwrap();
+    public function transform(PageData $pageData) {
+        $this->generateStatistics($pageData);
+        $qp = $pageData->getHtmlQuery();
+        $qp->find('font')->contents()->unwrap();
         $map = array(
             'b' => '<strong></strong>',
             'i' => '<em></em>',
             'tt' => '<code></code>');
         foreach ($map as $selector => $replace) {
-            $this->qp->find($selector)->wrapInner($replace)
+            $qp->find($selector)->wrapInner($replace)
                 ->contents()->unwrap();
         }
-        return $this->qp;
+        return $qp;
     }
 
     // TODO: stats for unhandled formatting elements
-    protected function generateStatistics($isTransforming = false) {
-        if (is_null($this->stats)) return;
+    protected function generateStatistics(PageData $pageData) {
         $selectors = array('font', 'b', 'i');
         foreach ($selectors as $selector)
-            $this->addSimpleStat($selector, $isTransforming);
-        $this->addSimpleStat('tt', $isTransforming, true);
+            $pageData->addSimpleStat($selector, true);
+        $pageData->addSimpleStat('tt', true, true);
 
         // non-transformed
-        $this->addSimpleStat('hr');
+        $pageData->addSimpleStat('hr');
         $warnSelectors = array('del', 'ins');
         foreach ($warnSelectors as $selector)
-            $this->addSimpleStat($selector, false, true);
+            $pageData->addSimpleStat($selector, false, true);
     }
 }

@@ -6,6 +6,7 @@
 namespace RtfmConvert\HtmlTransformers;
 
 
+use RtfmConvert\PageData;
 use RtfmConvert\PageStatistics;
 
 class CodePanelHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
@@ -15,8 +16,9 @@ class CodePanelHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
 
     public function testTransformShouldKeepNonCodeContent() {
         $html = '<h2>Title</h2><p>Text</p>';
-        $transformer = new CodePanelHtmlTransformer($html);
-        $result = $transformer->transform();
+        $pageData = new PageData($html);
+        $transformer = new CodePanelHtmlTransformer();
+        $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($html, $result);
     }
 
@@ -37,8 +39,9 @@ EOT;
 </pre>
 EOT;
 
-        $transformer = new CodePanelHtmlTransformer($sourceHtml);
-        $result = $transformer->transform();
+        $pageData = new PageData($sourceHtml);
+        $transformer = new CodePanelHtmlTransformer();
+        $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expectedHtml, $result);
     }
 
@@ -72,8 +75,9 @@ EOT;
 </pre>
 EOT;
 
-        $transformer = new CodePanelHtmlTransformer($sourceHtml);
-        $result = $transformer->transform();
+        $pageData = new PageData($sourceHtml);
+        $transformer = new CodePanelHtmlTransformer();
+        $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expectedHtml, $result, true);
 
         $htmlResult = $result->document()->saveHTML(
@@ -98,8 +102,9 @@ EOT;
 </pre>
 EOT;
 
-        $transformer = new CodePanelHtmlTransformer($sourceHtml);
-        $result = $transformer->transform();
+        $pageData = new PageData($sourceHtml);
+        $transformer = new CodePanelHtmlTransformer();
+        $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expectedHtml, $result);
     }
 
@@ -123,8 +128,9 @@ EOT;
 </pre>
 EOT;
 
-        $transformer = new CodePanelHtmlTransformer($sourceHtml);
-        $result = $transformer->transform();
+        $pageData = new PageData($sourceHtml);
+        $transformer = new CodePanelHtmlTransformer();
+        $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expectedHtml, $result);
     }
 
@@ -135,8 +141,9 @@ EOT;
 </div></div>
 EOT;
 
-        $transformer = new CodePanelHtmlTransformer($sourceHtml, $this->stats);
-        $transformer->transform();
+        $pageData = new PageData($sourceHtml, $this->stats);
+        $transformer = new CodePanelHtmlTransformer();
+        $transformer->transform($pageData);
 
         $this->assertStat('.code.panel', 1, true);
         $this->assertStat('.code.panel .codeHeader', 1, true);
@@ -153,8 +160,9 @@ EOT;
 </div></div>
 EOT;
 
-        $transformer = new CodePanelHtmlTransformer($sourceHtml, $this->stats);
-        $transformer->transform();
+        $pageData = new PageData($sourceHtml, $this->stats);
+        $transformer = new CodePanelHtmlTransformer();
+        $transformer->transform($pageData);
         $this->assertStat('.code.panel pre:has(span[class^="code-"])', 1, true);
     }
 
@@ -168,8 +176,9 @@ EOT;
 </div></div>
 EOT;
 
-        $transformer = new CodePanelHtmlTransformer($sourceHtml, $this->stats);
-        $transformer->transform();
+        $pageData = new PageData($sourceHtml, $this->stats);
+        $transformer = new CodePanelHtmlTransformer();
+        $transformer->transform($pageData);
         $this->assertStat('.code.panel pre:has(:not(span[class^="code-"]))', 1, false, true);
     }
 }

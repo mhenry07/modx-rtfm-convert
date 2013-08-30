@@ -6,6 +6,7 @@
 namespace RtfmConvert\HtmlTransformers;
 
 
+use RtfmConvert\PageData;
 use RtfmConvert\PageStatistics;
 
 class FormattingElementHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
@@ -18,8 +19,9 @@ class FormattingElementHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
         $html = "<p><font color=\"#333333\">{$text}</font></p>";
         $expected = "<p>{$text}</p>";
 
-        $transformer = new FormattingElementHtmlTransformer($html, $this->stats);
-        $result = $transformer->transform();
+        $pageData = new PageData($html, $this->stats);
+        $transformer = new FormattingElementHtmlTransformer();
+        $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
 
         $this->assertStat('font', 1, true, false);
@@ -29,8 +31,9 @@ class FormattingElementHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
         $html = "<p><b>strong <span>*</span></b>, <i>emphasis</i> &amp; <tt>code</tt></p>";
         $expected = "<p><strong>strong <span>*</span></strong>, <em>emphasis</em> &amp; <code>code</code></p>";
 
-        $transformer = new FormattingElementHtmlTransformer($html, $this->stats);
-        $result = $transformer->transform();
+        $pageData = new PageData($html, $this->stats);
+        $transformer = new FormattingElementHtmlTransformer();
+        $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
 
         $this->assertStat('b', 1, true, false);
@@ -41,8 +44,9 @@ class FormattingElementHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
     public function testTransformShouldGenerateStatsForHrDelIns() {
         $html = "<hr /><p><del>del</del><ins>ins</ins></p>";
 
-        $transformer = new FormattingElementHtmlTransformer($html, $this->stats);
-        $transformer->transform();
+        $pageData = new PageData($html, $this->stats);
+        $transformer = new FormattingElementHtmlTransformer();
+        $transformer->transform($pageData);
 
         $this->assertStat('hr', 1, false, false);
         $this->assertStat('del', 1, false, true);

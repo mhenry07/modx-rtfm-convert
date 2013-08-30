@@ -23,4 +23,5 @@ abstract class AbstractContentExtractor implements ProcessorOperationInterface {
             $this->extract($pageData->getHtmlString(), $pageData->getStats()),
             $pageData->getStats()
         );
-    }}
+    }
+}

@@ -12,7 +12,7 @@ use RtfmConvert\ProcessorOperationInterface;
 
 abstract class AbstractTextTransformer implements ProcessorOperationInterface {
     /**
-     * @param string $input The input string.
+     * @param string|PageData $input The input string or page data.
      * @return string The transformed string.
      */
     abstract public function transform($input);
@@ -22,9 +22,7 @@ abstract class AbstractTextTransformer implements ProcessorOperationInterface {
      * @return PageData
      */
     public function process($pageData) {
-        return new PageData(
-            $this->transform($pageData->getHtmlString()),
-            $pageData->getStats()
-        );
+        return new PageData($this->transform($pageData),
+            $pageData->getStats());
     }
 }

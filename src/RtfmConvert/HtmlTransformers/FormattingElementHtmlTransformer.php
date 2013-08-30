@@ -10,6 +10,7 @@ use RtfmConvert\PageData;
 
 class FormattingElementHtmlTransformer extends AbstractHtmlTransformer {
 
+    // note: using wrapInner inside each since it seems to cause issues with multiple matches
     public function transform(PageData $pageData) {
         $this->generateStatistics($pageData);
         $qp = $pageData->getHtmlQuery();
@@ -19,9 +20,11 @@ class FormattingElementHtmlTransformer extends AbstractHtmlTransformer {
             'i' => '<em></em>',
             'tt' => '<code></code>');
         foreach ($map as $selector => $replace) {
-            /** @var \QueryPath\DOMQuery $match */
-            foreach ($qp->find($selector) as $match)
-                $match->wrapInner($replace)->contents()->unwrap();
+            $qp->find($selector)->each(
+                function ($index, $item) use ($replace) {
+                    qp($item)->wrapInner($replace)->contents()->unwrap();
+                }
+            );
         }
         return $qp;
     }

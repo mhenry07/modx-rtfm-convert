@@ -10,12 +10,16 @@ use RtfmConvert\PageData;
 
 class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
 
+    // note: using wrapInner inside each since it seems to cause issues with multiple matches
     public function transform(PageData $pageData) {
         $this->generateStatistics($pageData);
         $qp = $pageData->getHtmlQuery();
         $codePanels = $qp->find('.code.panel');
-        $codePanels->find('div.codeHeader')
-            ->wrapInner('<p></p>');
+        $codePanels->find('div.codeHeader')->each(
+            function ($index, $item) {
+                qp($item)->wrapInner('<p></p>');
+            }
+        );
         $codePanels->find('pre.code-java')
             ->addClass('brush: php')->removeClass('code-java')
             ->find('span[class^="code-"]')->contents()->unwrap();

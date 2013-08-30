@@ -35,7 +35,6 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
 
         $this->generateTextStatistics($content, $stats);
         $content = $this->removeWikiContentComment($content);
-        $content = $this->restoreNbspEntities($content);
 
         return $content;
     }
@@ -46,15 +45,6 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
      */
     private function removeWikiContentComment($content) {
         return str_replace('<!-- wiki content -->', '', $content);
-    }
-
-    /**
-     * @param string $content
-     * @return string
-     */
-    private function restoreNbspEntities($content) {
-        $nbsp = html_entity_decode('&nbsp;', ENT_HTML401, 'UTF-8');
-        return str_replace($nbsp, '&nbsp;', $content);
     }
 
     private function generateDomStatistics(\QueryPath\DOMQuery $qp,
@@ -101,8 +91,9 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
             substr_count($html, '<!--') - $wikiContentCommentCount,
             false, true);
 
+        // TODO: move nbsp stats to NbspTextTransformer
         $nbsp = html_entity_decode('&nbsp;', ENT_HTML401, 'UTF-8');
         $stats->addCountStat('entities: nbsp',
-            substr_count($html, $nbsp), $isTransforming);
+            substr_count($html, $nbsp));
     }
 }

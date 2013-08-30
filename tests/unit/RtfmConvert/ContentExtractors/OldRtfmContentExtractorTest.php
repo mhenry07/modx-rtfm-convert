@@ -123,7 +123,7 @@ EOT;
     }
 
     public function testExtractShouldPreserveExpectedEntities() {
-        $expected = '<p>&amp; &gt; &lt; &nbsp;</p>';
+        $expected = '<p>&amp; &gt; &lt;</p>'; // restore &nbsp; in post-processing
         $source = $this->formatTestData($expected);
 
         $extractor = new OldRtfmContentExtractor();

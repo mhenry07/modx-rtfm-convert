@@ -18,7 +18,7 @@ abstract class AbstractContentExtractor implements ProcessorOperationInterface {
      * @param PageData $pageData
      * @return PageData
      */
-    public function process(PageData $pageData) {
+    public function process($pageData) {
         return new PageData(
             $this->extract($pageData->getHtmlString(), $pageData->getStats()),
             $pageData->getStats()

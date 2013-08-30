@@ -26,7 +26,7 @@ abstract class AbstractHtmlTransformer implements ProcessorOperationInterface {
      * @param PageData $pageData
      * @return PageData
      */
-    public function process(PageData $pageData) {
+    public function process($pageData) {
         $this->qp = $pageData->getHtmlQuery();
         $this->stats = $pageData->getStats();
         $qp = $this->transform();

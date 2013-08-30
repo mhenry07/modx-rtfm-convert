@@ -11,5 +11,5 @@ interface ProcessorOperationInterface {
      * @param \RtfmConvert\PageData $pageData
      * @return \RtfmConvert\PageData
      */
-    function process(\RtfmConvert\PageData $pageData);
+    function process($pageData);
 }

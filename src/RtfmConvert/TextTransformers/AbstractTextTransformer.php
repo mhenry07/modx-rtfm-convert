@@ -21,7 +21,7 @@ abstract class AbstractTextTransformer implements ProcessorOperationInterface {
      * @param PageData $pageData
      * @return PageData
      */
-    public function process(PageData $pageData) {
+    public function process($pageData) {
         return new PageData(
             $this->transform($pageData->getHtmlString()),
             $pageData->getStats()

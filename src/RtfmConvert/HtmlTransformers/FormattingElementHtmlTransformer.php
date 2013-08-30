@@ -19,8 +19,9 @@ class FormattingElementHtmlTransformer extends AbstractHtmlTransformer {
             'i' => '<em></em>',
             'tt' => '<code></code>');
         foreach ($map as $selector => $replace) {
-            $qp->find($selector)->wrapInner($replace)
-                ->contents()->unwrap();
+            /** @var \QueryPath\DOMQuery $match */
+            foreach ($qp->find($selector) as $match)
+                $match->wrapInner($replace)->contents()->unwrap();
         }
         return $qp;
     }

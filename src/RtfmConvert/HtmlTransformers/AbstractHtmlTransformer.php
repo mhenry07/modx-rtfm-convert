@@ -19,15 +19,8 @@ abstract class AbstractHtmlTransformer implements ProcessorOperationInterface {
         $this->stats = $stats;
     }
 
-    abstract public function generateStatistics($isTransforming = false);
     abstract public function transform();
-
-    protected function addSimpleStat($selector, $isTransforming = false,
-                                     $warnIfFound = false, $isRequired = false) {
-        $this->stats->addCountStat($selector,
-            $this->qp->find($selector)->count(),
-            $isTransforming, $warnIfFound, $isRequired);
-    }
+    abstract protected function generateStatistics($isTransforming = false);
 
     /**
      * @param PageData $pageData
@@ -38,5 +31,12 @@ abstract class AbstractHtmlTransformer implements ProcessorOperationInterface {
         $this->stats = $pageData->getStats();
         $qp = $this->transform();
         return new PageData($qp, $this->stats);
+    }
+
+    protected function addSimpleStat($selector, $isTransforming = false,
+                                     $warnIfFound = false, $isRequired = false) {
+        $this->stats->addCountStat($selector,
+            $this->qp->find($selector)->count(),
+            $isTransforming, $warnIfFound, $isRequired);
     }
 }

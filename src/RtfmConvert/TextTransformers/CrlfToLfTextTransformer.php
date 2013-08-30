@@ -14,11 +14,11 @@ class CrlfToLfTextTransformer implements
     TextTransformerInterface, ProcessorOperationInterface {
 
     /**
-     * Clean up line endings from $str by converting CR+LF to LF.
+     * Clean up line endings from $input by converting CR+LF to LF.
      * @param string $input The input string.
      * @return string The transformed string with carriage returns removed.
      */
-    function transform($input) {
+    public function transform($input) {
         return preg_replace('/\r\n/', "\n", $input);
     }
 

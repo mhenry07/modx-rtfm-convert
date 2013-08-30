@@ -19,7 +19,7 @@ class ModxTagsToEntitiesTextTransformer implements
      * @param string $input The input string.
      * @return string The transformed string.
      */
-    function transform($input) {
+    public function transform($input) {
         $patterns = array('/\[/', '/\]/');
         $replacements = array('&#91;', '&#93;');
         return preg_replace($patterns, $replacements, $input);

@@ -135,13 +135,11 @@ EOT;
 </div></div>
 EOT;
 
-        $transformed = true;
-
         $transformer = new CodePanelHtmlTransformer($sourceHtml, $this->stats);
-        $transformer->generateStatistics($transformed);
+        $transformer->transform();
 
-        $this->assertStat('.code.panel', 1, $transformed);
-        $this->assertStat('.code.panel .codeHeader', 1, $transformed);
+        $this->assertStat('.code.panel', 1, true);
+        $this->assertStat('.code.panel .codeHeader', 1, true);
         $this->assertStat('.code.panel pre:has(span[class^="code-"])', 0, false);
     }
 
@@ -156,7 +154,7 @@ EOT;
 EOT;
 
         $transformer = new CodePanelHtmlTransformer($sourceHtml, $this->stats);
-        $transformer->generateStatistics(true);
+        $transformer->transform();
         $this->assertStat('.code.panel pre:has(span[class^="code-"])', 1, true);
     }
 
@@ -171,7 +169,7 @@ EOT;
 EOT;
 
         $transformer = new CodePanelHtmlTransformer($sourceHtml, $this->stats);
-        $transformer->generateStatistics();
+        $transformer->transform();
         $this->assertStat('.code.panel pre:has(:not(span[class^="code-"]))', 1, false, true);
     }
 }

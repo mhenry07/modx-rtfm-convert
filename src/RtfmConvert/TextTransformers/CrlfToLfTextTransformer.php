@@ -7,14 +7,11 @@
 namespace RtfmConvert\TextTransformers;
 
 
-class CrlfToLfTextTransformer extends AbstractTextTransformer {
-
-    /**
-     * Clean up line endings from $input by converting CR+LF to LF.
-     * @param string $input The input string.
-     * @return string The transformed string with carriage returns removed.
-     */
-    public function transform($input) {
-        return preg_replace('/\r\n/', "\n", $input);
+/**
+ * Cleans up line endings from $input by converting CR+LF to LF.
+ */
+class CrlfToLfTextTransformer extends ReplaceTextTransformer {
+    public function __construct() {
+        parent::__construct("\r\n", "\n");
     }
 }

@@ -10,19 +10,31 @@ namespace RtfmConvert;
 class CurlWrapper {
     private $ch = null;
 
-    public function __construct($url = null) {
-        $ch = curl_init($url);
-        if ($ch === false)
-            throw new RtfmException('Error initializing cURL.');
-        $this->ch = $ch;
-    }
-
     public function __destruct() {
         if (!is_null($this->ch))
             curl_close($this->ch);
     }
 
+    /**
+     * Create and initialize a new instance of CurlWrapper.
+     * @param string|null $url
+     * @return CurlWrapper
+     */
+    public function create($url = null) {
+        $new = new CurlWrapper();
+        $new->init($url);
+        return $new;
+    }
+
+    public function init($url = null) {
+        $this->ch = curl_init($url);
+        if ($this->ch === false)
+            throw new RtfmException('Error initializing cURL.');
+    }
+
     public function close() {
+        if (is_null($this->ch))
+            return;
         curl_close($this->ch);
         $this->ch = null;
     }

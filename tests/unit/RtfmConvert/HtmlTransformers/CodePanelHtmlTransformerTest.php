@@ -48,6 +48,40 @@ EOT;
     /**
      * @depends testTransformShouldTransformSimpleCodePanel
      */
+    public function testTransformShouldPreserveHtmlBetweenCodePanels() {
+        $sourceHtml = <<<'EOT'
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+Hello [[+name]]!
+</pre>
+</div></div>
+<p>You'll note the new placeholder syntax. So, we'll definitely want to parse that Chunk's property. In Evolution, you would need to do this with a Snippet; no longer. You can simply pass a property for the Chunk:</p>
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">
+[[$Hello?name=`George`]]
+</pre>
+</div></div>
+EOT;
+
+        $expectedHtml = <<<'EOT'
+<pre class="brush: php">
+Hello [[+name]]!
+</pre>
+<p>You'll note the new placeholder syntax. So, we'll definitely want to parse that Chunk's property. In Evolution, you would need to do this with a Snippet; no longer. You can simply pass a property for the Chunk:</p>
+<pre class="brush: php">
+[[$Hello?name=`George`]]
+</pre>
+EOT;
+
+        $pageData = new PageData($sourceHtml);
+        $transformer = new CodePanelHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expectedHtml, $result);
+    }
+
+    /**
+     * @depends testTransformShouldTransformSimpleCodePanel
+     */
     public function testTransformShouldPreservePreWhiteSpace() {
         $sourceHtml = <<<'EOT'
 <div class="code panel" style="border-width: 1px;">

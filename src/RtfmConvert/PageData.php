@@ -44,7 +44,7 @@ class PageData {
      */
     public function getHtmlQuery() {
         if (is_string($this->html))
-            return htmlqp($this->html, 'body');
+            return RtfmQueryPath::htmlqp($this->html, 'body');
         return $this->html;
     }
 

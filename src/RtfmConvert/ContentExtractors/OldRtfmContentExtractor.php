@@ -6,29 +6,31 @@
 
 namespace RtfmConvert\ContentExtractors;
 
-use \QueryPath;
+use QueryPath\DOMQuery;
 use RtfmConvert\PageStatistics;
+use RtfmConvert\RtfmException;
+use RtfmConvert\RtfmQueryPath;
 
 
 class OldRtfmContentExtractor extends AbstractContentExtractor {
 
     /**
      * @param string $html
-     * @param \RtfmConvert\PageStatistics $stats
-     * @throws \RtfmConvert\RtfmException
+     * @param PageStatistics $stats
+     * @throws RtfmException
      * @return string
      *
      * See notes from 8/26.
      */
     public function extract($html, PageStatistics $stats = null) {
-        $qp = htmlqp($html, 'div.wiki-content');
+        $qp = RtfmQueryPath::htmlqp($html, 'div.wiki-content');
         $this->generateDomStatistics($qp, $stats);
         if ($qp->count() === 0)
-            throw new \RtfmConvert\RtfmException('Unable to locate div.wiki-content.');
+            throw new RtfmException('Unable to locate div.wiki-content.');
         $qp->remove('script, style, div.Scrollbar');
 
         $content = '';
-        /** @var \QueryPath\DOMQuery $item */
+        /** @var DOMQuery $item */
         foreach ($qp->contents() as $item) {
             $content .= $qp->document()->saveHTML($item->get(0));
         }
@@ -47,7 +49,7 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         return str_replace('<!-- wiki content -->', '', $content);
     }
 
-    private function generateDomStatistics(\QueryPath\DOMQuery $qp,
+    private function generateDomStatistics(DOMQuery $qp,
                                            PageStatistics $stats = null) {
         if (is_null($stats)) return;
 

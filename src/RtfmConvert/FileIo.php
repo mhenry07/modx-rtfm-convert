@@ -10,11 +10,11 @@ class FileIo {
 
     /**
      * @param string $filename
-     * @param PageData $pageData
+     * @param string $data
      * @throws RtfmException
      */
-    public function write($filename, $pageData) {
-        if (file_put_contents($filename, $pageData->getHtmlString()) === false)
+    public function write($filename, $data) {
+        if (file_put_contents($filename, $data) === false)
             throw new RtfmException("Error writing file: {$filename}");
     }
 }

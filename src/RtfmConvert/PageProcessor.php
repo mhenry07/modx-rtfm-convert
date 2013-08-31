@@ -23,7 +23,12 @@ class PageProcessor {
         foreach ($this->operations as $operation)
             $pageData = $operation->process($pageData);
 
-        $this->fileIo->write($dest, $pageData);
+        $html = $pageData->getHtmlString();
+        $this->fileIo->write($dest, $html);
+        if ($pageData->getStats()) {
+            $json = json_encode($pageData->getStats()->getStats());
+            $this->fileIo->write("{$dest}.json", $json);
+        }
         return $pageData;
     }
 

@@ -23,7 +23,6 @@ class PageData {
     }
 
     /**
-     * @todo allow getting full document (inc. doctype)
      * Note: if there are multiple matches, assumes they are contiguous
      * @return string Returns the HTML as a string. If the internal type
      * is a \QueryPath\DOMQuery, converts it to a string starting with the
@@ -37,6 +36,16 @@ class PageData {
         foreach ($this->html as $item)
             $result .= $this->html->document()->saveHTML($item->get(0));
         return $result;
+    }
+
+    /**
+     * @return string Returns the HTML document as a string. If the internal
+     * type is a \QueryPath\DOMQuery, returns the whole document as a string.
+     */
+    public function getHtmlDocument() {
+        if (is_string($this->html))
+            return $this->html;
+        return $this->html->document()->saveHTML();
     }
 
     /**

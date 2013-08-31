@@ -23,12 +23,8 @@ class PageProcessor {
         foreach ($this->operations as $operation)
             $pageData = $operation->process($pageData);
 
-        $html = $pageData->getHtmlString();
-        $this->fileIo->write($dest, $html);
-        if ($pageData->getStats()) {
-            $json = json_encode($pageData->getStats()->getStats());
-            $this->fileIo->write("{$dest}.json", $json);
-        }
+        $this->savePage($dest, $pageData);
+        $this->saveStats($dest, $pageData);
         return $pageData;
     }
 
@@ -39,5 +35,25 @@ class PageProcessor {
      */
     public function register(ProcessorOperationInterface $operation) {
         $this->operations[] = $operation;
+    }
+
+    /**
+     * @param string $dest
+     * @param PageData $pageData
+     */
+    protected function savePage($dest, PageData $pageData) {
+        $html = $pageData->getHtmlString();
+        $this->fileIo->write($dest, $html);
+    }
+
+    /**
+     * @param string $dest
+     * @param PageData $pageData
+     */
+    protected function saveStats($dest, PageData $pageData) {
+        if (is_null($pageData->getStats()))
+            return;
+        $json = json_encode($pageData->getStats()->getStats());
+        $this->fileIo->write("{$dest}.json", $json);
     }
 }

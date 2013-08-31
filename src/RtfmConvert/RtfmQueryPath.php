@@ -14,9 +14,10 @@ namespace RtfmConvert;
  */
 class RtfmQueryPath {
     /**
-     * A wrapper for QueryPath htmlqp() that changes the default
-     * convert_to_encoding option to utf-8.
+     * A wrapper for QueryPath htmlqp().
      * @see htmlqp()
+     * Warning: changing convert_to_encoding option to utf-8 seems to cause
+     * non-breaking spaces to be output incorrectly, like Â&nbsp;
      *
      * @param string|\DOMDocument|\SimpleXMLElement|\DOMNode|\DOMNode[]|\QueryPath\DOMQuery $document
      *  A document in one of the forms listed above.
@@ -28,8 +29,6 @@ class RtfmQueryPath {
      */
     public static function htmlqp($document = null, $selector = null,
                                      $options = []) {
-        if (!array_key_exists('convert_to_encoding', $options))
-            $options['convert_to_encoding'] = 'utf-8';
         return htmlqp($document, $selector, $options);
     }
 }

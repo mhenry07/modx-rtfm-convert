@@ -6,6 +6,11 @@
 namespace RtfmConvert;
 
 
+use DOMElement;
+use PHPUnit_Util_XML;
+use QueryPath\DOMQuery;
+use tidy;
+
 class HtmlTestCase extends \PHPUnit_Framework_TestCase {
     /** @var PageStatistics */
     protected $stats;
@@ -31,35 +36,24 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
      * @param string|\QueryPath\DOMQuery|\DOMDocument|\SimpleXMLElement|\DOMNode|\DOMNode[] $actualHtml
      * @param string $message
      *
-     * @todo handle empty string for actualHtml (htmlqp('') returns null)
+     * Note that assertEqualXMLStructure does not compare attribute values or
+     * text nodes. Neither does assertEqual on a DOMElement.
      */
     protected function assertHtmlEquals($expectedHtml, $actualHtml, $message = '') {
+        if (is_null($actualHtml) || $actualHtml === '')
+            $this->fail("{$message}\nActual HTML cannot be empty");
+
         // prevent objects from being altered
         if (is_object($expectedHtml))
             $expectedHtml = clone $expectedHtml;
         if (is_object($actualHtml))
             $actualHtml = clone $actualHtml;
 
-        $expectedElement = htmlqp($expectedHtml, 'body')->get(0);
-        $actualElement = htmlqp($actualHtml, 'body')->get(0);
+        $expectedQp = htmlqp($expectedHtml, 'body');
+        $actualQp = htmlqp($actualHtml, 'body');
 
-        if (is_string($expectedHtml) && is_string($actualHtml)) {
-            $expectedHtmlTrimmed = trim($expectedHtml);
-            $actualHtmlTrimmed = trim($actualHtml);
-            $message = <<<EOT
-{$message}
-Expected HTML:
-{$expectedHtmlTrimmed}
-
-Actual HTML:
-{$actualHtmlTrimmed}
-
-EOT;
-        }
-
-        $this->assertNotNull($actualHtml);
-        $this->assertEqualXMLStructure($expectedElement, $actualElement, true,
-            $message);
+        $this->assertEquals($this->normalizeHtml($expectedQp),
+            $this->normalizeHtml($actualQp), $message);
     }
 
     public function assertStat($expectedLabel, $expectedValue, $expectedTransformed = null, $expectedWarning = null) {
@@ -73,5 +67,24 @@ EOT;
             $this->assertEquals($expectedTransformed, $stat['transformed']);
         if (!is_null($expectedWarning))
             $this->assertEquals($expectedWarning, $stat['warning']);
+    }
+
+    protected function normalizeHtml(DOMQuery $qp) {
+        $html = $qp->document()->saveHTML($qp->get(0));
+        $config = array(
+            'output-html' => true,
+            'show-body-only' => true,
+            'break-before-br' => true,
+            'indent' => true,
+            'indent-spaces' => 2,
+            'vertical-space' => true,
+            'wrap' => 0,
+            'char-encoding' => 'utf8',
+            'newline' => 'LF',
+            'output-bom' => false,
+            'tidy-mark' => false);
+        $tidy = new tidy();
+        return $tidy->repairString($html, $config, 'utf8');
+
     }
 }

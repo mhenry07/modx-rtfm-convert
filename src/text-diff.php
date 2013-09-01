@@ -386,7 +386,7 @@ function getOldRtfmContent($html) {
  * @return string|bool
  */
 function getContent($html, $newOrOld) {
-    if ($newOrOld == 'new') 
+    if ($newOrOld == 'new')
         return getNewRtfmContent($html);
     return getOldRtfmContent($html);
 }

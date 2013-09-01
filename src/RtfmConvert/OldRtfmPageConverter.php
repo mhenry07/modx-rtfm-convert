@@ -11,7 +11,7 @@ use RtfmConvert\HtmlTransformers\BrAtlForcedNewlineHtmlTransformer;
 use RtfmConvert\HtmlTransformers\CodePanelHtmlTransformer;
 use RtfmConvert\HtmlTransformers\FormattingElementHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NestedListHtmlTransformer;
-use RtfmConvert\TextTransformers\CrlfToLfTextTransformer;
+use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
 use RtfmConvert\TextTransformers\ModxTagsToEntitiesTextTransformer;
 use RtfmConvert\TextTransformers\NbspTextTransformer;
 
@@ -25,14 +25,15 @@ class OldRtfmPageConverter {
         $processor->register(new OldRtfmContentExtractor());
         $processor->register(new NestedListHtmlTransformer());
 
-        $processor->register(new CodePanelHtmlTransformer());
+        // main processing
         $processor->register(new BrAtlForcedNewlineHtmlTransformer());
         $processor->register(new FormattingElementHtmlTransformer());
+        $processor->register(new CodePanelHtmlTransformer());
 
         // post-processing
+        $processor->register(new HtmlTidyTextTransformer());
         $processor->register(new ModxTagsToEntitiesTextTransformer());
         $processor->register(new NbspTextTransformer());
-        $processor->register(new CrlfToLfTextTransformer());
 
         $this->processor = $processor;
     }

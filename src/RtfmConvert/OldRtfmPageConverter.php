@@ -9,6 +9,7 @@ namespace RtfmConvert;
 use RtfmConvert\ContentExtractors\OldRtfmContentExtractor;
 use RtfmConvert\HtmlTransformers\BrAtlForcedNewlineHtmlTransformer;
 use RtfmConvert\HtmlTransformers\CodePanelHtmlTransformer;
+use RtfmConvert\HtmlTransformers\ConfluenceAsideHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ConfluenceTableHtmlTransformer;
 use RtfmConvert\HtmlTransformers\FormattingElementHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NestedListHtmlTransformer;
@@ -31,6 +32,7 @@ class OldRtfmPageConverter {
         $processor->register(new FormattingElementHtmlTransformer());
         $processor->register(new CodePanelHtmlTransformer());
         $processor->register(new ConfluenceTableHtmlTransformer());
+        $processor->register(new ConfluenceAsideHtmlTransformer());
 
 
         // post-processing

@@ -4,6 +4,8 @@
  */
 
 namespace RtfmConvert;
+use QueryPath\DOMQuery;
+use RtfmConvert\TextTransformers\CrlfToLfTextTransformer;
 
 
 /**
@@ -29,6 +31,17 @@ class RtfmQueryPath {
      */
     public static function htmlqp($document = null, $selector = null,
                                      $options = []) {
+        // remove carriage returns to prevent output of &#13; entities
+        if (is_string($document)) {
+            $eolTransformer = new CrlfToLfTextTransformer();
+            $document = $eolTransformer->transform($document);
+        }
+        $defaultOptions = array('omit_xml_declaration' => true);
+        $options = array_merge($defaultOptions, $options);
         return htmlqp($document, $selector, $options);
+    }
+
+    public static function getHtmlString(DOMQuery $qp) {
+        return trim($qp->xhtml());
     }
 }

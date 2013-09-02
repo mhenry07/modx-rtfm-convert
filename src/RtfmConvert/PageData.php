@@ -27,25 +27,23 @@ class PageData {
      * @return string Returns the HTML as a string. If the internal type
      * is a \QueryPath\DOMQuery, converts it to a string starting with the
      * current selector.
+     * Old (foreach): $result .=  $this->html->document()->saveHTML($item->get(0));
      */
     public function getHtmlString() {
         if (is_string($this->html))
             return $this->html;
-        $result = '';
-        /** @var \QueryPath\DOMQuery $item */
-        foreach ($this->html as $item)
-            $result .= $this->html->document()->saveHTML($item->get(0));
-        return $result;
+        return RtfmQueryPath::getHtmlString($this->html);
     }
 
     /**
      * @return string Returns the HTML document as a string. If the internal
      * type is a \QueryPath\DOMQuery, returns the whole document as a string.
+     * Old: return $this->html->document()->saveHTML();
      */
     public function getHtmlDocument() {
         if (is_string($this->html))
             return $this->html;
-        return $this->html->document()->saveHTML();
+        return RtfmQueryPath::getHtmlString($this->html->top());
     }
 
     /**

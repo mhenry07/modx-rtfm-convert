@@ -17,21 +17,27 @@ class PageDataTest extends HtmlTestCase {
     public function testGetHtmlStringShouldReturnExpectedStringGivenDomQuery() {
         $expected = <<<'EOT'
 <html>
-<head><title>Test</title></head>
-<body></body>
+  <head>
+    <title>Test</title>
+  </head>
+  <body></body>
 </html>
 EOT;
 
-        $qp = htmlqp('<html><head><title>Test</title></head><body></body></html>');
+        $qp = RtfmQueryPath::htmlqp('<html><head><title>Test</title></head><body></body></html>');
         $pageData = new PageData($qp);
-        $this->assertEquals($expected, $pageData->getHtmlString());
+        $this->assertContains($expected, $pageData->getHtmlString());
     }
 
     public function testGetHtmlStringShouldReturnExpectedStringGivenDomQueryWithSelector() {
         $content = '<p>test</p>';
-        $expected = "<body>{$content}</body>";
+        $expected = <<<EOT
+<body>
+  {$content}
+</body>
+EOT;
 
-        $qp = htmlqp($content, 'body');
+        $qp = RtfmQueryPath::htmlqp($content, 'body');
         $pageData = new PageData($qp);
         $this->assertEquals($expected, $pageData->getHtmlString());
     }
@@ -40,26 +46,28 @@ EOT;
         $content = '<p>test</p>';
         $expected = <<<EOT
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
-<html><body>{$content}</body></html>
-
+<html>
+  <body>
+    {$content}
+  </body>
+</html>
 EOT;
 
-        $qp = htmlqp($content, 'body');
+        $qp = RtfmQueryPath::htmlqp($content, 'body');
         $pageData = new PageData($qp);
         $this->assertEquals($expected, $pageData->getHtmlDocument());
     }
 
     public function testGetHtmlQueryShouldReturnGivenDomQuery() {
-        $qp = htmlqp('<html><head><title>Test</title></head><body></body></html>');
+        $qp = RtfmQueryPath::htmlqp('<html><head><title>Test</title></head><body></body></html>');
         $pageData = new PageData($qp);
         $this->assertEquals($qp, $pageData->getHtmlQuery());
     }
 
     public function testGetHtmlQueryShouldReturnExpectedDomQueryGivenHtmlString() {
         $html = '<html><head><title>Test</title></head><body></body></html>';
-        $qp = htmlqp($html);
         $pageData = new PageData($html);
-        $this->assertHtmlEquals($qp, $pageData->getHtmlQuery());
+        $this->assertHtmlEquals($html, $pageData->getHtmlQuery());
     }
 
     public function testGetHtmlQueryShouldReturnExpectedTagGivenHtmlString() {

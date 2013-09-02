@@ -7,12 +7,12 @@
 namespace RtfmConvert\ContentExtractors;
 
 
+require_once('RtfmConvert/HtmlTestCase.php');
+use RtfmConvert\HtmlTestCase;
 use RtfmConvert\PageStatistics;
 
-require_once('RtfmConvert/HtmlTestCase.php');
-
 // TODO: handle incomplete content (i.e. missing /div for .wiki-content)
-class OldRtfmContentExtractorTest extends \RtfmConvert\HtmlTestCase {
+class OldRtfmContentExtractorTest extends HtmlTestCase {
     const WIKI_CONTENT_FORMAT = <<<'EOT'
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
@@ -199,6 +199,13 @@ EOT;
     <input type="hidden" title="spaceName" value="{$spaceName}"/>
 </fieldset>
 
+<script type="text/x-template" title="movePageErrors">
+    <div id="move-errors" class="hidden warning"></div>
+</script>
+<script type="text/x-template" title="movePageBreadcrumb">
+    <div><li><a class="{2}" title="{3}" tabindex="-1"><span>{0}</span></a></li></div>
+</script>
+
 <div class="page-metadata">
         <ul>
                             <li class="page-metadata-item noprint">
@@ -243,26 +250,15 @@ EOT;
         $this->stats = new PageStatistics();
         $extractor = new OldRtfmContentExtractor();
         $extractor->extract($source, $this->stats);
-        $this->assertStat('pageId', $pageId);
+        $this->assertStat('sourcePageId', $pageId);
         $this->assertStat('pageTitle', $pageTitle);
-        $this->assertStat('spaceKey', $spaceKey);
-        $this->assertStat('spaceName', $spaceName);
-        $this->assertStat('modification-info', 'Added by Shaun McCormick, last edited by Jay Gilmore on Sep 28, 2012');
+        $this->assertStat('confluenceSpaceKey', $spaceKey);
+        $this->assertStat('confluenceSpaceName', $spaceName);
+        $this->assertStat('source-modification-info', 'Added by Shaun McCormick, last edited by Jay Gilmore on Sep 28, 2012');
     }
 
     // helper methods
     protected function formatTestData($contentHtml) {
         return sprintf(self::WIKI_CONTENT_FORMAT, $contentHtml);
     }
-
-//    protected function tidy($html) {
-//        $tidy = new \tidy();
-//        $tidyConfig = array(
-//            'output-xhtml' => true,
-//            'show-body-only' => true,
-//            'char-encoding' => 'utf8',
-//            'newline' => 'LF',
-//            'output-bom' => false);
-//        return $tidy->repairString($html, $tidyConfig);
-//    }
 }

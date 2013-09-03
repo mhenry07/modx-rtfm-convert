@@ -23,7 +23,7 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
 
     public function setUp() {
         $this->stats = new PageStatistics();
-        $this->pageLoader = new PageLoader(new CurlWrapper());
+        $this->pageLoader = new PageLoader(new CurlWrapper(), new FileIo());
         if (!file_exists(self::DATA_DIR))
             mkdir(self::DATA_DIR, 0777, true);
     }

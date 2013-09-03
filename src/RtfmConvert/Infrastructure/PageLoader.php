@@ -2,6 +2,7 @@
 
 namespace RtfmConvert\Infrastructure;
 use RtfmConvert\CurlWrapper;
+use RtfmConvert\FileIo;
 use RtfmConvert\PageData;
 use RtfmConvert\PageStatistics;
 use RtfmConvert\RtfmException;
@@ -12,14 +13,12 @@ use RtfmConvert\RtfmException;
  * @package RtfmConvert.
  */
 class PageLoader implements PageLoaderInterface {
-    private $curlWrapper;
+    protected $curlWrapper;
+    protected $fileIo;
 
-    function __construct(CurlWrapper $curlWrapper = null) {
-        if (!is_null($curlWrapper)) {
-            $this->curlWrapper = $curlWrapper;
-        } else {
-            $this->curlWrapper = new CurlWrapper();
-        }
+    function __construct(CurlWrapper $curlWrapper = null, FileIo $fileIo = null) {
+        $this->curlWrapper = $curlWrapper ? : new CurlWrapper();
+        $this ->fileIo = $fileIo ? : new FileIo();
     }
 
     /**
@@ -55,18 +54,10 @@ class PageLoader implements PageLoaderInterface {
         return new PageData($this->get($url, $stats), $stats);
     }
 
-    private function getContents($source, PageStatistics $stats = null) {
-        if (!$this->isWebUrl($source))
-            return file_get_contents($source);
-        return $this->curlGet($source, $stats);
-    }
-
-    private function putContents($dest, $data) {
-        return file_put_contents($dest, $data);
-    }
-
-    private function isWebUrl($source) {
-        return preg_match('#^https?\://#', $source) === 1;
+    private function getContents($url, PageStatistics $stats = null) {
+        if ($this->fileIo->isLocalFile($url))
+            return $this->fileIo->read($url);
+        return $this->curlGet($url, $stats);
     }
 
     private function curlGet($url, PageStatistics $stats = null) {

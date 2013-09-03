@@ -3,6 +3,7 @@
 namespace RtfmConvert\Infrastructure;
 use RtfmConvert\PageData;
 use RtfmConvert\PageStatistics;
+use RtfmConvert\PathHelper;
 use RtfmConvert\RtfmException;
 
 /**
@@ -53,7 +54,7 @@ class PageLoader implements PageLoaderInterface {
     }
 
     private function getContents($url, PageStatistics $stats = null) {
-        if ($this->fileIo->isLocalFile($url))
+        if (PathHelper::isLocalFile($url))
             return $this->fileIo->read($url);
         return $this->curlGet($url, $stats);
     }

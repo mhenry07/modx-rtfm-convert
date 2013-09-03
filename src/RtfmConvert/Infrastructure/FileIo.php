@@ -55,8 +55,4 @@ class FileIo {
         if (file_put_contents($filename, $data) === false)
             throw new RtfmException("Error writing file: {$filename}");
     }
-
-    public function isLocalFile($filename) {
-        return preg_match('#^https?\://#', $filename) === 0;
-    }
 }

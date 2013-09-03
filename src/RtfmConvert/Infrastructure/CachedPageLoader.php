@@ -8,6 +8,7 @@ namespace RtfmConvert\Infrastructure;
 
 use RtfmConvert\PageData;
 use RtfmConvert\PageStatistics;
+use RtfmConvert\PathHelper;
 use RtfmConvert\RtfmException;
 
 class CachedPageLoader implements PageLoaderInterface {
@@ -36,7 +37,7 @@ class CachedPageLoader implements PageLoaderInterface {
         $fileIo = $this->fileIo;
         if (is_null($stats))
             $stats = new PageStatistics();
-        if ($fileIo->isLocalFile($url))
+        if (PathHelper::isLocalFile($url))
             return $this->basePageLoader->get($url, $stats);
 
         $cacheFile = $this->getCachePath($url);
@@ -84,6 +85,6 @@ class CachedPageLoader implements PageLoaderInterface {
                 $path .= '/' . $urlQuery;
             $path .= '.html';
         }
-        return $this->baseDirectory . $path;
+        return PathHelper::join($this->baseDirectory, $path);
     }
 }

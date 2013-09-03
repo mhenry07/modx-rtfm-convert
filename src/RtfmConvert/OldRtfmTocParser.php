@@ -49,7 +49,8 @@ class OldRtfmTocParser {
      */
     public function parseTocDirectory($dirname) {
         $result = array();
-        $files = $this->fileIo->findPathnames($dirname . '/*.html');
+        $globPattern = PathHelper::join($dirname, '*.html');
+        $files = $this->fileIo->findPathnames($globPattern);
         foreach ($files as $file)
             $result = array_merge($result, $this->parseTocFile($file));
         return $result;

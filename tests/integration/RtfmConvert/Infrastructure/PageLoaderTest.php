@@ -12,7 +12,7 @@ use RtfmConvert\PageStatistics;
 
 // TODO: add feature to ignore cache
 class PageLoaderTest extends \PHPUnit_Framework_TestCase {
-    const DATA_DIR = '../../data/test/';
+    const DATA_DIR = '../data/test/';
     const RTFM_MODX_COM = 'http://rtfm.modx.com/';
 
     /** @var PageLoader */

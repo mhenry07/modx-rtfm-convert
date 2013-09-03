@@ -33,11 +33,11 @@ class CachedPageLoader implements PageLoaderInterface {
         $this->baseDirectory = $baseDirectory;
     }
 
-    function get($url, $obsoleteCacheFile = null, PageStatistics $stats = null) {
+    function get($url, PageStatistics $stats = null) {
         if (is_null($stats))
             $stats = new PageStatistics();
         if ($this->isLocalFile($url))
-            return $this->basePageLoader->get($url, $obsoleteCacheFile, $stats);
+            return $this->basePageLoader->get($url, $stats);
 
         $cacheFile = $this->getCachePath($url);
         $fileIo = $this->fileIo;
@@ -45,7 +45,7 @@ class CachedPageLoader implements PageLoaderInterface {
             $stats->add('cache: loaded from', $cacheFile);
             return $fileIo->read($cacheFile);
         }
-        $contents = $this->basePageLoader->get($url, $obsoleteCacheFile, $stats);
+        $contents = $this->basePageLoader->get($url, $stats);
         if (!$fileIo->exists(dirname($cacheFile))) {
             $stats->add('cache: saved to', $cacheFile);
             $fileIo->mkdir(dirname($cacheFile));
@@ -54,10 +54,10 @@ class CachedPageLoader implements PageLoaderInterface {
         return $contents;
     }
 
-    function getData($url, $obsoleteCacheFile = null, PageStatistics $stats = null) {
+    function getData($url, PageStatistics $stats = null) {
         if (is_null($stats))
             $stats = new PageStatistics();
-        return new PageData($this->get($url, $obsoleteCacheFile, $stats), $stats);
+        return new PageData($this->get($url, $stats), $stats);
     }
 
     public function getCachePath($url) {

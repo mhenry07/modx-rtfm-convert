@@ -10,7 +10,6 @@ use RtfmConvert\CurlWrapper;
 use RtfmConvert\FileIo;
 use RtfmConvert\PageStatistics;
 
-// TODO: add feature to ignore cache
 class PageLoaderTest extends \PHPUnit_Framework_TestCase {
     const DATA_DIR = '../data/test/';
     const RTFM_MODX_COM = 'http://rtfm.modx.com/';
@@ -37,23 +36,34 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
 
     public function testGetShouldRetrieveWebPage() {
         $this->requireWorkingUrl(self::RTFM_MODX_COM);
-        $page = $this->pageLoader->get(self::RTFM_MODX_COM, null, $this->stats);
+        $page = $this->pageLoader->get(self::RTFM_MODX_COM, $this->stats);
         $this->assertInternalType('string', $page);
-        $this->assertContains('<html', $page);
+        $this->assertContains('</html>', $page);
     }
 
+    public function testGetShouldRetrieveLocalFile() {
+        $expected = 'local';
+        $this->tempFile = self::DATA_DIR . 'file.txt';
+        file_put_contents($this->tempFile, $expected);
+
+        $result = $this->pageLoader->get($this->tempFile, $this->stats);
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @depends testGetShouldRetrieveWebPage
+     */
     public function testGetShouldRetrieveRedirectedWebPage() {
         $url = "http://rtfm.modx.com/display/revolution20/Tag+Syntax";
         $this->requireWorkingUrl($url);
-        $page = $this->pageLoader->get($url, null, $this->stats);
+        $page = $this->pageLoader->get($url, $this->stats);
         $this->assertInternalType('string', $page);
-        $this->assertContains('<html', $page);
+        $this->assertContains('</html>', $page);
     }
 
     public function testGetShouldThrowRtfmExceptionWhenPageNotFound() {
         $this->setExpectedException('\RtfmConvert\RtfmException');
-        $this->pageLoader->get('http://rtfm.modx.com/invalid-page', null,
-            $this->stats);
+        $this->pageLoader->get('http://rtfm.modx.com/invalid-page', $this->stats);
     }
 
     public function testGetShouldThrowRtfmExceptionWhenPageIncomplete() {
@@ -71,46 +81,12 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
         $curl->expects($this->any())->method('getinfo')
             ->will($this->returnValueMap($getinfoMap));
 
-        $pageLoader = new PageLoader($curl, $this->stats);
+        $pageLoader = new PageLoader($curl);
         $this->setExpectedException('\RtfmConvert\RtfmException');
 //            'downloaded size does not match Content-Length header');
         $pageLoader->get(
-            'http://oldrtfm.modx.com/display/revolution20/Tag+Syntax', null,
+            'http://oldrtfm.modx.com/display/revolution20/Tag+Syntax',
             $this->stats);
-    }
-
-    public function testGetShouldRetrievePageWhenPageComplete() {
-        $page = $this->pageLoader->get(
-            'http://oldrtfm.modx.com/display/revolution20/Tag+Syntax', null,
-            $this->stats);
-        $this->assertInternalType('string', $page);
-        $this->assertContains('<html', $page);
-    }
-
-    public function testGetShouldLoadCache() {
-        $this->writeTempFile('PageLoader.get', 'local');
-
-        $page = $this->pageLoader->get(self::RTFM_MODX_COM, $this->tempFile,
-            $this->stats);
-        $this->assertStringEqualsFile($this->tempFile, $page);
-    }
-
-    public function testGetShouldLoadUrlWhenCacheNotFound() {
-        $page = $this->getAndCachePage(self::RTFM_MODX_COM,
-            'non-existent-file', $this->stats);
-        $this->assertContains('<html', $page);
-    }
-
-    /**
-     * @depends testGetShouldLoadUrlWhenCacheNotFound
-     * Note: since tearDown() deletes the cache file, we have to re-perform
-     * the act step from testGetShouldLoadUrlWhenCacheNotFound.
-     */
-    public function testGetShouldWriteCache() {
-        $page = $this->getAndCachePage(self::RTFM_MODX_COM, 'cache.html');
-
-        $this->assertFileExists($this->tempFile);
-        $this->assertEquals($page, file_get_contents($this->tempFile));
     }
 
     /**
@@ -118,20 +94,12 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
      */
     public function testGetDataShouldGetExpectedData() {
         $this->pageLoader = new PageLoader(new CurlWrapper());
-        $result = $this->pageLoader->getData(self::RTFM_MODX_COM, null,
-            $this->stats);
-        $this->assertContains('<html', $result->getHtmlString());
+        $result = $this->pageLoader->getData(self::RTFM_MODX_COM, $this->stats);
+        $this->assertContains('</html>', $result->getHtmlString());
         $this->assertEquals($this->stats, $result->getStats());
     }
 
     // helper methods
-    protected function getAndCachePage($url, $filename) {
-        $this->requireWorkingUrl($url);
-        $this->deleteTempFile($filename);
-
-        return $this->pageLoader->get($url, $this->tempFile, $this->stats);
-    }
-
     protected function requireWorkingUrl($url) {
         $ch = curl_init($url);
 
@@ -142,16 +110,5 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
         if ($retcode == 200 || $retcode >= 300 && $retcode < 400)
             return;
         $this->markTestSkipped("Test requires that the URL '{$url}' works. (Status code: {$retcode})");
-    }
-
-    protected function deleteTempFile($filename) {
-        $this->tempFile = self::DATA_DIR . $filename;
-        if (file_exists($this->tempFile))
-            unlink($this->tempFile);
-    }
-
-    protected function writeTempFile($filename, $contents) {
-        $this->tempFile = self::DATA_DIR . $filename;
-        file_put_contents($this->tempFile, $contents);
     }
 }

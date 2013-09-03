@@ -9,6 +9,6 @@ namespace RtfmConvert\Infrastructure;
 use RtfmConvert\PageStatistics;
 
 interface PageLoaderInterface {
-    function get($url, $obsoleteCacheFile = null, PageStatistics $stats = null);
-    function getData($url, $obsoleteCacheFile = null, PageStatistics $stats = null);
+    function get($url, PageStatistics $stats = null);
+    function getData($url, PageStatistics $stats = null);
 }

@@ -10,7 +10,8 @@ use RtfmConvert\OldRtfmPageConverter;
 
 $space = 'revolution20';
 $page = 'Tag+Syntax';
-$converter = new OldRtfmPageConverter();
+$cacheDir = "{$root}/data/cache/";
+$converter = new OldRtfmPageConverter($cacheDir);
 $converter->convert(
     "http://oldrtfm.modx.com/display/{$space}/{$page}",
     "{$root}/data/{$page}.converted.html");

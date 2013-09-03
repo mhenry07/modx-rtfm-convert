@@ -13,6 +13,7 @@ use RtfmConvert\HtmlTransformers\ConfluenceAsideHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ConfluenceTableHtmlTransformer;
 use RtfmConvert\HtmlTransformers\FormattingElementHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NestedListHtmlTransformer;
+use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
 use RtfmConvert\TextTransformers\ModxTagsToEntitiesTextTransformer;
 use RtfmConvert\TextTransformers\NbspTextTransformer;
@@ -21,8 +22,10 @@ class OldRtfmPageConverter {
     /** @var PageProcessor */
     protected $processor;
 
-    public function __construct() {
-        $processor = new PageProcessor();
+    public function __construct($cacheDir) {
+        $pageLoader = new CachedPageLoader();
+        $pageLoader->setBaseDirectory($cacheDir);
+        $processor = new PageProcessor($pageLoader);
         // pre-processing
         $processor->register(new OldRtfmContentExtractor());
         $processor->register(new NestedListHtmlTransformer());

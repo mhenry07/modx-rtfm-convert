@@ -6,13 +6,16 @@
 namespace RtfmConvert;
 
 
+use RtfmConvert\Infrastructure\CachedPageLoader;
+use RtfmConvert\Infrastructure\PageLoaderInterface;
+
 class PageProcessor {
     protected $pageLoader;
     protected $fileIo;
     protected $operations = array();
 
-    function __construct(PageLoader $pageLoader = null, FileIo $fileIo = null) {
-        $this->pageLoader = $pageLoader ? : new PageLoader();
+    function __construct(PageLoaderInterface $pageLoader = null, FileIo $fileIo = null) {
+        $this->pageLoader = $pageLoader ? : new CachedPageLoader();
         $this->fileIo = $fileIo ? : new FileIo();
     }
 

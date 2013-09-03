@@ -30,6 +30,8 @@ class CachedPageLoaderTest extends \PHPUnit_Framework_TestCase {
         $url = '/local/path/to/file.html';
         $expected = '<html></html>';
         $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo->expects($this->any())->method('isLocalFile')
+            ->will($this->returnValue(true));
         $fileIo->expects($this->never())->method('write');
         $basePageLoader = $this->getMock('PageLoaderInterface', array('get'));
         $basePageLoader->expects($this->once())->method('get')

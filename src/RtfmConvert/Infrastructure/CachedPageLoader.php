@@ -34,13 +34,13 @@ class CachedPageLoader implements PageLoaderInterface {
     }
 
     function get($url, PageStatistics $stats = null) {
+        $fileIo = $this->fileIo;
         if (is_null($stats))
             $stats = new PageStatistics();
-        if ($this->isLocalFile($url))
+        if ($fileIo->isLocalFile($url))
             return $this->basePageLoader->get($url, $stats);
 
         $cacheFile = $this->getCachePath($url);
-        $fileIo = $this->fileIo;
         if ($fileIo->exists($cacheFile)) {
             $stats->add('cache: loaded from', $cacheFile);
             return $fileIo->read($cacheFile);
@@ -86,9 +86,5 @@ class CachedPageLoader implements PageLoaderInterface {
             $path .= '.html';
         }
         return $this->baseDirectory . $path;
-    }
-
-    protected function isLocalFile($url) {
-        return preg_match('#^https?://#', $url) === 0;
     }
 }

@@ -12,7 +12,7 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $url = 'http://oldrtfm.modx.com/display/revolution20/Getting+Started';
         $expectedData = new PageData(\QueryPath::HTML_STUB,
             new PageStatistics());
-        $pageLoader = $this->getMock('\RtfmConvert\PageLoader');
+        $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
         $pageLoader->expects($this->any())->method('getData')->with($url)
             ->will($this->returnValue($expectedData));
         $fileIo = $this->getMock('\RtfmConvert\FileIo');
@@ -26,7 +26,7 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $url = 'http://oldrtfm.modx.com/display/revolution20/Getting+Started';
         $dest = 'temp.html';
         $pageData = new PageData('<html></html>');
-        $pageLoader = $this->getMock('\RtfmConvert\PageLoader');
+        $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
         $pageLoader->expects($this->any())->method('getData')
             ->will($this->returnValue($pageData));
         $fileIo = $this->getMock('\RtfmConvert\FileIo');
@@ -48,7 +48,7 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $stats = new PageStatistics();
         $stats->add('stat', 1, true, false);
         $pageData = new PageData('<html></html>', $stats);
-        $pageLoader = $this->getMock('\RtfmConvert\PageLoader');
+        $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
         $pageLoader->expects($this->any())->method('getData')
             ->will($this->returnValue($pageData));
         $fileIo = $this->getMock('\RtfmConvert\FileIo');
@@ -63,7 +63,7 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
     public function testProcessPageShouldProcessExpectedOperation() {
         $url = 'http://oldrtfm.modx.com/display/revolution20/Getting+Started';
         $pageData = new PageData('');
-        $pageLoader = $this->getMock('\RtfmConvert\PageLoader');
+        $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
         $pageLoader->expects($this->any())->method('getData')
             ->will($this->returnValue($pageData));
         $fileIo = $this->getMock('\RtfmConvert\FileIo');
@@ -85,7 +85,7 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $pageData1 = new PageData('<p>1</p>');
         $pageData2 = new PageData('<p>2</p>');
         $pageData3 = new PageData('<p>3</p>');
-        $pageLoader = $this->getMock('\RtfmConvert\PageLoader');
+        $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
         $pageLoader->expects($this->any())->method('getData')
             ->will($this->returnValue($pageData1));
         $fileIo = $this->getMock('\RtfmConvert\FileIo');

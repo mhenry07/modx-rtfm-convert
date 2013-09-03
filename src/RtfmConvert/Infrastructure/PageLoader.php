@@ -1,7 +1,10 @@
 <?php
 
-namespace RtfmConvert;
-use RtfmConvert\Infrastructure\PageLoaderInterface;
+namespace RtfmConvert\Infrastructure;
+use RtfmConvert\CurlWrapper;
+use RtfmConvert\PageData;
+use RtfmConvert\PageStatistics;
+use RtfmConvert\RtfmException;
 
 /**
  * Class PageLoader
@@ -29,7 +32,7 @@ class PageLoader implements PageLoaderInterface {
      * @param string|null $cacheFile
      * The filename of a locally cached copy of the page.
      * @param PageStatistics $stats
-     * @throws RtfmException
+     * @throws \RtfmConvert\RtfmException
      * @return string Returns the contents of the response.
      */
     public function get($url, $cacheFile = null,

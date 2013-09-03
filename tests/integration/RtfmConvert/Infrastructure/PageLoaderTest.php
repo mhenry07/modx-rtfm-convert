@@ -3,8 +3,12 @@
  * @author: Mike Henry
  */
 
-namespace RtfmConvert;
+namespace RtfmConvert\Infrastructure;
 
+
+use RtfmConvert\CurlWrapper;
+use RtfmConvert\FileIo;
+use RtfmConvert\PageStatistics;
 
 // TODO: add feature to ignore cache
 class PageLoaderTest extends \PHPUnit_Framework_TestCase {

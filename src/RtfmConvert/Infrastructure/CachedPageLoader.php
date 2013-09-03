@@ -8,7 +8,6 @@ namespace RtfmConvert\Infrastructure;
 
 use RtfmConvert\FileIo;
 use RtfmConvert\PageData;
-use RtfmConvert\PageLoader;
 use RtfmConvert\PageStatistics;
 use RtfmConvert\RtfmException;
 

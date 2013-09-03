@@ -46,7 +46,31 @@ class OldRtfmPageConverter {
         $this->processor = $processor;
     }
 
-    public function convert($source, $dest) {
+    public function convertPage($source, $dest) {
         $this->processor->processPage($source, $dest);
+    }
+
+    // TODO: add a PageProcessor::processPages method and call that
+    // TODO: add an isBatch param to processPage and delay writing stats if true
+    // TODO: write all stats to a single file instead of one per page
+    public function convertAll($tocDir, $outputDir, $addHtmlExtension) {
+        $tocParser = new OldRtfmTocParser();
+        $hrefs = $tocParser->parseTocDirectory($tocDir);
+        foreach ($hrefs as $href) {
+            $url = $href['url'];
+            $destFile = $this->getDestinationFilename($url, $outputDir,
+                $addHtmlExtension);
+            $this->processor->processPage($url, $destFile);
+        }
+    }
+
+    protected function getDestinationFilename($url, $baseDir, $addHtmlExtension) {
+        $path = trim(parse_url($url, PHP_URL_PATH), '/');
+        $urlQuery = parse_url($url, PHP_URL_QUERY);
+        if ($urlQuery)
+            $path = PathHelper::join($path, $urlQuery);
+        if ($addHtmlExtension)
+            $path .= '.html';
+        return PathHelper::join($baseDir, $path);
     }
 }

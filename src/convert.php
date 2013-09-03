@@ -10,8 +10,19 @@ use RtfmConvert\OldRtfmPageConverter;
 
 $space = 'revolution20';
 $page = 'Tag+Syntax';
-$cacheDir = "{$root}/data/cache/";
+// TODO: disable .html extension before final conversion
+$addHtmlExtension = true;
+
+$data = "{$root}/data";
+$tocDir = "{$root}/oldrtfm-toc";
+$outputDir = "{$data}/convert";
+$cacheDir = "{$data}/cache";
+
+
 $converter = new OldRtfmPageConverter($cacheDir);
-$converter->convert(
+
+$converter->convertPage(
     "http://oldrtfm.modx.com/display/{$space}/{$page}",
-    "{$root}/data/{$page}.converted.html");
+    "{$data}/{$page}.converted.html");
+
+//$converter->convertAll($tocDir, $outputDir, $addHtmlExtension);

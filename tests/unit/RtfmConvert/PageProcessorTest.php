@@ -15,7 +15,7 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
         $pageLoader->expects($this->any())->method('getData')->with($url)
             ->will($this->returnValue($expectedData));
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
         $processor = new PageProcessor($pageLoader, $fileIo);
 
         $pageData = $processor->processPage($url, 'temp');
@@ -29,7 +29,7 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
         $pageLoader->expects($this->any())->method('getData')
             ->will($this->returnValue($pageData));
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
 
         $fileIo->expects($this->at(0))->method('write')
             ->with($dest, '<html></html>');
@@ -51,7 +51,7 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
         $pageLoader->expects($this->any())->method('getData')
             ->will($this->returnValue($pageData));
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
 
         $fileIo->expects($this->at(1))->method('write')
             ->with($statsDest, '{"stat":{"label":"stat","value":1,"transformed":true,"warning":false}}');
@@ -66,7 +66,7 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
         $pageLoader->expects($this->any())->method('getData')
             ->will($this->returnValue($pageData));
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
         $operation = $this->getMock('\RtfmConvert\ProcessorOperationInterface');
 
         $operation->expects($this->once())->method('process')
@@ -88,7 +88,7 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
         $pageLoader->expects($this->any())->method('getData')
             ->will($this->returnValue($pageData1));
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
         $operation1 = $this->getMock('\RtfmConvert\ProcessorOperationInterface');
         $operation2 = $this->getMock('\RtfmConvert\ProcessorOperationInterface');
 

@@ -12,7 +12,7 @@ class CachedPageLoaderTest extends \PHPUnit_Framework_TestCase {
     public function testGetWhenCacheFileNotExistShouldCallBaseGetAndReturnExpectedHtml() {
         $url = 'http://oldrtfm.modx.com/';
         $expected = '<html></html>';
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('RtfmConvert\Infrastructure\FileIo');
         $fileIo->expects($this->any())->method('exists')
             ->will($this->onConsecutiveCalls(false, true));
         $basePageLoader = $this->getMock('PageLoaderInterface', array('get'));
@@ -29,7 +29,7 @@ class CachedPageLoaderTest extends \PHPUnit_Framework_TestCase {
     public function testGetLocalFileShouldCallBaseGetAndReturnExpectedHtml() {
         $url = '/local/path/to/file.html';
         $expected = '<html></html>';
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('RtfmConvert\Infrastructure\FileIo');
         $fileIo->expects($this->any())->method('isLocalFile')
             ->will($this->returnValue(true));
         $fileIo->expects($this->never())->method('write');
@@ -48,7 +48,7 @@ class CachedPageLoaderTest extends \PHPUnit_Framework_TestCase {
         $url = 'http://oldrtfm.modx.com/';
         $expected = '<html></html>';
         $cacheFile = '/path/to/oldrtfm.modx.com.html';
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('RtfmConvert\Infrastructure\FileIo');
         $fileIo->expects($this->once())->method('exists')->with($cacheFile)
             ->will($this->returnValue(true));
         $fileIo->expects($this->once())->method('read')->with($cacheFile)
@@ -69,7 +69,7 @@ class CachedPageLoaderTest extends \PHPUnit_Framework_TestCase {
         $url = 'http://oldrtfm.modx.com/';
         $expected = '<html></html>';
         $cacheFile = '/path/to/oldrtfm.modx.com.html';
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('RtfmConvert\Infrastructure\FileIo');
         $fileIo->expects($this->any())->method('exists')
             ->will($this->onConsecutiveCalls(false, true));
         $basePageLoader = $this->getMock('PageLoaderInterface', array('get'));
@@ -89,7 +89,7 @@ class CachedPageLoaderTest extends \PHPUnit_Framework_TestCase {
         $url = 'http://oldrtfm.modx.com/';
         $expected = '<html></html>';
         $cacheFile = '/path/to/oldrtfm.modx.com.html';
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('RtfmConvert\Infrastructure\FileIo');
         $fileIo->expects($this->any())->method('exists')
             ->will($this->onConsecutiveCalls(false, false));
         $basePageLoader = $this->getMock('PageLoaderInterface', array('get'));
@@ -107,7 +107,7 @@ class CachedPageLoaderTest extends \PHPUnit_Framework_TestCase {
         $url = 'http://oldrtfm.modx.com/';
         $expected = '/path/to/oldrtfm.modx.com.html';
         $basePageLoader = $this->getMock('PageLoaderInterface');
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('RtfmConvert\Infrastructure\FileIo');
 
         $pageLoader = new CachedPageLoader($basePageLoader, $fileIo);
         $pageLoader->setBaseDirectory(self::BASE_CACHE_DIR);
@@ -119,7 +119,7 @@ class CachedPageLoaderTest extends \PHPUnit_Framework_TestCase {
         $url = 'http://oldrtfm.modx.com/display/revolution20/Getting+Started';
         $expected = '/path/to/oldrtfm.modx.com/display/revolution20/Getting+Started.html';
         $basePageLoader = $this->getMock('PageLoaderInterface');
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('RtfmConvert\Infrastructure\FileIo');
 
         $pageLoader = new CachedPageLoader($basePageLoader, $fileIo);
         $pageLoader->setBaseDirectory(self::BASE_CACHE_DIR);
@@ -131,7 +131,7 @@ class CachedPageLoaderTest extends \PHPUnit_Framework_TestCase {
         $url = 'http://oldrtfm.modx.com/pages/viewpage.action?pageId=13205626';
         $expected = '/path/to/oldrtfm.modx.com/pages/viewpage.action/pageId=13205626.html';
         $basePageLoader = $this->getMock('PageLoaderInterface');
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('RtfmConvert\Infrastructure\FileIo');
 
         $pageLoader = new CachedPageLoader($basePageLoader, $fileIo);
         $pageLoader->setBaseDirectory(self::BASE_CACHE_DIR);
@@ -143,7 +143,7 @@ class CachedPageLoaderTest extends \PHPUnit_Framework_TestCase {
         $url = 'http://oldrtfm.modx.com/download/attachments/18678475/avgjoe.png?version=1&modificationDate=1280336319000';
         $expected = '/path/to/oldrtfm.modx.com/download/attachments/18678475/avgjoe.png';
         $basePageLoader = $this->getMock('PageLoaderInterface');
-        $fileIo = $this->getMock('\RtfmConvert\FileIo');
+        $fileIo = $this->getMock('RtfmConvert\Infrastructure\FileIo');
 
         $pageLoader = new CachedPageLoader($basePageLoader, $fileIo);
         $pageLoader->setBaseDirectory(self::BASE_CACHE_DIR);

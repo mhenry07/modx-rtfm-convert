@@ -1,8 +1,6 @@
 <?php
 
 namespace RtfmConvert\Infrastructure;
-use RtfmConvert\CurlWrapper;
-use RtfmConvert\FileIo;
 use RtfmConvert\PageData;
 use RtfmConvert\PageStatistics;
 use RtfmConvert\RtfmException;

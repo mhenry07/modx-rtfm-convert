@@ -6,8 +6,6 @@
 namespace RtfmConvert\Infrastructure;
 
 
-use RtfmConvert\CurlWrapper;
-use RtfmConvert\FileIo;
 use RtfmConvert\PageStatistics;
 
 class PageLoaderTest extends \PHPUnit_Framework_TestCase {
@@ -67,7 +65,7 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testGetShouldThrowRtfmExceptionWhenPageIncomplete() {
-        $curl = $this->getMock('\RtfmConvert\CurlWrapper');
+        $curl = $this->getMock('\RtfmConvert\Infrastructure\CurlWrapper');
         $curl->expects($this->any())->method('create')
             ->will($this->returnValue($curl));
         $curl->expects($this->any())->method('exec')

@@ -3,8 +3,10 @@
  * @author: Mike Henry
  */
 
-namespace RtfmConvert;
+namespace RtfmConvert\Infrastructure;
 
+
+use RtfmConvert\RtfmException;
 
 class FileIo {
 

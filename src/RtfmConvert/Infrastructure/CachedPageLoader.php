@@ -6,7 +6,6 @@
 namespace RtfmConvert\Infrastructure;
 
 
-use RtfmConvert\FileIo;
 use RtfmConvert\PageData;
 use RtfmConvert\PageStatistics;
 use RtfmConvert\RtfmException;

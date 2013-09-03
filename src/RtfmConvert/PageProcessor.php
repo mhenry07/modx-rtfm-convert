@@ -7,6 +7,7 @@ namespace RtfmConvert;
 
 
 use RtfmConvert\Infrastructure\CachedPageLoader;
+use RtfmConvert\Infrastructure\FileIo;
 use RtfmConvert\Infrastructure\PageLoaderInterface;
 
 class PageProcessor {

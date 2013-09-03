@@ -1,13 +1,14 @@
 <?php
 
 namespace RtfmConvert;
+use RtfmConvert\Infrastructure\PageLoaderInterface;
 
 /**
  * Class PageLoader
  * A class for retrieving web pages from a URL or from the local filesystem.
  * @package RtfmConvert.
  */
-class PageLoader {
+class PageLoader implements PageLoaderInterface {
     private $curlWrapper;
 
     function __construct(CurlWrapper $curlWrapper = null) {

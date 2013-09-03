@@ -1,0 +1,95 @@
+<?php
+/**
+ * @author: Mike Henry
+ */
+
+namespace RtfmConvert\Infrastructure;
+
+
+use RtfmConvert\FileIo;
+use RtfmConvert\PageData;
+use RtfmConvert\PageLoader;
+use RtfmConvert\PageStatistics;
+use RtfmConvert\RtfmException;
+
+class CachedPageLoader implements PageLoaderInterface {
+    /** @var string */
+    protected $baseDirectory;
+    /** @var PageLoaderInterface */
+    protected $basePageLoader;
+    /** @var FileIo */
+    protected $fileIo;
+
+    /**
+     * @param PageLoaderInterface $basePageLoader
+     * @param FileIo $fileIo
+     */
+    function __construct($basePageLoader = null, $fileIo = null) {
+        $this->basePageLoader = $basePageLoader ? : new PageLoader();
+        $this->fileIo = $fileIo ? : new FileIo();
+    }
+
+    /** @param string $baseDirectory */
+    public function setBaseDirectory($baseDirectory) {
+        $this->baseDirectory = $baseDirectory;
+    }
+
+    function get($url, $obsoleteCacheFile = null, PageStatistics $stats = null) {
+        if (is_null($stats))
+            $stats = new PageStatistics();
+        if ($this->isLocalFile($url))
+            return $this->basePageLoader->get($url, $obsoleteCacheFile, $stats);
+
+        $cacheFile = $this->getCachePath($url);
+        $fileIo = $this->fileIo;
+        if ($fileIo->exists($cacheFile)) {
+            $stats->add('cache: loaded from', $cacheFile);
+            return $fileIo->read($cacheFile);
+        }
+        $contents = $this->basePageLoader->get($url, $obsoleteCacheFile, $stats);
+        if (!$fileIo->exists(dirname($cacheFile))) {
+            $stats->add('cache: saved to', $cacheFile);
+            $fileIo->mkdir(dirname($cacheFile));
+        }
+        $fileIo->write($cacheFile, $contents);
+        return $contents;
+    }
+
+    function getData($url, $obsoleteCacheFile = null, PageStatistics $stats = null) {
+        if (is_null($stats))
+            $stats = new PageStatistics();
+        return new PageData($this->get($url, $obsoleteCacheFile, $stats), $stats);
+    }
+
+    public function getCachePath($url) {
+        $count = preg_match('!^https?://([^#]*)!', $url, $matches);
+        if ($count === 0 || $count === false)
+            throw new RtfmException("Error parsing URL: {$url}");
+
+        $urlPath = parse_url($url, PHP_URL_PATH);
+        $path = trim(parse_url($url, PHP_URL_HOST) . $urlPath, '/');
+        $hasValidExtension = false;
+        if ($urlPath) {
+            $validExtensions = array('css', 'gif', 'htm', 'html', 'jpg', 'js', 'png', 'txt');
+            $ext = pathinfo($urlPath, PATHINFO_EXTENSION);
+            foreach ($validExtensions as $validExt) {
+                if (strtolower($ext) === $validExt) {
+                    $hasValidExtension = true;
+                    break;
+                }
+            }
+        }
+        // include query string and .html extension in paths without a valid extension
+        if (!$hasValidExtension) {
+            $urlQuery = parse_url($url, PHP_URL_QUERY);
+            if ($urlQuery)
+                $path .= '/' . $urlQuery;
+            $path .= '.html';
+        }
+        return $this->baseDirectory . $path;
+    }
+
+    protected function isLocalFile($url) {
+        return preg_match('#^https?://#', $url) === 0;
+    }
+}

@@ -18,6 +18,13 @@ class FileIo {
         return file_exists($filename);
     }
 
+    public function findPathnames($pattern) {
+        $result = glob($pattern);
+        if ($result === false)
+            throw new RtfmException("Error finding pathnames matching: {$pattern}");
+        return $result;
+    }
+
     /**
      * @param string $pathname
      * @throws RtfmException

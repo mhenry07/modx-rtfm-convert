@@ -12,6 +12,7 @@ use RtfmConvert\HtmlTransformers\CodePanelHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ConfluenceAsideHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ConfluenceTableHtmlTransformer;
 use RtfmConvert\HtmlTransformers\FormattingElementHtmlTransformer;
+use RtfmConvert\HtmlTransformers\NamedAnchorHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NestedListHtmlTransformer;
 use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
@@ -36,6 +37,7 @@ class OldRtfmPageConverter {
         $processor->register(new CodePanelHtmlTransformer());
         $processor->register(new ConfluenceTableHtmlTransformer());
         $processor->register(new ConfluenceAsideHtmlTransformer());
+        $processor->register(new NamedAnchorHtmlTransformer());
 
 
         // post-processing

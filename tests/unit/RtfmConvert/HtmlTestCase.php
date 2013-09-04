@@ -70,13 +70,14 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
     }
 
     protected function normalizeHtml(DOMQuery $qp) {
-        $html = $qp->document()->saveHTML($qp->get(0));
+        $html = $qp->xhtml();
         $config = array(
             'output-html' => true,
             'show-body-only' => true,
             'break-before-br' => true,
             'indent' => true,
             'indent-spaces' => 2,
+            'sort-attributes' => true, // Note: php options differ from docs
             'vertical-space' => true,
             'wrap' => 0,
             'char-encoding' => 'utf8',
@@ -85,6 +86,5 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
             'tidy-mark' => false);
         $tidy = new tidy();
         return $tidy->repairString($html, $config, 'utf8');
-
     }
 }

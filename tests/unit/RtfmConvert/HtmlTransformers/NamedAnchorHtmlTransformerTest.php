@@ -86,4 +86,14 @@ EOT;
         $this->assertStat('named anchors: headings', 0, false, false);
         $this->assertStat('named anchors: heading exceptions', 1, false, true);
     }
+
+    public function testTransformShouldPreservePercentAndDot() {
+        $input = '<h2><a name="YAMSSetup%28de%29-Erstellungeinerneuenbzw.ErweiterungeinereinsprachigenWebsite"></a>Heading</h2>';
+        $expected = '<h2 id="YAMSSetup%28de%29-Erstellungeinerneuenbzw.ErweiterungeinereinsprachigenWebsite">Heading</h2>';
+        $pageData = new PageData($input, $this->stats);
+        $transformer = new NamedAnchorHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertStat('named anchors: headings', 1, true, false);
+    }
 }

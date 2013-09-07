@@ -139,4 +139,38 @@ EOT;
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
     }
+
+    // e.g. http://oldrtfm.modx.com/display/revolution20/Adding+Custom+Fields+to+Manager+Forms
+    public function testTransformShouldConvertSmileEmoticonToText() {
+        $input = <<<'EOT'
+<p>...for tutorial purposes <img class="emoticon" src="/images/icons/emoticons/smile.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> .</p>
+EOT;
+        $expected = <<<'EOT'
+<p>...for tutorial purposes :) .</p>
+EOT;
+
+        $pageData = new PageData($input, $this->stats);
+        $transformer = new ImageHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertStat(
+            'img.emoticon[src="/images/icons/emoticons/smile.gif"]', 1, true);
+    }
+
+    // e.g. http://oldrtfm.modx.com/display/ADDON/modSwiftMailer
+    public function testTransformShouldConvertWinkEmoticonToText() {
+        $input = <<<'EOT'
+<p>Hey you! Go ahead and slap that sucker into a snippet. <img class="emoticon" src="/images/icons/emoticons/wink.gif" height="20" width="20" align="absmiddle" alt="" border="0"/> It will, if you have set up your MODX in the right manner, send you an e-mail with a subject and printed array.</p>
+EOT;
+        $expected = <<<'EOT'
+<p>Hey you! Go ahead and slap that sucker into a snippet. ;) It will, if you have set up your MODX in the right manner, send you an e-mail with a subject and printed array.</p>
+EOT;
+
+        $pageData = new PageData($input, $this->stats);
+        $transformer = new ImageHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertStat(
+            'img.emoticon[src="/images/icons/emoticons/wink.gif"]', 1, true);
+    }
 }

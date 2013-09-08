@@ -11,6 +11,7 @@ use RtfmConvert\HtmlTransformers\BrAtlForcedNewlineHtmlTransformer;
 use RtfmConvert\HtmlTransformers\CodePanelHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ConfluenceAsideHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ConfluenceTableHtmlTransformer;
+use RtfmConvert\HtmlTransformers\ExternalLinkHtmlTransformer;
 use RtfmConvert\HtmlTransformers\FormattingElementHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ImageHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NamedAnchorHtmlTransformer;
@@ -40,6 +41,7 @@ class OldRtfmPageConverter {
         $processor->register(new ConfluenceAsideHtmlTransformer());
         $processor->register(new NamedAnchorHtmlTransformer());
         $processor->register(new ImageHtmlTransformer());
+        $processor->register(new ExternalLinkHtmlTransformer());
 
 
         // post-processing

@@ -205,53 +205,53 @@ EOT;
         $this->assertHtmlEquals($expected, $result);
     }
 
-    // looks like QueryPath converts ul > ol (nested) to ul + ol (sibling)
-    public function testTransformShouldMoveOlNestedInUlIntoPrevLi() {
-        $this->markTestSkipped('Cannot handle ul > ol due to the way QueryPath parses it.');
-        $nested = '<ol><li>item 1.1</li></ol>';
-        $html = <<<EOT
-<ul>
-    <li>item 1</li>
-    {$nested}
-</ul>
-EOT;
-
-        $expected = <<<EOT
-<ul>
-    <li>item 1
-        {$nested}
-    </li>
-</ul>
-EOT;
-
-        $pageData = new PageData($html);
-        $transformer = new NestedListHtmlTransformer();
-        $result = $transformer->transform($pageData);
-        $this->assertHtmlEquals($expected, $result);
-    }
-
-    // looks like QueryPath converts ol > ul (nested) to ol + ul (sibling)
-    public function testTransformShouldMoveUlNestedInOlIntoPrevLi() {
-        $this->markTestSkipped('Cannot handle ol > ul due to the way QueryPath parses it.');
-        $nested = '<ul><li>item 1.1</li></ul>';
-        $html = <<<EOT
-<ol>
-    <li>item 1</li>
-    {$nested}
-</ol>
-EOT;
-
-        $expected = <<<EOT
-<ol>
-    <li>item 1
-        {$nested}
-    </li>
-</ol>
-EOT;
-
-        $pageData = new PageData($html);
-        $transformer = new NestedListHtmlTransformer();
-        $result = $transformer->transform($pageData);
-        $this->assertHtmlEquals($expected, $result);
-    }
+//    // looks like QueryPath converts ul > ol (nested) to ul + ol (sibling)
+//    public function testTransformShouldMoveOlNestedInUlIntoPrevLi() {
+//        $this->markTestSkipped('Cannot handle ul > ol due to the way QueryPath parses it.');
+//        $nested = '<ol><li>item 1.1</li></ol>';
+//        $html = <<<EOT
+//<ul>
+//    <li>item 1</li>
+//    {$nested}
+//</ul>
+//EOT;
+//
+//        $expected = <<<EOT
+//<ul>
+//    <li>item 1
+//        {$nested}
+//    </li>
+//</ul>
+//EOT;
+//
+//        $pageData = new PageData($html);
+//        $transformer = new NestedListHtmlTransformer();
+//        $result = $transformer->transform($pageData);
+//        $this->assertHtmlEquals($expected, $result);
+//    }
+//
+//    // looks like QueryPath converts ol > ul (nested) to ol + ul (sibling)
+//    public function testTransformShouldMoveUlNestedInOlIntoPrevLi() {
+//        $this->markTestSkipped('Cannot handle ol > ul due to the way QueryPath parses it.');
+//        $nested = '<ul><li>item 1.1</li></ul>';
+//        $html = <<<EOT
+//<ol>
+//    <li>item 1</li>
+//    {$nested}
+//</ol>
+//EOT;
+//
+//        $expected = <<<EOT
+//<ol>
+//    <li>item 1
+//        {$nested}
+//    </li>
+//</ol>
+//EOT;
+//
+//        $pageData = new PageData($html);
+//        $transformer = new NestedListHtmlTransformer();
+//        $result = $transformer->transform($pageData);
+//        $this->assertHtmlEquals($expected, $result);
+//    }
 }

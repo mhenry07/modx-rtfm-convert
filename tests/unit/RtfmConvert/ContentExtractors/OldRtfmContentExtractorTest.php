@@ -250,11 +250,11 @@ EOT;
         $this->stats = new PageStatistics();
         $extractor = new OldRtfmContentExtractor();
         $extractor->extract($source, $this->stats);
-        $this->assertStat('sourcePageId', $pageId, null, false);
-        $this->assertStat('pageTitle', $pageTitle);
-        $this->assertStat('confluenceSpaceKey', $spaceKey);
-        $this->assertStat('confluenceSpaceName', $spaceName);
-        $this->assertStat('source-modification-info', 'Added by Shaun McCormick, last edited by Jay Gilmore on Sep 28, 2012');
+        $this->assertStat('source: pageId', $pageId, null, false);
+        $this->assertStat('source: pageTitle', $pageTitle);
+        $this->assertStat('source: spaceKey', $spaceKey);
+        $this->assertStat('source: spaceName', $spaceName);
+        $this->assertStat('source: modification-info', 'Added by Shaun McCormick, last edited by Jay Gilmore on Sep 28, 2012');
     }
 
     // helper methods

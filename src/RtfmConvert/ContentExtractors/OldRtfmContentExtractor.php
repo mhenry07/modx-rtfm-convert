@@ -32,24 +32,28 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
             throw new RtfmException('Unable to locate div.wiki-content.');
         $qp->remove('script, style, div.Scrollbar');
 
-        $content = '';
-        /** @var DOMQuery $item */
-        foreach ($qp->contents() as $item) {
-            $content .= $qp->document()->saveHTML($item->get(0));
-        }
+        $content = $qp->innerXHTML();
 
-        $this->generateTextStatistics($content, $stats);
-        $content = $this->removeWikiContentComment($content);
+        $content = $this->removeWikiContentComment($content, $stats);
 
         return $content;
     }
 
     /**
      * @param string $content
+     * @param \RtfmConvert\PageStatistics $stats
      * @return string
      */
-    private function removeWikiContentComment($content) {
-        return str_replace('<!-- wiki content -->', '', $content);
+    private function removeWikiContentComment($content,
+                                              PageStatistics $stats = null) {
+        $content = str_replace('<!-- wiki content -->', '', $content, $count);
+
+        if (!is_null($stats)) {
+            $stats->addCountStat('comments: wiki content', $count, $count > 0);
+            $stats->addCountStat('comments: others',
+                substr_count($content, '<!--') - $count, false, true);
+        }
+        return $content;
     }
 
     /**
@@ -67,21 +71,24 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
 
         $isTransforming = true;
         $content = $qp->top('#content');
+        $pageIdNotInContentDiv = ($content->find('#pageId')->count() == 0);
+        if ($pageIdNotInContentDiv)
+            $content = $qp->top('body');
 
         // page metadata
         $pageId = $content->find('#pageId');
-        $stats->add('sourcePageId', $pageId->attr('value'), false,
-            $pageId->count() == 0);
-        $stats->add('pageTitle',
+        $stats->add('source: pageId', $pageId->attr('value'), false,
+            $pageId->count() == 0 || $pageIdNotInContentDiv);
+        $stats->add('source: pageTitle',
             $content->find('input[title="pageTitle"]')->first()->attr('value'));
-        $stats->add('confluenceSpaceKey', $content->find('#spaceKey')->attr('value'));
-        $stats->add('confluenceSpaceName',
+        $stats->add('source: spaceKey', $content->find('#spaceKey')->attr('value'));
+        $stats->add('source: spaceName',
             $content->find('input[title="spaceName"]')->first()->attr('value'));
         $modificationInfo = $content
             ->find('.page-metadata .page-metadata-modification-info')
             ->first();
         $modificationInfo->remove('.noprint');
-        $stats->add('source-modification-info', trim($modificationInfo->text()));
+        $stats->add('source: modification-info', trim($modificationInfo->text()));
 
         // stats
         $wikiContent = $content->find('div.wiki-content');
@@ -94,19 +101,6 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
             $wikiContent->find('style')->count(), $isTransforming);
         $stats->addCountStat('div.Scrollbar',
             $wikiContent->find('div.Scrollbar')->count(), $isTransforming);
-    }
-
-    private function generateTextStatistics($html,
-                                            PageStatistics $stats = null) {
-        if (is_null($stats)) return;
-        $isTransforming = true;
-
-        $wikiContentCommentCount = substr_count($html, '<!-- wiki content -->');
-        $stats->addCountStat('comments: wiki content',
-            $wikiContentCommentCount, $isTransforming);
-        $stats->addCountStat('comments: others',
-            substr_count($html, '<!--') - $wikiContentCommentCount,
-            false, true);
     }
 
     /**
@@ -126,10 +120,10 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
      * See also https://developer.atlassian.com/display/AUI/Template
      */
     private function escapeAtlassianTemplate($html) {
-        $pattern = '/<script type="text\/x-template"((?:[^>](?!\/>))*)>((?:(?!<[\/]?script>).)+)<\/script>/s'; // (?!]]>)
+        $pattern = '#<script type="text/x-template"((?:[^>](?!/>))*)>((?:(?!<[/]?script>).)+)</script>#s'; // (?!]]>)
         $callback = function ($matches) {
             $scriptAttributes = $matches[1];
-            $scriptCdata = preg_replace('/<\//', '<\/', $matches[2]);
+            $scriptCdata = preg_replace('#</#', '<\/', $matches[2]);
             return "<script{$scriptAttributes}>{$scriptCdata}</script>";
         };
         return preg_replace_callback($pattern, $callback, $html);

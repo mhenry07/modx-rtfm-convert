@@ -31,6 +31,7 @@ class OldRtfmPageConverter {
         $processor = new PageProcessor($pageLoader);
         // pre-processing
         $processor->register(new OldRtfmContentExtractor());
+        // PageTreeHtmlTransformer (external requests) // note: will require cleanup (nested lists, etc.)
         $processor->register(new NestedListHtmlTransformer());
 
         // main processing
@@ -43,6 +44,9 @@ class OldRtfmPageConverter {
         $processor->register(new ImageHtmlTransformer());
         $processor->register(new ExternalLinkHtmlTransformer());
 
+        // RtfmLinkHtmlTransformer (external lookup) // if using [[~id]] links, they would have to be ignored by ModxTagsToEntitiesTextTransformer or done as a text transformer after ModxTagsToEntitiesTextTransformer
+        // ConversionMetadataLoader (external lookup)
+        // ConversionMetadataHtmlTransformer
 
         // post-processing
         $processor->register(new HtmlTidyTextTransformer());

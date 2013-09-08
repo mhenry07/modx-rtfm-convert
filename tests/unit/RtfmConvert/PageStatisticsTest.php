@@ -6,9 +6,47 @@
 namespace RtfmConvert;
 
 
-use RtfmConvert\Statistics;
-
+// TODO: add more tests
 class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
+
+    public function testAddValueStatShouldAddExpectedStat() {
+        $expected = array(PageStatistics::VALUE => 'value');
+
+        $stats = new PageStatistics();
+        $stats->addValueStat('my label', 'value');
+
+        $statsArray = $stats->getStats();
+        $this->assertArrayHasKey('my label', $statsArray);
+        $this->assertEquals($expected, $statsArray['my label']);
+    }
+
+    public function testAddTransformStatShouldAddExpectedStat() {
+        $expected = array(
+            PageStatistics::FOUND => 5,
+            PageStatistics::TRANSFORM => 3);
+
+        $stats = new PageStatistics();
+        $stats->addTransformStat('transform', 5, 3);
+
+        $statsArray = $stats->getStats();
+        $this->assertArrayHasKey('transform', $statsArray);
+        $this->assertEquals($expected, $statsArray['transform']);
+    }
+
+    public function testAddQueryStatShouldAddExpectedStat() {
+        $expected = array(
+            PageStatistics::FOUND => 1,
+            PageStatistics::TRANSFORM => 1,
+            PageStatistics::WARNING => 1);
+
+        $query = qp('<p></p>')->find('p');
+        $stats = new PageStatistics();
+        $stats->addQueryStat($query, 'dom', true, null, true);
+
+        $statsArray = $stats->getStats();
+        $this->assertArrayHasKey('dom', $statsArray);
+        $this->assertEquals($expected, $statsArray['dom']);
+    }
 
     public function testAddShouldAddExpectedStat() {
         $stats = new PageStatistics();
@@ -17,6 +55,6 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
         $statsArray = $stats->getStats();
         $this->assertArrayHasKey('label', $statsArray);
         $stat = $statsArray['label'];
-        $this->assertEquals(5, $stat['value']);
+        $this->assertEquals(5, $stat[PageStatistics::VALUE]);
     }
 }

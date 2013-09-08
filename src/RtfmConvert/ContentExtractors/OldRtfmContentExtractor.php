@@ -71,7 +71,7 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         // page metadata
         $pageId = $content->find('#pageId');
         $stats->add('sourcePageId', $pageId->attr('value'), false,
-            $pageId->count() > 0);
+            $pageId->count() == 0);
         $stats->add('pageTitle',
             $content->find('input[title="pageTitle"]')->first()->attr('value'));
         $stats->add('confluenceSpaceKey', $content->find('#spaceKey')->attr('value'));

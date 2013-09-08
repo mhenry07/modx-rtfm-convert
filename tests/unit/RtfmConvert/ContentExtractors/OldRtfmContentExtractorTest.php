@@ -250,7 +250,7 @@ EOT;
         $this->stats = new PageStatistics();
         $extractor = new OldRtfmContentExtractor();
         $extractor->extract($source, $this->stats);
-        $this->assertStat('sourcePageId', $pageId);
+        $this->assertStat('sourcePageId', $pageId, null, false);
         $this->assertStat('pageTitle', $pageTitle);
         $this->assertStat('confluenceSpaceKey', $spaceKey);
         $this->assertStat('confluenceSpaceName', $spaceName);

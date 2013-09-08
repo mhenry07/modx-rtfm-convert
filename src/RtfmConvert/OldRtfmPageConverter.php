@@ -19,7 +19,7 @@ use RtfmConvert\HtmlTransformers\NestedListHtmlTransformer;
 use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
 use RtfmConvert\TextTransformers\ModxTagsToEntitiesTextTransformer;
-use RtfmConvert\TextTransformers\NbspTextTransformer;
+//use RtfmConvert\TextTransformers\NbspTextTransformer;
 
 class OldRtfmPageConverter {
     /** @var PageProcessor */
@@ -47,7 +47,7 @@ class OldRtfmPageConverter {
         // post-processing
         $processor->register(new HtmlTidyTextTransformer());
         $processor->register(new ModxTagsToEntitiesTextTransformer());
-        $processor->register(new NbspTextTransformer());
+        //$processor->register(new NbspTextTransformer());
 
         $this->processor = $processor;
     }

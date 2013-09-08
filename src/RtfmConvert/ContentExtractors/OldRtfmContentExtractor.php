@@ -23,8 +23,9 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
      * See notes from 8/26.
      */
     public function extract($html, PageStatistics $stats = null) {
+        $this->checkForErrors($html, $stats);
         // preprocess HTML that causes issues with QueryPath
-        $html = $this->escapeAtlassianTemplate($html);
+        $html = $this->escapeAtlassianTemplates($html);
 
         $qp = RtfmQueryPath::htmlqp($html, 'div.wiki-content');
         $this->generateDomStatistics($qp, $stats);
@@ -44,8 +45,8 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
      * @param \RtfmConvert\PageStatistics $stats
      * @return string
      */
-    private function removeWikiContentComment($content,
-                                              PageStatistics $stats = null) {
+    protected function removeWikiContentComment($content,
+                                                PageStatistics $stats = null) {
         $content = str_replace('<!-- wiki content -->', '', $content, $count);
 
         if (!is_null($stats)) {
@@ -61,17 +62,19 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
      * This may happen if scripts contain </ and/or there are self-closing
      * div's <div/>, either of which may cause div#content to be closed
      * prematurely due to the way QueryPath parses those.
-     * escapeAtlassianTemplate() should take care of </ within scripts and
+     * escapeAtlassianTemplates() should take care of </ within scripts and
      * RtfmQueryPath::htmlqp should prevent self-closing div's from being
      * generated.
      */
-    private function generateDomStatistics(DOMQuery $qp,
-                                           PageStatistics $stats = null) {
+    protected function generateDomStatistics(DOMQuery $qp,
+                                             PageStatistics $stats = null) {
         if (is_null($stats)) return;
 
         $isTransforming = true;
         $content = $qp->top('#content');
-        $pageIdNotInContentDiv = ($content->find('#pageId')->count() == 0);
+        $pageIdNotInContentDiv = true;
+        if ($content->count() > 0)
+            $pageIdNotInContentDiv = ($content->find('#pageId')->count() == 0);
         if ($pageIdNotInContentDiv)
             $content = $qp->top('body');
 
@@ -103,6 +106,18 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
             $wikiContent->find('div.Scrollbar')->count(), $isTransforming);
     }
 
+    protected function checkForErrors($html, PageStatistics $stats = null) {
+        if (strpos($html, '</body>') === false ||
+            strpos($html, '</html>') === false)
+            throw new RtfmException('Document appears to be corrupt. Missing end tag for body and/or html element.');
+        // check for unmatched div tags which could be an indication of missing content
+        $divOpenTags = preg_match_all('#<div\b#', $html);
+        $divCloseTags = preg_match_all('#</div>#', $html);
+        if ($divOpenTags !== $divCloseTags && !is_null($stats))
+            $stats->addCountStat('warning: unmatched div(s)',
+                $divOpenTags - $divCloseTags, false, true);
+    }
+
     /**
      * QueryPath has issues parsing </ within a script tag.
      *
@@ -119,7 +134,7 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
      * AJS.renderTemplate only matches numeric values, \{\d+\} e.g. {1}
      * See also https://developer.atlassian.com/display/AUI/Template
      */
-    private function escapeAtlassianTemplate($html) {
+    protected function escapeAtlassianTemplates($html) {
         $pattern = '#<script type="text/x-template"((?:[^>](?!/>))*)>((?:(?!<[/]?script>).)+)</script>#s'; // (?!]]>)
         $callback = function ($matches) {
             $scriptAttributes = $matches[1];

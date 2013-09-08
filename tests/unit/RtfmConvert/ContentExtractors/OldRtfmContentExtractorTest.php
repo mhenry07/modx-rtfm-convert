@@ -9,9 +9,7 @@ namespace RtfmConvert\ContentExtractors;
 
 require_once('RtfmConvert/HtmlTestCase.php');
 use RtfmConvert\HtmlTestCase;
-use RtfmConvert\PageStatistics;
 
-// TODO: handle incomplete content (i.e. missing /div for .wiki-content)
 class OldRtfmContentExtractorTest extends HtmlTestCase {
     const WIKI_CONTENT_FORMAT = <<<'EOT'
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -247,7 +245,6 @@ EOT;
 </html>
 EOT;
 
-        $this->stats = new PageStatistics();
         $extractor = new OldRtfmContentExtractor();
         $extractor->extract($source, $this->stats);
         $this->assertStat('source: pageId', $pageId, null, false);
@@ -255,6 +252,43 @@ EOT;
         $this->assertStat('source: spaceKey', $spaceKey);
         $this->assertStat('source: spaceName', $spaceName);
         $this->assertStat('source: modification-info', 'Added by Shaun McCormick, last edited by Jay Gilmore on Sep 28, 2012');
+    }
+
+    public function testExtractShouldThrowExceptionIfBodyOrHtmlEndTagMissing() {
+        $source = <<<'EOT'
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Test</title>
+</head>
+<body>
+    <div class="wiki-content">
+        content
+    </div>
+EOT;
+
+        $extractor = new OldRtfmContentExtractor();
+        $this->setExpectedException('\RtfmConvert\RtfmException');
+        $extractor->extract($source);
+    }
+
+    public function testExtractShouldWarnIfDivUnmatched() {
+        $source = <<<'EOT'
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Test</title>
+</head>
+<body>
+    <div class="wiki-content">
+        content
+</body>
+</html>
+EOT;
+
+        $extractor = new OldRtfmContentExtractor();
+        $extractor->extract($source, $this->stats);
+        $this->assertStat('warning: unmatched div(s)', 1, null, true);
     }
 
     // helper methods

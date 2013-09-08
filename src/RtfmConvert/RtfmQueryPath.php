@@ -41,6 +41,7 @@ class RtfmQueryPath {
         return htmlqp($document, $selector, $options);
     }
 
+    // TODO: add a selector
     public static function getHtmlString(DOMQuery $qp) {
         return trim($qp->xhtml());
     }

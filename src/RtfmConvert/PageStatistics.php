@@ -55,8 +55,8 @@ class PageStatistics {
     }
 
     /**
-     * @param $label
-     * @param $found
+     * @param string $label
+     * @param int $found The number of matches.
      * @param array $options An associative array of options.
      * Possible options:
      * * transformAll: a bool indicating whether all matches should be marked as transformed
@@ -66,14 +66,16 @@ class PageStatistics {
      * * warnIfMissing: a bool indicating whether to warn if no matches were found
      * * warnings: an int representing the number of warnings
      * * warningMessages: warning message(s) (see note)
+     * * errorIfFound: a bool indicating whether to error if any matches were found
+     * * errorIfMissing: a bool indicating whether to error if no matches were found
      * * errors: an int representing the number of errors
      * * errorMessages: error message(s) (see note)
      *
      * Note: Message options can be null, a string, an array of strings, or an
      * array of assoc. arrays with the inner arrays having keys: message, count.
-     * Also, at most one of transformAll and transformed should be specified,
-     * and at most one of warnIfFound, warnIfMissing, and warnings should be
-     * specified.
+     * Also, there should be at most one of transformAll and transformed,
+     * at most one of warnIfFound, warnIfMissing, and warnings, and
+     * at most one of errorIfFound, errorIfMissing, and errors.
      */
     public function addTransformStat($label, $found, array $options = array()) {
         $types = array(self::TRANSFORM, self::WARNING, self::ERROR);
@@ -85,10 +87,11 @@ class PageStatistics {
     }
 
     /**
-     * @param \QueryPath\DOMQuery $query
+     * Add transform stat based on current matches in a QueryPath DOMQuery object.
+     * @param \QueryPath\DOMQuery $query The query with matches to get stats on.
      * @param string $label
      * @param array $options See addTransformStat() options, especially
-     * transformAll, warnIfFound, warnIfMissing.
+     * transformAll, warnIfFound, warnIfMissing, errorIfFound, errorIfMissing.
      */
     public function addQueryStat(DOMQuery $query, $label,
                                  array $options = array()) {
@@ -267,7 +270,8 @@ class PageStatistics {
     }
 
     /**
-     * Applies transformAll, warnIfFound and warnIfMissing options.
+     * Applies transformAll, warnIfFound, warnIfMissing, errorIfFound and
+     * errorIfMissing options.
      *
      * @param int $found
      * @param array $options see addTransformStat() options
@@ -275,7 +279,7 @@ class PageStatistics {
      *
      * Note: this doesn't check if transformed is set before overwriting with
      * transformAll nor warnings before overwriting with warnIfFound or
-     * warnIfMissing.
+     * warnIfMissing, etc.
      */
     protected function normalizeStatOptions($found, array $options = array()) {
         if ($this->getOption($options, 'transformAll')) {
@@ -289,6 +293,14 @@ class PageStatistics {
         if ($this->getOption($options, 'warnIfMissing') && $found == 0) {
             $options['warnings'] = 1;
             unset($options['warnIfMissing']);
+        }
+        if ($this->getOption($options, 'errorIfFound') && $found > 0) {
+            $options['errors'] = $found;
+            unset($options['errorIfFound']);
+        }
+        if ($this->getOption($options, 'errorIfMissing') && $found == 0) {
+            $options['errors'] = 1;
+            unset($options['errorIfMissing']);
         }
 
         return $options;

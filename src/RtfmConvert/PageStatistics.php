@@ -24,6 +24,14 @@ class PageStatistics {
 
     private $stats = array();
 
+    public static function getMessagesLabelFor($type) {
+        $map = array(
+            self::TRANSFORM => self::ACTIONS);
+        if (array_key_exists($type, $map))
+            return $map[$type];
+        return "{$type}: messages";
+    }
+
     /**
      * Message arguments can be null, a string, an array of strings, or an
      * array of assoc. arrays with the inner arrays having keys: message, count
@@ -112,6 +120,7 @@ class PageStatistics {
             $stat[$type] = $count;
         }
         $this->appendMessages($stat, $type, $messages);
+        $this->stats[$label] = $stat;
     }
 
     /**
@@ -165,14 +174,6 @@ class PageStatistics {
         if (!is_null($messages))
             $stat[$this->getMessagesLabelFor($type)] = $messages;
         return $stat;
-    }
-
-    protected function getMessagesLabelFor($key) {
-        $map = array(
-            self::TRANSFORM => self::ACTIONS);
-        if (array_key_exists($key, $map))
-            return $map[$key];
-        return "{$key}: messages";
     }
 
     // TODO: smarter message handling (empty string, consolidate duplicates from input)

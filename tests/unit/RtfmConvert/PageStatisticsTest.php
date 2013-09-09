@@ -48,6 +48,24 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals($expected, $statsArray['dom']);
     }
 
+    /**
+     * @depends testAddTransformStatShouldAddExpectedStat
+     */
+    public function testIncrementStatShouldUpdateExpectedStat() {
+        $expected = array(
+            PageStatistics::FOUND => 1,
+            PageStatistics::WARNING => 1,
+            PageStatistics::getMessagesLabelFor(PageStatistics::WARNING) => 'message'
+        );
+
+        $stats = new PageStatistics();
+        $stats->addTransformStat('key', 1);
+        $stats->incrementStat('key', PageStatistics::WARNING, 1, 'message');
+
+        $statsArray = $stats->getStats();
+        $this->assertEquals($expected, $statsArray['key']);
+    }
+
     public function testAddShouldAddExpectedStat() {
         $stats = new PageStatistics();
         $stats->add('label', 5);

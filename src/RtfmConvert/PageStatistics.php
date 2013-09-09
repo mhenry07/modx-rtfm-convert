@@ -88,12 +88,12 @@ class PageStatistics {
 
     /**
      * Add transform stat based on current matches in a QueryPath DOMQuery object.
-     * @param \QueryPath\DOMQuery $query The query with matches to get stats on.
      * @param string $label
+     * @param \QueryPath\DOMQuery $query The query with matches to get stats on.
      * @param array $options See addTransformStat() options, especially
      * transformAll, warnIfFound, warnIfMissing, errorIfFound, errorIfMissing.
      */
-    public function addQueryStat(DOMQuery $query, $label,
+    public function addQueryStat($label, DOMQuery $query,
                                  array $options = array()) {
         $this->addTransformStat($label, $query->count(), $options);
     }
@@ -124,7 +124,7 @@ class PageStatistics {
         $this->elementCount = RtfmQueryPath::countAll($qp);
     }
 
-    public function checkTransform(DOMQuery $qp, $statLabel, $matchesCount,
+    public function checkTransform($statLabel, DOMQuery $qp, $matchesCount,
                                    $expectedElementChangesPerMatch) {
         $qp = $qp->top('body');
         $beginCount = $this->elementCount;

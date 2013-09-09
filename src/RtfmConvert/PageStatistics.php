@@ -35,73 +35,69 @@ class PageStatistics {
     }
 
     /**
-     * Message arguments can be null, a string, an array of strings, or an
-     * array of assoc. arrays with the inner arrays having keys: message, count
-     *
      * @param string $label
      * @param string|bool|float|int $value
-     * @param null $warning
-     * @param null $warningMessage
+     * @param array $options An associative array of options
+     * Possible options:
+     * * warnings: an int representing the number of warnings
+     * * warningMessages: warning message(s) (see note)
+     * * errors: an int representing the number of errors
+     * * errorMessages: error message(s) (see note)
+     *
+     * Note: Message options can be null, a string, an array of strings, or an
+     * array of assoc. arrays with the inner arrays having keys: message, count
      */
-    public function addValueStat($label, $value, $warning = null,
-        $warningMessage = null) {
+    public function addValueStat($label, $value, array $options = array()) {
+        $types = array(self::WARNING, self::ERROR);
         $stat = $this->createStat(self::VALUE, $value);
-        $stat = $this->addToStat($stat, self::WARNING, $warning,
-            $warningMessage);
+        $stat = $this->buildStat($stat, $types, $options);
         $this->stats[$label] = $stat;
     }
 
     /**
-     * Message arguments can be null, a string, an array of strings, or an
-     * array of assoc. arrays with the inner arrays having keys: message, count
-     *
      * @param $label
      * @param $found
-     * @param int|null $transformed
-     * @param string|array|null $transformedMessages
-     * @param int|null $warnings
-     * @param string|array|null $warningMessages
-     * @param int|null $errors
-     * @param string|array|null $errorMessages
+     * @param array $options An associative array of options
+     * Possible options:
+     * * transformed: an int representing the number of transformations performed
+     * * transformMessages: description(s) of transformations performed (see note)
+     * * warnings: an int representing the number of warnings
+     * * warningMessages: warning message(s) (see note)
+     * * errors: an int representing the number of errors
+     * * errorMessages: error message(s) (see note)
+     *
+     * Note: Message options can be null, a string, an array of strings, or an
+     * array of assoc. arrays with the inner arrays having keys: message, count
      */
-    public function addTransformStat($label, $found, $transformed = null,
-                                     $transformedMessages = null,
-                                     $warnings = null, $warningMessages = null,
-                                     $errors = null, $errorMessages = null) {
+    public function addTransformStat($label, $found, array $options = array()) {
+        $types = array(self::TRANSFORM, self::WARNING, self::ERROR);
         $stat = $this->createStat(self::FOUND, $found);
-        $stat = $this->addToStat($stat, self::TRANSFORM, $transformed,
-            $transformedMessages);
-        $stat = $this->addToStat($stat, self::WARNING, $warnings,
-            $warningMessages);
-        $stat = $this->addToStat($stat, self::ERROR, $errors, $errorMessages);
+        $stat = $this->buildStat($stat, $types, $options);
         $this->stats[$label] = $stat;
     }
 
     /**
-     * Message arguments can be null, a string, an array of strings, or an
-     * array of assoc. arrays with the inner arrays having keys: message, count
-     *
      * @param \QueryPath\DOMQuery $query
      * @param string $label
-     * @param bool $transformAll
-     * @param string $transformMessage
-     * @param bool $warnIfFound
-     * @param bool $warnIfMissing
-     * @param string $warningMessage
+     * @param array $options An associative array of options
+     * Possible options:
+     * * transformAll: a bool indicating whether all matches should be marked as transformed
+     * * transformMessages: description(s) of transformations performed (see note)
+     * * warnIfFound: a bool indicating whether to warn if any matches were found
+     * * warnIfMissing: a bool indicating whether to warn if no matches were found
+     * * warningMessages: warning message(s) (see note)
+     *
+     * Note: Message options can be null, a string, an array of strings, or an
+     * array of assoc. arrays with the inner arrays having keys: message, count
      */
     public function addQueryStat(DOMQuery $query, $label,
-                                 $transformAll = false, $transformMessage = null,
-                                 $warnIfFound = false, $warnIfMissing = false,
-                                 $warningMessage = null) {
+                                 array $options = array()) {
         $found = $query->count();
-        $transformed = $transformAll ? $found : null;
-        $warnings = null;
-        if ($warnIfFound && $found > 0)
-            $warnings = $found;
-        if ($warnIfMissing && $found == 0)
-            $warnings = true;
-        $this->addTransformStat($label, $found, $transformed, $transformMessage,
-            $warnings, $warningMessage);
+
+        $transformOptions =
+            $this->mapQueryOptionsToTransformOptions($found, $options);
+
+        $this->addTransformStat($label, $found, $transformOptions);
     }
 
     /**
@@ -138,7 +134,7 @@ class PageStatistics {
         $actual = $endCount - $beginCount;
         $expected = $matchesCount * $expectedElementChangesPerMatch;
         if ($actual !== $expected)
-            $this->incrementStat($statLabel, PageStatistics::WARNING, 1,
+            $this->incrementStat($statLabel, self::WARNING, 1,
                 "Changed element count does not match expected. Expected: {$expected} Actual: {$actual}");
     }
 
@@ -173,6 +169,29 @@ class PageStatistics {
         $stat = array();
         $stat = $this->addToStat($stat, $type, $value, $messages);
         return $stat;
+    }
+
+    protected function buildStat(array $stat, array $types, array $options) {
+        foreach ($types as $type)
+            $stat = $this->addToStatFromOptions($stat, $type, $options);
+        return $stat;
+    }
+
+    protected function addToStatFromOptions(array $stat, $type, array $options) {
+        $optionsKeys = array(
+            self::TRANSFORM => array('valueKey' => 'transformed', 'messagesKey' => 'transformMessages'),
+            self::WARNING => array('valueKey' => 'warnings', 'messagesKey' => 'warningMessages'),
+            self::ERROR => array('valueKey' => 'errors', 'messagesKey' => 'errorMessages')
+        );
+        $keys = $optionsKeys[$type];
+        $stat = $this->addToStat($stat, $type,
+            $this->getOption($options, $keys['valueKey']),
+            $this->getOption($options, $keys['messagesKey']));
+        return $stat;
+    }
+
+    protected function getOption(array $options, $key) {
+        return array_key_exists($key, $options) ? $options[$key] : null;
     }
 
     // TODO: smarter message handling (empty string, consolidate duplicates from input)
@@ -250,5 +269,30 @@ class PageStatistics {
         if (is_array($message))
             return $message[self::MESSAGE];
         return $message;
+    }
+
+    /**
+     * @param $found
+     * @param array $queryOptions @see addQueryStat()
+     * @return array
+     */
+    protected function mapQueryOptionsToTransformOptions($found,
+                                                         array $queryOptions) {
+        $transformOptions = array();
+        if ($this->getOption($queryOptions, 'transformAll'))
+            $transformOptions['transformed'] = $found;
+        $transformMessage = $this->getOption($queryOptions, 'transformMessages');
+        if (!is_null($transformMessage))
+            $transformOptions['transformMessages'] = $transformMessage;
+
+        if ($this->getOption($queryOptions, 'warnIfFound') && $found > 0)
+            $transformOptions['warnings'] = $found;
+        if ($this->getOption($queryOptions, 'warnIfMissing') && $found == 0)
+            $transformOptions['warnings'] = 1;
+        $warningMessage = $this->getOption($queryOptions, 'warningMessages');
+        if (!is_null($warningMessage))
+            $transformOptions['warningMessages'] = $warningMessage;
+
+        return $transformOptions;
     }
 }

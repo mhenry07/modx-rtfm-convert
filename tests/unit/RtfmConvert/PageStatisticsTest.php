@@ -26,22 +26,26 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
             PageStatistics::TRANSFORM => 3);
 
         $stats = new PageStatistics();
-        $stats->addTransformStat('transform', 5, 3);
+        $stats->addTransformStat('transform', 5, array('transformed' => 3));
 
         $statsArray = $stats->getStats();
         $this->assertArrayHasKey('transform', $statsArray);
         $this->assertEquals($expected, $statsArray['transform']);
     }
 
+    /**
+     * @depends testAddTransformStatShouldAddExpectedStat
+     */
     public function testAddQueryStatShouldAddExpectedStat() {
         $expected = array(
             PageStatistics::FOUND => 1,
             PageStatistics::TRANSFORM => 1,
             PageStatistics::WARNING => 1);
 
-        $query = qp('<p></p>')->find('p');
+        $query = qp('<p class="warning"></p>')->find('p.warning');
         $stats = new PageStatistics();
-        $stats->addQueryStat($query, 'dom', true, null, true);
+        $stats->addQueryStat($query, 'dom',
+            array('transformAll' => true, 'warnIfFound' => true));
 
         $statsArray = $stats->getStats();
         $this->assertArrayHasKey('dom', $statsArray);
@@ -77,7 +81,7 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
         $html = '<p>test <font>inner</font></p>';
         $qp = RtfmQueryPath::htmlqp($html);
         $stats = new PageStatistics();
-        $stats->addQueryStat($qp, 'font', true);
+        $stats->addQueryStat($qp, 'font', array('transformAll' => true));
 
         $stats->beginTransform($qp);
         $qp->find('font')->contents()->unwrap();
@@ -98,7 +102,7 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
         $html = '<p>test <font>inner</font></p>';
         $qp = RtfmQueryPath::htmlqp($html);
         $stats = new PageStatistics();
-        $stats->addQueryStat($qp, 'font', true);
+        $stats->addQueryStat($qp, 'font', array('transformAll' => true));
 
         $stats->beginTransform($qp);
         // oops, this removes too many elements

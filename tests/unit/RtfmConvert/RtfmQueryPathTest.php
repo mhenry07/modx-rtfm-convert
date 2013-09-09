@@ -62,4 +62,21 @@ EOT;
         $result = RtfmQueryPath::getHtmlString($qp);
         $this->assertEquals($expected, $result);
     }
+
+    public function testCountAllShouldReturnExpectedCount() {
+        $input = <<<'EOT'
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head><title>Title</title></head>
+<body>
+<h1>heading</h1>
+<p>content <span>inner</span></p>
+</body>
+</html>
+EOT;
+
+        $qp = RtfmQueryPath::htmlqp($input, 'body');
+        $result = RtfmQueryPath::countAll($qp);
+        $this->assertEquals(3, $result);
+    }
 }

@@ -45,4 +45,10 @@ class RtfmQueryPath {
     public static function getHtmlString(DOMQuery $qp) {
         return trim($qp->xhtml());
     }
+
+    // count all descendant elements of the current match
+    // (not including the selected element)
+    public static function countAll(DOMQuery $qp) {
+        return $qp->find('*')->count();
+    }
 }

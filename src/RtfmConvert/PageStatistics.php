@@ -22,7 +22,9 @@ class PageStatistics {
     const MESSAGE = 'message';
     const COUNT = 'count';
 
-    private $stats = array();
+    protected $stats = array();
+
+    protected $elementCount;
 
     public static function getMessagesLabelFor($type) {
         $map = array(
@@ -121,6 +123,23 @@ class PageStatistics {
         }
         $this->appendMessages($stat, $type, $messages);
         $this->stats[$label] = $stat;
+    }
+
+    public function beginTransform(DOMQuery $qp) {
+        $qp = $qp->top('body');
+        $this->elementCount = RtfmQueryPath::countAll($qp);
+    }
+
+    public function checkTransform(DOMQuery $qp, $statLabel, $matchesCount,
+                                   $expectedElementChangesPerMatch) {
+        $qp = $qp->top('body');
+        $beginCount = $this->elementCount;
+        $endCount = RtfmQueryPath::countAll($qp);
+        $actual = $endCount - $beginCount;
+        $expected = $matchesCount * $expectedElementChangesPerMatch;
+        if ($actual !== $expected)
+            $this->incrementStat($statLabel, PageStatistics::WARNING, 1,
+                "Changed element count does not match expected. Expected: {$expected} Actual: {$actual}");
     }
 
     /**

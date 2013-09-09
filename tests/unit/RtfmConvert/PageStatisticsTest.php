@@ -66,6 +66,48 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals($expected, $statsArray['key']);
     }
 
+    /**
+     * @depends testAddQueryStatShouldAddExpectedStat
+     */
+    public function testCheckTransformShouldPreserveStatWhenCountMatchesExpected() {
+        $expected = array(
+            PageStatistics::FOUND => 1,
+            PageStatistics::TRANSFORM => 1);
+
+        $html = '<p>test <font>inner</font></p>';
+        $qp = RtfmQueryPath::htmlqp($html);
+        $stats = new PageStatistics();
+        $stats->addQueryStat($qp, 'font', true);
+
+        $stats->beginTransform($qp);
+        $qp->find('font')->contents()->unwrap();
+        $stats->checkTransform($qp, 'font', 1, -1);
+
+        $this->assertEquals($expected, $stats->getStats()['font']);
+    }
+
+    public function testCheckTransformShouldWarnWhenCountNotExpected() {
+        $expected = array(
+            PageStatistics::FOUND => 1,
+            PageStatistics::TRANSFORM => 1,
+            PageStatistics::WARNING => 1,
+            PageStatistics::getMessagesLabelFor(PageStatistics::WARNING) =>
+            'Changed element count does not match expected. Expected: -1 Actual: -2'
+        );
+
+        $html = '<p>test <font>inner</font></p>';
+        $qp = RtfmQueryPath::htmlqp($html);
+        $stats = new PageStatistics();
+        $stats->addQueryStat($qp, 'font', true);
+
+        $stats->beginTransform($qp);
+        // oops, this removes too many elements
+        $qp->find('*')->contents()->unwrap();
+        $stats->checkTransform($qp, 'font', 1, -1);
+
+        $this->assertEquals($expected, $stats->getStats()['font']);
+    }
+
     public function testAddShouldAddExpectedStat() {
         $stats = new PageStatistics();
         $stats->add('label', 5);

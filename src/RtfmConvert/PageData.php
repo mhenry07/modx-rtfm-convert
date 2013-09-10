@@ -83,4 +83,24 @@ class PageData {
             return;
         $this->stats->addQueryStat($label, $query, $options);
     }
+
+    /**
+     * @see PageStatistics::beginTransform()
+     */
+    public function beginTransform(DOMQuery $query) {
+        if (is_null($this->stats))
+            return;
+        $this->stats->beginTransform($query);
+    }
+
+    /**
+     * @see PageStatistics::checkTransform()
+     */
+    public function checkTransform($statLabel, DOMQuery $query,
+                                   $expectedElementChanges) {
+        if (is_null($this->stats))
+            return;
+        $this->stats->checkTransform($statLabel, $query,
+            $expectedElementChanges);
+    }
 }

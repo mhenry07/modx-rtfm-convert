@@ -139,16 +139,16 @@ class PageStatistics {
     /**
      * @param string $statLabel
      * @param DOMQuery $query
-     * @param int $expectedElementChanges Expected total element changes (+/-)
+     * @param int $expectedElementDiff Expected total net element additions/deletions (+/-)
      */
     public function checkTransform($statLabel, DOMQuery $query,
-                                   $expectedElementChanges) {
+                                   $expectedElementDiff) {
         $beginCount = $this->elementCount;
         $endCount = RtfmQueryPath::countAll($query->top('body'));
         $actual = $endCount - $beginCount;
-        if ($actual !== $expectedElementChanges)
+        if ($actual !== $expectedElementDiff)
             $this->incrementStat($statLabel, self::WARNING, 1,
-                "Changed element count does not match expected. Expected: {$expectedElementChanges} Actual: {$actual}");
+                "Changed element count does not match expected. Expected: {$expectedElementDiff} Actual: {$actual}");
     }
 
     public function getStats() {

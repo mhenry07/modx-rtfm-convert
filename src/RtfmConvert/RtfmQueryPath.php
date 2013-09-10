@@ -54,7 +54,10 @@ class RtfmQueryPath {
 
     // count all descendant elements of the current match
     // (not including the selected element)
-    public static function countAll(DOMQuery $qp) {
-        return $qp->find('*')->count();
+    public static function countAll(DOMQuery $qp, $includeSelf = false) {
+        $count = $qp->find('*')->count();
+        if ($includeSelf)
+            $count += $qp->count();
+        return $count;
     }
 }

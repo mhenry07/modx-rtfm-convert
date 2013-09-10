@@ -17,7 +17,9 @@ class PageStatistics {
     const WARNING = 'warnings';
     const ERROR = 'errors';
     // message labels
-    const ACTIONS = 'transformed: actions';
+    const TRANSFORM_MESSAGES = 'transformMessages';
+    const WARNING_MESSAGES = 'warningMessages';
+    const ERROR_MESSAGES = 'errorMessages';
     // messages array keys
     const MESSAGE = 'message';
     const COUNT = 'count';
@@ -32,12 +34,16 @@ class PageStatistics {
 
     protected $elementCount;
 
-    public static function getMessagesLabelFor($type) {
+    // note: assumes type & messages keys are the same for options arrays and stats arrays
+    public static function getMessagesKeyFor($type) {
         $map = array(
-            self::TRANSFORM => self::ACTIONS);
+            self::TRANSFORM => self::TRANSFORM_MESSAGES,
+            self::WARNING => self::WARNING_MESSAGES,
+            self::ERROR => self::ERROR_MESSAGES
+        );
         if (array_key_exists($type, $map))
             return $map[$type];
-        return "{$type}: messages";
+        return "{$type}Messages";
     }
 
     /**
@@ -159,15 +165,9 @@ class PageStatistics {
     }
 
     protected function addToStatFromOptions(array $stat, $type, array $options) {
-        $optionsKeys = array(
-            self::TRANSFORM => array('valueKey' => self::TRANSFORM, 'messagesKey' => 'transformMessages'),
-            self::WARNING => array('valueKey' => self::WARNING, 'messagesKey' => 'warningMessages'),
-            self::ERROR => array('valueKey' => self::ERROR, 'messagesKey' => 'errorMessages')
-        );
-        $keys = $optionsKeys[$type];
         $stat = $this->addToStat($stat, $type,
-            $this->getOption($options, $keys['valueKey']),
-            $this->getOption($options, $keys['messagesKey']));
+            $this->getOption($options, $type),
+            $this->getOption($options, $this->getMessagesKeyFor($type)));
         return $stat;
     }
 
@@ -191,13 +191,13 @@ class PageStatistics {
             return $stat;
         $stat[$type] = $value;
         if (!is_null($messages))
-            $stat[$this->getMessagesLabelFor($type)] = $messages;
+            $stat[$this->getMessagesKeyFor($type)] = $messages;
         return $stat;
     }
 
     // TODO: smarter message handling (empty string, consolidate duplicates from input)
     protected function appendMessages(array &$stat, $type, $messages) {
-        $msgKey = $this->getMessagesLabelFor($type);
+        $msgKey = $this->getMessagesKeyFor($type);
         if (!array_key_exists($msgKey, $stat)) {
             $stat[$msgKey] = $messages;
             return;

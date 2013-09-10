@@ -76,7 +76,7 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         if ($qp->top('#content #pageId')->count() == 0) {
             $stats->addTransformStat('#content #pageId', 0,
                 array(PageStatistics::WARN_IF_MISSING => true,
-                    'warningMessages' => '#pageId not found in #content. Attempting to search from body.'));
+                    PageStatistics::WARNING_MESSAGES => '#pageId not found in #content. Attempting to search from body.'));
             $content = $qp->top('body');
         }
 
@@ -85,7 +85,7 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         $pageIdOptions = array();
         if ($pageId->count() == 0)
             $pageIdOptions = array(PageStatistics::WARNING => 1,
-                'warningMessages' => 'Unable to locate pageId');
+                PageStatistics::WARNING_MESSAGES => 'Unable to locate pageId');
         $stats->addValueStat('source: pageId', $pageId->attr('value'),
             $pageIdOptions);
         $stats->addValueStat('source: pageTitle',

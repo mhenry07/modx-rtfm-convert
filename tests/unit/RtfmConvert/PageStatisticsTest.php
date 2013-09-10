@@ -75,7 +75,7 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
         $expected = array(
             PageStatistics::FOUND => 1,
             PageStatistics::WARNING => 1,
-            PageStatistics::getMessagesLabelFor(PageStatistics::WARNING) => 'message'
+            PageStatistics::WARNING_MESSAGES => 'message'
         );
 
         $stats = new PageStatistics();
@@ -111,7 +111,7 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
             PageStatistics::FOUND => 1,
             PageStatistics::TRANSFORM => 1,
             PageStatistics::WARNING => 1,
-            PageStatistics::getMessagesLabelFor(PageStatistics::WARNING) =>
+            PageStatistics::WARNING_MESSAGES =>
             'Changed element count does not match expected. Expected: -1 Actual: -2'
         );
 

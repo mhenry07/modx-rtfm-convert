@@ -95,12 +95,15 @@ class PageData {
 
     /**
      * @see PageStatistics::checkTransform()
+     * @param $statLabel
+     * @param \QueryPath\DOMQuery $query
+     * @param $expectedElementDiff
      */
     public function checkTransform($statLabel, DOMQuery $query,
-                                   $expectedElementChanges) {
+                                   $expectedElementDiff) {
         if (is_null($this->stats))
             return;
         $this->stats->checkTransform($statLabel, $query,
-            $expectedElementChanges);
+            $expectedElementDiff);
     }
 }

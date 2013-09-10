@@ -304,9 +304,9 @@ EOT;
         $transformer->transform($pageData);
 
         $this->assertTransformStat('.code.panel', 1,
-            array(self::TRANSFORM => 1));
+            array(self::TRANSFORM => 1, self::WARNING => 0));
         $this->assertTransformStat('.code.panel .codeHeader', 1,
-            array(self::TRANSFORM => 1));
+            array(self::TRANSFORM => 1, self::WARNING => 0));
         $this->assertTransformStat('.code.panel pre:has(span[class^="code-"])',
             0, array(self::TRANSFORM => 0));
     }
@@ -325,7 +325,7 @@ EOT;
         $transformer = new CodePanelHtmlTransformer();
         $transformer->transform($pageData);
         $this->assertTransformStat('.code.panel pre:has(span[class^="code-"])',
-            1, array(self::TRANSFORM => 1));
+            1, array(self::TRANSFORM => 1, self::WARNING => 0));
     }
 
     /**

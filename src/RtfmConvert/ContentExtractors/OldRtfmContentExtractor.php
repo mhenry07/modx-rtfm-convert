@@ -50,9 +50,11 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         $content = str_replace('<!-- wiki content -->', '', $content, $count);
 
         if (!is_null($stats)) {
-            $stats->addCountStat('comments: wiki content', $count, $count > 0);
-            $stats->addCountStat('comments: others',
-                substr_count($content, '<!--') - $count, false, true);
+            $stats->addTransformStat('comments: wiki content', $count,
+                array(PageStatistics::TRANSFORM_ALL => true));
+            $stats->addTransformStat('comments: others',
+                substr_count($content, '<!--') - $count,
+                array(PageStatistics::WARN_IF_FOUND => true));
         }
         return $content;
     }
@@ -70,52 +72,62 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
                                              PageStatistics $stats = null) {
         if (is_null($stats)) return;
 
-        $isTransforming = true;
         $content = $qp->top('#content');
-        $pageIdNotInContentDiv = true;
-        if ($content->count() > 0)
-            $pageIdNotInContentDiv = ($content->find('#pageId')->count() == 0);
-        if ($pageIdNotInContentDiv)
+        if ($qp->top('#content #pageId')->count() == 0) {
+            $stats->addTransformStat('#content #pageId', 0,
+                array(PageStatistics::WARN_IF_MISSING => true,
+                    'warningMessages' => '#pageId not found in #content. Attempting to search from body.'));
             $content = $qp->top('body');
+        }
 
         // page metadata
         $pageId = $content->find('#pageId');
-        $stats->add('source: pageId', $pageId->attr('value'), false,
-            $pageId->count() == 0 || $pageIdNotInContentDiv);
-        $stats->add('source: pageTitle',
+        $pageIdOptions = array();
+        if ($pageId->count() == 0)
+            $pageIdOptions = array(PageStatistics::WARNING => 1,
+                'warningMessages' => 'Unable to locate pageId');
+        $stats->addValueStat('source: pageId', $pageId->attr('value'),
+            $pageIdOptions);
+        $stats->addValueStat('source: pageTitle',
             $content->find('input[title="pageTitle"]')->first()->attr('value'));
-        $stats->add('source: spaceKey', $content->find('#spaceKey')->attr('value'));
-        $stats->add('source: spaceName',
+        $stats->addValueStat('source: spaceKey',
+            $content->find('#spaceKey')->attr('value'));
+        $stats->addValueStat('source: spaceName',
             $content->find('input[title="spaceName"]')->first()->attr('value'));
         $modificationInfo = $content
             ->find('.page-metadata .page-metadata-modification-info')
             ->first();
         $modificationInfo->remove('.noprint');
-        $stats->add('source: modification-info', trim($modificationInfo->text()));
+        $stats->addValueStat('source: modification-info',
+            trim($modificationInfo->text()));
 
         // stats
         $wikiContent = $content->find('div.wiki-content');
 
-        $stats->addCountStat('div.wiki-content', $wikiContent->count(),
-            $isTransforming, false, true);
-        $stats->addCountStat('script',
-            $wikiContent->find('script')->count(), $isTransforming);
-        $stats->addCountStat('style',
-            $wikiContent->find('style')->count(), $isTransforming);
-        $stats->addCountStat('div.Scrollbar',
-            $wikiContent->find('div.Scrollbar')->count(), $isTransforming);
+        $stats->addQueryStat('div.wiki-content', $wikiContent,
+            array(PageStatistics::TRANSFORM_ALL => true,
+                PageStatistics::ERROR_IF_MISSING => true));
+        $stats->addQueryStat('script', $wikiContent->find('script'),
+            array(PageStatistics::TRANSFORM_ALL => true));
+        $stats->addQueryStat('style', $wikiContent->find('style'),
+            array(PageStatistics::TRANSFORM_ALL => true));
+        $stats->addQueryStat('div.Scrollbar',
+            $wikiContent->find('div.Scrollbar'),
+            array(PageStatistics::TRANSFORM_ALL => true));
     }
 
     protected function checkForErrors($html, PageStatistics $stats = null) {
         if (strpos($html, '</body>') === false ||
             strpos($html, '</html>') === false)
             throw new RtfmException('Document appears to be corrupt. Missing end tag for body and/or html element.');
+
         // check for unmatched div tags which could be an indication of missing content
         $divOpenTags = preg_match_all('#<div\b#', $html);
         $divCloseTags = preg_match_all('#</div>#', $html);
+        $diff = $divOpenTags - $divCloseTags;
         if ($divOpenTags !== $divCloseTags && !is_null($stats))
-            $stats->addCountStat('warning: unmatched div(s)',
-                $divOpenTags - $divCloseTags, false, true);
+            $stats->addTransformStat('warning: unmatched div(s)', abs($diff),
+                array(PageStatistics::WARN_IF_FOUND => true));
     }
 
     /**

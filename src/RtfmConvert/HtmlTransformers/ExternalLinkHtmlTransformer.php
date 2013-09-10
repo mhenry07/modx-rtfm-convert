@@ -27,6 +27,8 @@ class ExternalLinkHtmlTransformer extends AbstractHtmlTransformer {
     }
 
     protected function generateStatistics(PageData $pageData) {
-        $pageData->addSimpleStat('a.external-link', true);
+        $externalLinks = $pageData->getHtmlQuery('a.external-link');
+        $pageData->addQueryStat('a.external-link', $externalLinks,
+            array(self::TRANSFORM_ALL => true));
     }
 }

@@ -55,17 +55,18 @@ class NamedAnchorHtmlTransformer extends AbstractHtmlTransformer {
         return $qp;
     }
 
+    // TODO: make better use of new stats api
     protected function generateStatistics(PageData $pageData) {
         $this->namedAnchorInHeadingCount -= $this->namedAnchorExceptionsCount;
-        $pageData->addCountStat('named anchors: headings',
-            $this->namedAnchorInHeadingCount, true);
-        $pageData->addCountStat('named anchors: heading exceptions',
-            $this->namedAnchorExceptionsCount, false, true);
+        $pageData->addTransformStat('named anchors: headings',
+            $this->namedAnchorInHeadingCount, array(self::TRANSFORM_ALL => true));
+        $pageData->addTransformStat('named anchors: heading exceptions',
+            $this->namedAnchorExceptionsCount, array(self::WARN_IF_FOUND => true));
 
         $otherNamedAnchors = $pageData->getHtmlQuery()->find('a[name]')->count() -
             $this->namedAnchorExceptionsCount;
-        $pageData->addCountStat('named anchors: others', $otherNamedAnchors,
-            false, true);
+        $pageData->addTransformStat('named anchors: others', $otherNamedAnchors,
+            array(self::WARN_IF_FOUND => true));
     }
 
     protected function resetStats() {

@@ -40,36 +40,42 @@ class ImageHtmlTransformer extends AbstractHtmlTransformer {
     }
 
     protected function generateStatistics(PageData $pageData) {
-        $pageData->addSimpleStat('span.image-wrap');
-        $pageData->addSimpleStat('span.image-wrap[style=""]', true);
-
-        $pageData->addSimpleStat(
-            'a.confluence-thumbnail-link[href^="http://oldrtfm.modx.com"]',
-            true);
-
-        $pageData->addSimpleStat('img');
-        $pageData->addSimpleStat('img[style="border: 0px solid black"]', true);
-
-        $pageData->addSimpleStat('img.emoticon');
-
         $qp = $pageData->getHtmlQuery();
-        $emoticonCount = $qp->find('img.emoticon')->count();
-        if ($emoticonCount > 0) {
-            $pageData->addSimpleStat(
-                'img.emoticon[src="/images/icons/emoticons/smile.gif"]', true);
-            $pageData->addSimpleStat(
-                'img.emoticon[src="/images/icons/emoticons/wink.gif"]', true);
+        $pageData->addQueryStat('span.image-wrap', $qp->find('span.image-wrap'));
+        $pageData->addQueryStat('span.image-wrap[style=""]',
+            $qp->find('span.image-wrap[style=""]'),
+            array(self::TRANSFORM_ALL => true));
 
-            $smileCount = $qp
-                ->find('img.emoticon[src="/images/icons/emoticons/smile.gif"]')
-                ->count();
-            $winkCount = $qp
-                ->find('img.emoticon[src="/images/icons/emoticons/wink.gif"]')
-                ->count();
-            $unhandledEmoticonCount = $emoticonCount - $smileCount - $winkCount;
+        $pageData->addQueryStat(
+            'a.confluence-thumbnail-link[href^="http://oldrtfm.modx.com"]',
+            $qp->find('a.confluence-thumbnail-link[href^="http://oldrtfm.modx.com"]'),
+            array(self::TRANSFORM_ALL => true));
+
+        $pageData->addQueryStat('img', $qp->find('img'));
+        $pageData->addQueryStat('img[style="border: 0px solid black"]',
+            $qp->find('img[style="border: 0px solid black"]'),
+            array(self::TRANSFORM_ALL => true));
+
+        $emoticons = $qp->find('img.emoticon');
+        $pageData->addQueryStat('img.emoticon', $emoticons);
+
+        $emoticonCount = $emoticons->count();
+        if ($emoticonCount > 0) {
+            $smiles = $qp->find('img.emoticon[src="/images/icons/emoticons/smile.gif"]');
+            $winks = $qp->find('img.emoticon[src="/images/icons/emoticons/wink.gif"]');
+            $pageData->addQueryStat(
+                'img.emoticon[src="/images/icons/emoticons/smile.gif"]',
+                $smiles, array(self::TRANSFORM_ALL => true));
+            $pageData->addQueryStat(
+                'img.emoticon[src="/images/icons/emoticons/wink.gif"]', $winks,
+                array(self::TRANSFORM_ALL => true));
+
+            $unhandledEmoticonCount = $emoticonCount - $smiles->count() -
+                $winks->count();
             if ($unhandledEmoticonCount > 0)
-                $pageData->addCountStat('img.emoticon (unhandled)',
-                    $unhandledEmoticonCount, false, true);
+                $pageData->addTransformStat('img.emoticon (unhandled)',
+                    $unhandledEmoticonCount,
+                    array(self::WARN_IF_FOUND => true));
         }
     }
 }

@@ -27,6 +27,9 @@ class ConfluenceTableHtmlTransformer extends AbstractHtmlTransformer {
     }
 
     protected function generateStatistics(PageData $pageData) {
-        $pageData->addSimpleStat('div.table-wrap table.confluenceTable', true);
+        $confluenceTables = $pageData
+            ->getHtmlQuery('div.table-wrap table.confluenceTable');
+        $pageData->addQueryStat('div.table-wrap table.confluenceTable',
+            $confluenceTables, array(self::TRANSFORM_ALL => true));
     }
 }

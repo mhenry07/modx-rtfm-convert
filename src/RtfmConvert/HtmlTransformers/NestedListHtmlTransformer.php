@@ -64,12 +64,12 @@ class NestedListHtmlTransformer extends AbstractHtmlTransformer {
         return $qp;
     }
 
+    // TODO: make better use of new stats API
     protected function generateStatistics(PageData $pageData) {
-//        echo 'hasPrevLi: ', $this->counts['hasPrevLi'], PHP_EOL;
-//        echo 'noPrevLi: ', $this->counts['noPrevLi'], PHP_EOL;
-        $pageData->addCountStat('lists: nested w prev li',
-            $this->counts['hasPrevLi'], true);
-        $pageData->addCountStat('lists: nested w/o prev li',
-            $this->counts['noPrevLi'], true, true);
+        $pageData->addTransformStat('lists: nested w prev li',
+            $this->counts['hasPrevLi'], array(self::TRANSFORM_ALL => true));
+        $pageData->addTransformStat('lists: nested w/o prev li',
+            $this->counts['noPrevLi'],
+            array(self::TRANSFORM_ALL => true, self::WARN_IF_FOUND => true));
     }
 }

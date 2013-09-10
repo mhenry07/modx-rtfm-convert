@@ -247,11 +247,13 @@ EOT;
 
         $extractor = new OldRtfmContentExtractor();
         $extractor->extract($source, $this->stats);
-        $this->assertStat('source: pageId', $pageId, null, false);
-        $this->assertStat('source: pageTitle', $pageTitle);
-        $this->assertStat('source: spaceKey', $spaceKey);
-        $this->assertStat('source: spaceName', $spaceName);
-        $this->assertStat('source: modification-info', 'Added by Shaun McCormick, last edited by Jay Gilmore on Sep 28, 2012');
+        $this->assertValueStat('source: pageId', $pageId,
+            array(self::WARNING => 0));
+        $this->assertValueStat('source: pageTitle', $pageTitle);
+        $this->assertValueStat('source: spaceKey', $spaceKey);
+        $this->assertValueStat('source: spaceName', $spaceName);
+        $this->assertValueStat('source: modification-info',
+            'Added by Shaun McCormick, last edited by Jay Gilmore on Sep 28, 2012');
     }
 
     public function testExtractShouldThrowExceptionIfBodyOrHtmlEndTagMissing() {
@@ -288,7 +290,8 @@ EOT;
 
         $extractor = new OldRtfmContentExtractor();
         $extractor->extract($source, $this->stats);
-        $this->assertStat('warning: unmatched div(s)', 1, null, true);
+        $this->assertTransformStat('warning: unmatched div(s)', 1,
+            array('warnings' => 1));
     }
 
     // helper methods

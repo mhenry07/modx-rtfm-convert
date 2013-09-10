@@ -30,14 +30,18 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
 
     protected function generateStatistics(PageData $pageData) {
         if (is_null($pageData->getStats())) return;
-        $qp = $pageData->getHtmlQuery();
-        $pageData->addSimpleStat('.code.panel', true);
-        $pageData->addSimpleStat('.code.panel .codeHeader', true);
-        $pageData->addCountStat('.code.panel pre:has(span[class^="code-"])',
-            $qp->find('.code.panel pre')->has('span[class^="code-"]')->count(),
-            true);
-        $pageData->addCountStat('.code.panel pre:has(:not(span[class^="code-"]))',
-            $qp->find('.code.panel pre')->has(':not(span[class^="code-"])')->count(),
-            false, true);
+        $codePanels = $pageData->getHtmlQuery('.code.panel');
+        $pageData->addQueryStat('.code.panel', $codePanels,
+            array(self::TRANSFORM_ALL => true));
+        $pageData->addQueryStat('.code.panel .codeHeader',
+            $codePanels->find('.codeHeader'), array(self::TRANSFORM_ALL => true));
+        $codePanelPres = $codePanels->find('pre');
+        $pageData->addQueryStat('.code.panel pre:has(span[class^="code-"])',
+            $codePanelPres->has('span[class^="code-"]'),
+            array(self::TRANSFORM_ALL => true));
+        $pageData->addQueryStat(
+            '.code.panel pre:has(:not(span[class^="code-"]))',
+            $codePanelPres->has(':not(span[class^="code-"])'),
+            array(self::WARN_IF_FOUND => true));
     }
 }

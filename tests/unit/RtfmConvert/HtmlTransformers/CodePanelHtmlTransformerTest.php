@@ -7,12 +7,8 @@ namespace RtfmConvert\HtmlTransformers;
 
 
 use RtfmConvert\PageData;
-use RtfmConvert\PageStatistics;
 
 class CodePanelHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
-    public function setUp() {
-        $this->stats = new PageStatistics();
-    }
 
     public function testTransformShouldKeepNonCodeContent() {
         $html = '<h2>Title</h2><p>Text</p>';
@@ -307,9 +303,12 @@ EOT;
         $transformer = new CodePanelHtmlTransformer();
         $transformer->transform($pageData);
 
-        $this->assertStat('.code.panel', 1, true);
-        $this->assertStat('.code.panel .codeHeader', 1, true);
-        $this->assertStat('.code.panel pre:has(span[class^="code-"])', 0, false);
+        $this->assertTransformStat('.code.panel', 1,
+            array(self::TRANSFORM => 1));
+        $this->assertTransformStat('.code.panel .codeHeader', 1,
+            array(self::TRANSFORM => 1));
+        $this->assertTransformStat('.code.panel pre:has(span[class^="code-"])',
+            0, array(self::TRANSFORM => 0));
     }
 
     /**
@@ -325,7 +324,8 @@ EOT;
         $pageData = new PageData($sourceHtml, $this->stats);
         $transformer = new CodePanelHtmlTransformer();
         $transformer->transform($pageData);
-        $this->assertStat('.code.panel pre:has(span[class^="code-"])', 1, true);
+        $this->assertTransformStat('.code.panel pre:has(span[class^="code-"])',
+            1, array(self::TRANSFORM => 1));
     }
 
     /**
@@ -341,6 +341,8 @@ EOT;
         $pageData = new PageData($sourceHtml, $this->stats);
         $transformer = new CodePanelHtmlTransformer();
         $transformer->transform($pageData);
-        $this->assertStat('.code.panel pre:has(:not(span[class^="code-"]))', 1, false, true);
+        $this->assertTransformStat(
+            '.code.panel pre:has(:not(span[class^="code-"]))', 1,
+            array(self::TRANSFORM => 0, self::WARNING => 1));
     }
 }

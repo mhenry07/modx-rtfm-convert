@@ -8,7 +8,6 @@ namespace RtfmConvert\HtmlTransformers;
 
 use RtfmConvert\HtmlTestCase;
 use RtfmConvert\PageData;
-use RtfmConvert\PageStatistics;
 
 /**
  * Class NestedListHtmlTransformerTest
@@ -97,12 +96,12 @@ EOT;
 </ul>
 EOT;
 
-        $this->stats = new PageStatistics();
         $pageData = new PageData($html, $this->stats);
         $transformer = new NestedListHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('lists: nested w/o prev li', 1, true, true);
+        $this->assertTransformStat('lists: nested w/o prev li', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 1));
     }
 
     public function testTransformShouldMoveNestedDivIntoPrevLi() {

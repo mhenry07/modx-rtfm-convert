@@ -24,8 +24,10 @@ EOT;
         $transformer = new ImageHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('img[style="border: 0px solid black"]', 1, true);
-        $this->assertStat('span.image-wrap[style=""]', 1, true);
+        $this->assertTransformStat('img[style="border: 0px solid black"]', 1,
+            array(self::TRANSFORM => 1));
+        $this->assertTransformStat('span.image-wrap[style=""]', 1,
+            array(self::TRANSFORM => 1));
     }
 
     // e.g. http://oldrtfm.modx.com/display/revolution20/Using+Friendly+URLs
@@ -41,7 +43,8 @@ EOT;
         $transformer = new ImageHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('img[style="border: 0px solid black"]', 0, false);
+        $this->assertTransformStat('img[style="border: 0px solid black"]', 0,
+            array(self::TRANSFORM => 0));
     }
 
     // e.g. http://oldrtfm.modx.com/display/revolution20/An+Overview+of+MODX
@@ -57,7 +60,8 @@ EOT;
         $transformer = new ImageHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('span.image-wrap[style=""]', 0, false);
+        $this->assertTransformStat('span.image-wrap[style=""]', 0,
+            array(self::TRANSFORM => 0));
     }
 
     /**
@@ -82,8 +86,10 @@ EOT;
         $transformer = new ImageHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('img[style="border: 0px solid black"]', 2, true);
-        $this->assertStat('span.image-wrap[style=""]', 2, true);
+        $this->assertTransformStat('img[style="border: 0px solid black"]', 2,
+            array(self::TRANSFORM => 2));
+        $this->assertTransformStat('span.image-wrap[style=""]', 2,
+            array(self::TRANSFORM => 2));
     }
 
     // e.g. http://oldrtfm.modx.com/display/revolution20/Resources
@@ -99,7 +105,9 @@ EOT;
         $transformer = new ImageHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('a.confluence-thumbnail-link[href^="http://oldrtfm.modx.com"]', 1, true);
+        $this->assertTransformStat(
+            'a.confluence-thumbnail-link[href^="http://oldrtfm.modx.com"]', 1,
+            array(self::TRANSFORM => 1));
     }
 
     /**
@@ -153,8 +161,9 @@ EOT;
         $transformer = new ImageHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat(
-            'img.emoticon[src="/images/icons/emoticons/smile.gif"]', 1, true);
+        $this->assertTransformStat(
+            'img.emoticon[src="/images/icons/emoticons/smile.gif"]', 1,
+            array(self::TRANSFORM => 1));
     }
 
     // e.g. http://oldrtfm.modx.com/display/ADDON/modSwiftMailer
@@ -170,7 +179,8 @@ EOT;
         $transformer = new ImageHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat(
-            'img.emoticon[src="/images/icons/emoticons/wink.gif"]', 1, true);
+        $this->assertTransformStat(
+            'img.emoticon[src="/images/icons/emoticons/wink.gif"]', 1,
+            array(self::TRANSFORM => 1));
     }
 }

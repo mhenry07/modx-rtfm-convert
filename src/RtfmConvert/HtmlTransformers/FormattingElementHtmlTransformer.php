@@ -31,15 +31,19 @@ class FormattingElementHtmlTransformer extends AbstractHtmlTransformer {
 
     // TODO: stats for unhandled formatting elements
     protected function generateStatistics(PageData $pageData) {
+        $qp = $pageData->getHtmlQuery();
         $selectors = array('font', 'b', 'i');
         foreach ($selectors as $selector)
-            $pageData->addSimpleStat($selector, true);
-        $pageData->addSimpleStat('tt', true, true);
+            $pageData->addQueryStat($selector, $qp->find($selector),
+                array(self::TRANSFORM_ALL => true));
+        $pageData->addQueryStat('tt', $qp->find('tt'),
+            array(self::TRANSFORM_ALL => true, self::WARN_IF_FOUND => true));
 
         // non-transformed
-        $pageData->addSimpleStat('hr');
+        $pageData->addQueryStat('hr', $qp->find('hr'));
         $warnSelectors = array('del', 'ins');
         foreach ($warnSelectors as $selector)
-            $pageData->addSimpleStat($selector, false, true);
+            $pageData->addQueryStat($selector, $qp->find($selector),
+                array(self::WARN_IF_FOUND => true));
     }
 }

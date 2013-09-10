@@ -46,7 +46,7 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $dest = 'temp.html';
         $statsDest = 'temp.html.json';
         $stats = new PageStatistics();
-        $stats->add('stat', 1, true, false);
+        $stats->addValueStat('stat', 1);
         $pageData = new PageData('<html></html>', $stats);
         $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
         $pageLoader->expects($this->any())->method('getData')
@@ -54,7 +54,7 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
 
         $fileIo->expects($this->at(1))->method('write')
-            ->with($statsDest, '{"stat":{"label":"stat","value":1,"transformed":true,"warning":false}}');
+            ->with($statsDest, '{"stat":{"value":1}}');
         $processor = new PageProcessor($pageLoader, $fileIo);
 
         $processor->processPage($url, $dest);

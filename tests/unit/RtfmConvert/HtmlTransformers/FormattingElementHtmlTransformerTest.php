@@ -7,12 +7,8 @@ namespace RtfmConvert\HtmlTransformers;
 
 
 use RtfmConvert\PageData;
-use RtfmConvert\PageStatistics;
 
 class FormattingElementHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
-    public function setUp() {
-        $this->stats = new PageStatistics();
-    }
 
     public function testTransformShouldStripFontTag() {
         $text = 'If you are running your MySQL server with networking disabled, you can specify the socket name like this: ";unix_socket=MySQL".';
@@ -24,7 +20,8 @@ class FormattingElementHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
 
-        $this->assertStat('font', 1, true, false);
+        $this->assertTransformStat('font', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
     }
 
     public function testTransformShouldStripMultipleFontTags() {
@@ -46,9 +43,12 @@ class FormattingElementHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
 
-        $this->assertStat('b', 1, true, false);
-        $this->assertStat('i', 1, true, false);
-        $this->assertStat('tt', 1, true, true);
+        $this->assertTransformStat('b', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
+        $this->assertTransformStat('i', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
+        $this->assertTransformStat('tt', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 1));
     }
 
     public function testTransformShouldConvertMultipleBolds() {
@@ -75,8 +75,11 @@ EOT;
         $transformer = new FormattingElementHtmlTransformer();
         $transformer->transform($pageData);
 
-        $this->assertStat('hr', 1, false, false);
-        $this->assertStat('del', 1, false, true);
-        $this->assertStat('ins', 1, false, true);
+        $this->assertTransformStat('hr', 1,
+            array(self::TRANSFORM => 0, self::WARNING => 0));
+        $this->assertTransformStat('del', 1,
+            array(self::TRANSFORM => 0, self::WARNING => 1));
+        $this->assertTransformStat('ins', 1,
+            array(self::TRANSFORM => 0, self::WARNING => 1));
     }
 }

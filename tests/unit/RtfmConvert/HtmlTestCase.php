@@ -6,12 +6,13 @@
 namespace RtfmConvert;
 
 
-use DOMElement;
-use PHPUnit_Util_XML;
 use QueryPath\DOMQuery;
 use tidy;
 
 class HtmlTestCase extends \PHPUnit_Framework_TestCase {
+    const TRANSFORM = PageStatistics::TRANSFORM;
+    const WARNING = PageStatistics::WARNING;
+
     /** @var PageStatistics */
     protected $stats;
 
@@ -81,7 +82,6 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
      */
     public function assertValueStat($expectedLabel, $expectedValue,
                                     array $options = array()) {
-//                                    $expectedWarnings = null) {
         if (is_null($this->stats))
             $this->fail('the test class requires a valid PageStatistics object');
         $statsArray = $this->stats->getStats();
@@ -89,9 +89,14 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
         $stat = $statsArray[$expectedLabel];
         $this->assertEquals($expectedValue, $stat[PageStatistics::VALUE]);
 
-        $expectedWarnings = $this->getOption($options, 'warnings');
-        if (!is_null($expectedWarnings))
-            $this->assertEquals($expectedWarnings, $stat[PageStatistics::WARNING]);
+        $expectedWarnings = $this->getOption($options, PageStatistics::WARNING);
+        if (!is_null($expectedWarnings)) {
+            if ($expectedWarnings == 0) {
+                $this->assertArrayNotHasKey(PageStatistics::WARNING, $stat);
+            } else {
+                $this->assertEquals($expectedWarnings, $stat[PageStatistics::WARNING]);
+            }
+        }
     }
 
 
@@ -112,12 +117,22 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
         $stat = $statsArray[$label];
         $this->assertEquals($expectedFound, $stat[PageStatistics::FOUND]);
 
-        $expectedTransformed = $this->getOption($options, 'transformed');
-        if (!is_null($expectedTransformed))
-            $this->assertEquals($expectedTransformed, $stat[PageStatistics::TRANSFORM]);
-        $expectedWarnings = $this->getOption($options, 'warnings');
-        if (!is_null($expectedWarnings))
-            $this->assertEquals($expectedWarnings, $stat[PageStatistics::WARNING]);
+        $expectedTransformed = $this->getOption($options, PageStatistics::TRANSFORM);
+        if (!is_null($expectedTransformed)) {
+            if ($expectedTransformed == 0) {
+                $this->assertArrayNotHasKey(PageStatistics::TRANSFORM, $stat);
+            } else {
+                $this->assertEquals($expectedTransformed, $stat[PageStatistics::TRANSFORM]);
+            }
+        }
+        $expectedWarnings = $this->getOption($options, PageStatistics::WARNING);
+        if (!is_null($expectedWarnings)) {
+            if ($expectedWarnings == 0) {
+                $this->assertArrayNotHasKey(PageStatistics::WARNING, $stat);
+            } else {
+                $this->assertEquals($expectedWarnings, $stat[PageStatistics::WARNING]);
+            }
+        }
     }
 
     protected function normalizeHtml(DOMQuery $qp) {

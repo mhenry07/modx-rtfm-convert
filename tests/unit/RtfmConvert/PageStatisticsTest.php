@@ -26,11 +26,27 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
             PageStatistics::TRANSFORM => 3);
 
         $stats = new PageStatistics();
-        $stats->addTransformStat('transform', 5, array('transformed' => 3));
+        $stats->addTransformStat('transform', 5,
+            array(PageStatistics::TRANSFORM => 3));
 
         $statsArray = $stats->getStats();
         $this->assertArrayHasKey('transform', $statsArray);
         $this->assertEquals($expected, $statsArray['transform']);
+    }
+
+    /**
+     * @depends testAddTransformStatShouldAddExpectedStat
+     */
+    public function testAddTransformStatWithTransformAllShouldAddExpectedStatWhenNotFound() {
+        $expected = array(PageStatistics::FOUND => 0);
+
+        $stats = new PageStatistics();
+        $stats->addTransformStat('transformAllEmpty', 0,
+            array('transformAll' => true));
+
+        $statsArray = $stats->getStats();
+        $this->assertArrayHasKey('transformAllEmpty', $statsArray);
+        $this->assertEquals($expected, $statsArray['transformAllEmpty']);
     }
 
     /**

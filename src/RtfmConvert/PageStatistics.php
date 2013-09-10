@@ -21,6 +21,12 @@ class PageStatistics {
     // messages array keys
     const MESSAGE = 'message';
     const COUNT = 'count';
+    // options
+    const TRANSFORM_ALL = 'transformAll';
+    const WARN_IF_FOUND = 'warnIfFound';
+    const WARN_IF_MISSING = 'warnIfMissing';
+    const ERROR_IF_FOUND = 'errorIfFound';
+    const ERROR_IF_MISSING = 'errorIfMissing';
 
     protected $stats = array();
 
@@ -177,9 +183,9 @@ class PageStatistics {
 
     protected function addToStatFromOptions(array $stat, $type, array $options) {
         $optionsKeys = array(
-            self::TRANSFORM => array('valueKey' => 'transformed', 'messagesKey' => 'transformMessages'),
-            self::WARNING => array('valueKey' => 'warnings', 'messagesKey' => 'warningMessages'),
-            self::ERROR => array('valueKey' => 'errors', 'messagesKey' => 'errorMessages')
+            self::TRANSFORM => array('valueKey' => self::TRANSFORM, 'messagesKey' => 'transformMessages'),
+            self::WARNING => array('valueKey' => self::WARNING, 'messagesKey' => 'warningMessages'),
+            self::ERROR => array('valueKey' => self::ERROR, 'messagesKey' => 'errorMessages')
         );
         $keys = $optionsKeys[$type];
         $stat = $this->addToStat($stat, $type,
@@ -282,25 +288,25 @@ class PageStatistics {
      * warnIfMissing, etc.
      */
     protected function normalizeStatOptions($found, array $options = array()) {
-        if ($this->getOption($options, 'transformAll')) {
-            $options['transformed'] = $found;
-            unset($options['transformAll']);
+        if ($this->getOption($options, self::TRANSFORM_ALL) && $found > 0) {
+            $options[self::TRANSFORM] = $found;
+            unset($options[self::TRANSFORM_ALL]);
         }
-        if ($this->getOption($options, 'warnIfFound') && $found > 0) {
-            $options['warnings'] = $found;
-            unset($options['warnIfFound']);
+        if ($this->getOption($options, self::WARN_IF_FOUND) && $found > 0) {
+            $options[self::WARNING] = $found;
+            unset($options[self::WARN_IF_FOUND]);
         }
-        if ($this->getOption($options, 'warnIfMissing') && $found == 0) {
-            $options['warnings'] = 1;
-            unset($options['warnIfMissing']);
+        if ($this->getOption($options, self::WARN_IF_MISSING) && $found == 0) {
+            $options[self::WARNING] = 1;
+            unset($options[self::WARN_IF_MISSING]);
         }
-        if ($this->getOption($options, 'errorIfFound') && $found > 0) {
-            $options['errors'] = $found;
-            unset($options['errorIfFound']);
+        if ($this->getOption($options, self::ERROR_IF_FOUND) && $found > 0) {
+            $options[self::ERROR] = $found;
+            unset($options[self::ERROR_IF_FOUND]);
         }
-        if ($this->getOption($options, 'errorIfMissing') && $found == 0) {
-            $options['errors'] = 1;
-            unset($options['errorIfMissing']);
+        if ($this->getOption($options, self::ERROR_IF_MISSING) && $found == 0) {
+            $options[self::ERROR] = 1;
+            unset($options[self::ERROR_IF_MISSING]);
         }
 
         return $options;

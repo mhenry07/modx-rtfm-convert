@@ -57,22 +57,6 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
             $this->normalizeHtml($actualQp), $message);
     }
 
-    /**
-     * @deprecated
-     */
-    public function assertStat($expectedLabel, $expectedValue, $expectedTransformed = null, $expectedWarning = null) {
-        if (is_null($this->stats))
-            $this->fail('the test class requires a valid PageStatistics object');
-        $statsArray = $this->stats->getStats();
-        $this->assertArrayHasKey($expectedLabel, $statsArray);
-        $stat = $statsArray[$expectedLabel];
-        $this->assertEquals($expectedValue, $stat['value']);
-        if (!is_null($expectedTransformed))
-            $this->assertEquals($expectedTransformed, $stat['transformed']);
-        if (!is_null($expectedWarning))
-            $this->assertEquals($expectedWarning, $stat['warning']);
-    }
-
     /*
      * @param string $label
      * @param int $expectedFound

@@ -142,29 +142,6 @@ class PageStatistics {
                 "Changed element count does not match expected. Expected: {$expected} Actual: {$actual}");
     }
 
-    /**
-     * @deprecated
-     */
-    public function add($label, $value, $isTransformed = null, $isWarning = null) {
-        $stat = array('label' => $label, 'value' => $value);
-        if (!is_null($isTransformed))
-            $stat['transformed'] = $isTransformed;
-        if (!is_null($isWarning))
-            $stat['warning'] = $isWarning;
-        $this->stats[$label] = $stat;
-    }
-
-    /**
-     * @deprecated
-     */
-    public function addCountStat($label, $count, $isTransformed = null,
-                                 $warnIfFound = null, $isRequired = null) {
-        $isWarning = $count > 0 ? $warnIfFound : $isRequired;
-        if ($count === 0)
-            $isTransformed = false;
-        $this->add($label, $count, $isTransformed, $isWarning);
-    }
-
     public function getStats() {
         return $this->stats;
     }

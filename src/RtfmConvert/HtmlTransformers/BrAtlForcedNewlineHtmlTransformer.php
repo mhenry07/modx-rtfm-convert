@@ -23,6 +23,8 @@ class BrAtlForcedNewlineHtmlTransformer extends AbstractHtmlTransformer {
 
     // should I add stats for first & last?
     protected function generateStatistics(PageData $pageData) {
-        $pageData->addSimpleStat('br.atl-forced-newline', true);
+        $atlNewlines = $pageData->getHtmlQuery('br.atl-forced-newline');
+        $pageData->addQueryStat('br.atl-forced-newline', $atlNewlines,
+            array(self::TRANSFORM_ALL => true));
     }
 }

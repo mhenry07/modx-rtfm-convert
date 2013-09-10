@@ -83,36 +83,4 @@ class PageData {
             return;
         $this->stats->addQueryStat($label, $query, $options);
     }
-
-    /**
-     * @deprecated
-     * @param $label
-     * @param $count
-     * @param bool $isTransformed
-     * @param bool $warnIfFound
-     * @param bool $isRequired
-     */
-    public function addCountStat($label, $count, $isTransformed = false,
-                                 $warnIfFound = false, $isRequired = false) {
-        if (is_null($this->stats))
-            return;
-        $this->stats->addCountStat($label, $count, $isTransformed,
-            $warnIfFound, $isRequired);
-    }
-
-    /**
-     * @deprecated
-     * @param string $selector
-     * @param bool $isTransforming
-     * @param bool $warnIfFound
-     * @param bool $isRequired
-     */
-    public function addSimpleStat($selector, $isTransforming = false,
-                                  $warnIfFound = false, $isRequired = false) {
-        if (is_null($this->stats))
-            return;
-        $qp = $this->getHtmlQuery();
-        $this->stats->addCountStat($selector, $qp->find($selector)->count(),
-            $isTransforming, $warnIfFound, $isRequired);
-    }
 }

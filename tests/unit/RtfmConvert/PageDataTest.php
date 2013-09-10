@@ -76,4 +76,11 @@ EOT;
         $qp = $pageData->getHtmlQuery();
         $this->assertEquals($qp->tag(), 'body');
     }
+
+    public function testGetHtmlQueryWithSelectorShouldReturnExpectedTagGivenHtmlString() {
+        $html = '<p>test</p>';
+        $pageData = new PageData($html);
+        $qp = $pageData->getHtmlQuery('p');
+        $this->assertEquals($qp->tag(), 'p');
+    }
 }

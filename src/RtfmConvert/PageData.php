@@ -6,6 +6,8 @@
 namespace RtfmConvert;
 
 
+use QueryPath\DOMQuery;
+
 class PageData {
     /** @var \QueryPath\DOMQuery|string */
     protected $html;
@@ -47,11 +49,12 @@ class PageData {
     }
 
     /**
+     * @param string $selector
      * @return \QueryPath\DOMQuery
      */
-    public function getHtmlQuery() {
+    public function getHtmlQuery($selector = 'body') {
         if (is_string($this->html))
-            return RtfmQueryPath::htmlqp($this->html, 'body');
+            return RtfmQueryPath::htmlqp($this->html, $selector);
         return $this->html;
     }
 
@@ -63,6 +66,26 @@ class PageData {
     }
 
     /**
+     * @see PageStatistics::addTransformStat()
+     */
+    public function addTransformStat($label, $found, array $options = array()) {
+        if (is_null($this->stats))
+            return;
+        $this->stats->addTransformStat($label, $found, $options);
+    }
+
+    /**
+     * @see PageStatistics::addQueryStat()
+     */
+    public function addQueryStat($label, DOMQuery $query,
+                                 array $options = array()) {
+        if (is_null($this->stats))
+            return;
+        $this->stats->addQueryStat($label, $query, $options);
+    }
+
+    /**
+     * @deprecated
      * @param $label
      * @param $count
      * @param bool $isTransformed
@@ -78,6 +101,7 @@ class PageData {
     }
 
     /**
+     * @deprecated
      * @param string $selector
      * @param bool $isTransforming
      * @param bool $warnIfFound

@@ -95,17 +95,20 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
             PageStatistics::TRANSFORM => 1);
 
         $html = '<p>test <font>inner</font></p>';
-        $qp = RtfmQueryPath::htmlqp($html);
+        $fonts = RtfmQueryPath::htmlqp($html, 'font');
         $stats = new PageStatistics();
-        $stats->addQueryStat('font', $qp, array('transformAll' => true));
+        $stats->addQueryStat('font', $fonts, array('transformAll' => true));
 
-        $stats->beginTransform($qp);
-        $qp->find('font')->contents()->unwrap();
-        $stats->checkTransform('font', $qp, 1, -1);
+        $stats->beginTransform($fonts);
+        $fonts->contents()->unwrap();
+        $stats->checkTransform('font', $fonts, -1);
 
         $this->assertEquals($expected, $stats->getStats()['font']);
     }
 
+    /**
+     * @depends testAddQueryStatShouldAddExpectedStat
+     */
     public function testCheckTransformShouldWarnWhenCountNotExpected() {
         $expected = array(
             PageStatistics::FOUND => 1,
@@ -116,14 +119,14 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
         );
 
         $html = '<p>test <font>inner</font></p>';
-        $qp = RtfmQueryPath::htmlqp($html);
+        $fonts = RtfmQueryPath::htmlqp($html, 'font');
         $stats = new PageStatistics();
-        $stats->addQueryStat('font', $qp, array('transformAll' => true));
+        $stats->addQueryStat('font', $fonts, array('transformAll' => true));
 
-        $stats->beginTransform($qp);
+        $stats->beginTransform($fonts);
         // oops, this removes too many elements
-        $qp->find('*')->contents()->unwrap();
-        $stats->checkTransform('font', $qp, 1, -1);
+        $fonts->top('body')->find('*')->contents()->unwrap();
+        $stats->checkTransform('font', $fonts, -1);
 
         $this->assertEquals($expected, $stats->getStats()['font']);
     }

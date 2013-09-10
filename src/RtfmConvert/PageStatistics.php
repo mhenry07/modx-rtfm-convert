@@ -32,6 +32,7 @@ class PageStatistics {
 
     protected $stats = array();
 
+    // used by beginTransform and checkTransform
     protected $elementCount;
 
     // note: assumes type & messages keys are the same for options arrays and stats arrays
@@ -131,21 +132,23 @@ class PageStatistics {
         $this->stats[$label] = $stat;
     }
 
-    public function beginTransform(DOMQuery $qp) {
-        $qp = $qp->top('body');
-        $this->elementCount = RtfmQueryPath::countAll($qp);
+    public function beginTransform(DOMQuery $query) {
+        $this->elementCount = RtfmQueryPath::countAll($query->top('body'));
     }
 
-    public function checkTransform($statLabel, DOMQuery $qp, $matchesCount,
-                                   $expectedElementChangesPerMatch) {
-        $qp = $qp->top('body');
+    /**
+     * @param string $statLabel
+     * @param DOMQuery $query
+     * @param int $expectedElementChanges Expected total element changes (+/-)
+     */
+    public function checkTransform($statLabel, DOMQuery $query,
+                                   $expectedElementChanges) {
         $beginCount = $this->elementCount;
-        $endCount = RtfmQueryPath::countAll($qp);
+        $endCount = RtfmQueryPath::countAll($query->top('body'));
         $actual = $endCount - $beginCount;
-        $expected = $matchesCount * $expectedElementChangesPerMatch;
-        if ($actual !== $expected)
+        if ($actual !== $expectedElementChanges)
             $this->incrementStat($statLabel, self::WARNING, 1,
-                "Changed element count does not match expected. Expected: {$expected} Actual: {$actual}");
+                "Changed element count does not match expected. Expected: {$expectedElementChanges} Actual: {$actual}");
     }
 
     public function getStats() {

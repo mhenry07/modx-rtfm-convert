@@ -24,7 +24,10 @@ class NamedAnchorHtmlTransformer extends AbstractHtmlTransformer {
     public function transform(PageData $pageData) {
         $this->resetStats();
         $qp = $pageData->getHtmlQuery();
-        $qp->find('h1, h2, h3, h4, h5, h6')->has('a[name]')->each(
+        $matches = $qp->find('h1, h2, h3, h4, h5, h6')->has('a[name]');
+        $expectedDiff = -$matches->count();
+        $pageData->beginTransform($qp);
+        $matches->each(
             function ($index, $item) {
                 /** @var \DOMNode $item */
                 $anchor = qp($item)->firstChild();
@@ -50,6 +53,7 @@ class NamedAnchorHtmlTransformer extends AbstractHtmlTransformer {
                     $anchor->remove();
             }
         );
+        $pageData->checkTransform('named anchors: headings', $qp, $expectedDiff);
         $this->generateStatistics(new PageData($qp, $pageData->getStats()));
 
         return $qp;

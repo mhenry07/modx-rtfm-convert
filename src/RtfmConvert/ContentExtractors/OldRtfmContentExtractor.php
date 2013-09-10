@@ -31,13 +31,32 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         $this->generateDomStatistics($qp, $stats);
         if ($qp->count() === 0)
             throw new RtfmException('Unable to locate div.wiki-content.');
-        $qp->remove('script, style, div.Scrollbar');
 
+        $this->removeSelector('script', $qp, $stats);
+        $this->removeSelector('style', $qp, $stats);
+        // note: each div.Scrollbar can have 5 - 18 elements
+        $this->removeSelector('div.Scrollbar', $qp, $stats);
 
         $content = RtfmQueryPath::getHtmlString($qp->contents());
         $content = $this->removeWikiContentComment($content, $stats);
 
         return $content;
+    }
+
+    protected function removeSelector($selector, DOMQuery $query,
+                                      PageStatistics $stats = null) {
+        $matches = $query->find($selector);
+        $expectedDiff = -RtfmQueryPath::countAll($matches, true);
+        if (!is_null($stats)) {
+            $stats->beginTransform($query);
+            $stats->addQueryStat($selector, $matches,
+                array(PageStatistics::TRANSFORM_ALL => true));
+        }
+
+        $matches->remove();
+
+        if (!is_null($stats))
+            $stats->checkTransform($selector, $query, $expectedDiff);
     }
 
     /**
@@ -107,13 +126,6 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         $stats->addQueryStat('div.wiki-content', $wikiContent,
             array(PageStatistics::TRANSFORM_ALL => true,
                 PageStatistics::ERROR_IF_MISSING => true));
-        $stats->addQueryStat('script', $wikiContent->find('script'),
-            array(PageStatistics::TRANSFORM_ALL => true));
-        $stats->addQueryStat('style', $wikiContent->find('style'),
-            array(PageStatistics::TRANSFORM_ALL => true));
-        $stats->addQueryStat('div.Scrollbar',
-            $wikiContent->find('div.Scrollbar'),
-            array(PageStatistics::TRANSFORM_ALL => true));
     }
 
     protected function checkForErrors($html, PageStatistics $stats = null) {

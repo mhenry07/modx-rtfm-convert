@@ -14,17 +14,25 @@ class FormattingElementHtmlTransformer extends AbstractHtmlTransformer {
     public function transform(PageData $pageData) {
         $this->generateStatistics($pageData);
         $qp = $pageData->getHtmlQuery();
-        $qp->find('font')->contents()->unwrap();
+
+        $pageData->beginTransform($qp);
+        $fonts = $qp->find('font');
+        $expectedDiff = -$fonts->count();
+        $fonts->contents()->unwrap();
+        $pageData->checkTransform('font', $qp, $expectedDiff);
+
         $map = array(
             'b' => '<strong></strong>',
             'i' => '<em></em>',
             'tt' => '<code></code>');
         foreach ($map as $selector => $replace) {
+            $pageData->beginTransform($qp);
             $qp->find($selector)->each(
                 function ($index, $item) use ($replace) {
                     qp($item)->wrapInner($replace)->contents()->unwrap();
                 }
             );
+            $pageData->checkTransform($selector, $qp, 0);
         }
         return $qp;
     }

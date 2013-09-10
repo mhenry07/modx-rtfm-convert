@@ -6,42 +6,89 @@
 namespace RtfmConvert\HtmlTransformers;
 
 
+use QueryPath\DOMQuery;
 use RtfmConvert\PageData;
 
 class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
+
+    /** @var callable $addStatFn */
+    protected $addStatFn;
+
+    function __construct() {
+        $this->addStatFn = function ($label, DOMQuery $query,
+                                        PageData $pageData) {
+            $pageData->addQueryStat($label, $query,
+                array(self::TRANSFORM_ALL => true));
+        };
+    }
 
     // note: using wrapInner inside each since it seems to cause issues with multiple matches
     public function transform(PageData $pageData) {
         $this->generateStatistics($pageData);
         $qp = $pageData->getHtmlQuery();
         $codePanels = $qp->find('.code.panel');
-        $codePanels->find('div.codeHeader')->each(
-            function ($index, $item) {
-                qp($item)->wrapInner('<p></p>');
-            }
-        );
-        $codePanels->find('pre.code-java')
-            ->addClass('brush: php')->removeClass('code-java')
-            ->find('span[class^="code-"]')->contents()->unwrap();
-        $codePanels->find('div.codeHeader, div.codeContent')
-            ->contents()->unwrap()->unwrap();
+
+        $this->transformCodeSpans('.code.panel pre:has(span[class^="code-"])',
+            $codePanels->find('pre.code-java'), $pageData);
+        $this->transformCodeHeaders('.code.panel .codeHeader',
+            $codePanels->find('div.codeHeader'), $pageData);
+        $this->transformCodePanels('.code.panel', $codePanels, $pageData);
+
         return $qp;
     }
 
     protected function generateStatistics(PageData $pageData) {
         if (is_null($pageData->getStats())) return;
-        $codePanels = $pageData->getHtmlQuery('.code.panel');
-        $pageData->addQueryStat('.code.panel', $codePanels,
-            array(self::TRANSFORM_ALL => true));
-        $pageData->addQueryStat('.code.panel .codeHeader',
-            $codePanels->find('.codeHeader'), array(self::TRANSFORM_ALL => true));
-        $codePanelPres = $codePanels->find('pre');
-        $pageData->addQueryStat('.code.panel pre:has(span[class^="code-"])',
-            $codePanelPres->has('span[class^="code-"]'),
-            array(self::TRANSFORM_ALL => true));
+        $codePanelPres = $pageData->getHtmlQuery('.code.panel pre');
         $pageData->addQueryStat(
             '.code.panel pre:has(:not(span[class^="code-"]))',
             $codePanelPres->has(':not(span[class^="code-"])'),
             array(self::WARN_IF_FOUND => true));
+    }
+
+    protected function transformCodeSpans($label, DOMQuery $codePanelPres,
+                                          PageData $pageData) {
+        $selector = 'span[class^="code-"]';
+        $transformFn = function (DOMQuery $query) use ($selector) {
+            $query->find($selector)->contents()->unwrap();
+        };
+
+        $addStatFn = function ($label, DOMQuery $query, PageData $pageData)
+            use ($selector) {
+            if ($query->count() > 0)
+                $query = $query->has($selector);
+            $pageData->addQueryStat($label, $query,
+                array(self::TRANSFORM_ALL => true));
+        };
+
+        $preCodeSpans = $codePanelPres->find($selector);
+        $expectedElementDiff = -$preCodeSpans->count();
+        $this->executeTransformStep($label, $codePanelPres, $pageData,
+            $transformFn, $addStatFn, $expectedElementDiff);
+    }
+
+    protected function transformCodeHeaders($label, DOMQuery $codeHeaders,
+                                            PageData $pageData) {
+        $transformFn = function (DOMQuery $query) {
+            $query->each(function ($index, $item) {
+                qp($item)->wrapInner('<p></p>')->contents()->unwrap();
+            });
+        };
+
+        $this->executeTransformStep($label, $codeHeaders, $pageData,
+            $transformFn, $this->addStatFn, 0);
+    }
+
+    protected function transformCodePanels($label, DOMQuery $codePanels,
+                                           PageData $pageData) {
+        $transformFn = function (DOMQuery $query) {
+            $query->find('pre.code-java')
+                ->removeClass('code-java')->addClass('brush: php')->unwrap();
+            $query->contents()->unwrap();
+        };
+
+        $expectedDiff = -$codePanels->count() * 2;
+        $this->executeTransformStep($label, $codePanels, $pageData,
+            $transformFn, $this->addStatFn, $expectedDiff);
     }
 }

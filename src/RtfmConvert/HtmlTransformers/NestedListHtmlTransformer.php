@@ -44,6 +44,7 @@ class NestedListHtmlTransformer extends AbstractHtmlTransformer {
 //        echo "Before:\n", $qp->html(), PHP_EOL;
         $this->counts = array('hasPrevLi' => 0, 'noPrevLi' => 0);
         $selector = 'ul > :not(li), ol > :not(li)';
+        $pageData->beginTransform($qp);
 
         // re-query after each iteration since other matches may be modified
         // so we can't use the usual \QueryPath\DOMQuery::each() or foreach
@@ -58,8 +59,9 @@ class NestedListHtmlTransformer extends AbstractHtmlTransformer {
                 $nestedElement->wrapAll('<li></li>');
             }
         }
+        $pageData->checkTransform('lists: nested w/o prev li', $qp,
+            $this->counts['noPrevLi']);
 
-//        echo "\nAfter:\n", $qp->html(), "\n\n";
         $this->generateStatistics($pageData);
         return $qp;
     }

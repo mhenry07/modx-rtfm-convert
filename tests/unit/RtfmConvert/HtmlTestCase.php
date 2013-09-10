@@ -120,7 +120,7 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
     }
 
     protected function normalizeHtml(DOMQuery $qp) {
-        $html = $qp->xhtml();
+        $html = RtfmQueryPath::getHtmlString($qp);
         $config = array(
             'output-html' => true,
             'show-body-only' => true,

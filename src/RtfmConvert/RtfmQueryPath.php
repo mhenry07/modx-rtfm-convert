@@ -42,8 +42,14 @@ class RtfmQueryPath {
     }
 
     // TODO: add a selector
+    // note: DOMQuery::xhtml() may add undesired spaces between adjacent inline
+    // elements in some cases
     public static function getHtmlString(DOMQuery $qp) {
-        return trim($qp->xhtml());
+        $html = '';
+        /** @var DOMQuery $match */
+        foreach ($qp as $match)
+            $html .= $qp->document()->saveHTML($match->get(0));
+        return trim($html);
     }
 
     // count all descendant elements of the current match

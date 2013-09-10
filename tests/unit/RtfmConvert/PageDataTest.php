@@ -17,10 +17,8 @@ class PageDataTest extends HtmlTestCase {
     public function testGetHtmlStringShouldReturnExpectedStringGivenDomQuery() {
         $expected = <<<'EOT'
 <html>
-  <head>
-    <title>Test</title>
-  </head>
-  <body></body>
+<head><title>Test</title></head>
+<body></body>
 </html>
 EOT;
 
@@ -32,9 +30,7 @@ EOT;
     public function testGetHtmlStringShouldReturnExpectedStringGivenDomQueryWithSelector() {
         $content = '<p>test</p>';
         $expected = <<<EOT
-<body>
-  {$content}
-</body>
+<body>{$content}</body>
 EOT;
 
         $qp = RtfmQueryPath::htmlqp($content, 'body');
@@ -45,12 +41,7 @@ EOT;
     public function testGetHtmlDocumentShouldReturnExpectedStringGivenDomQueryWithSelector() {
         $content = '<p>test</p>';
         $expected = <<<EOT
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
-<html>
-  <body>
-    {$content}
-  </body>
-</html>
+<html><body>{$content}</body></html>
 EOT;
 
         $qp = RtfmQueryPath::htmlqp($content, 'body');

@@ -33,8 +33,8 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
             throw new RtfmException('Unable to locate div.wiki-content.');
         $qp->remove('script, style, div.Scrollbar');
 
-        $content = $qp->innerXHTML();
 
+        $content = RtfmQueryPath::getHtmlString($qp->contents());
         $content = $this->removeWikiContentComment($content, $stats);
 
         return $content;

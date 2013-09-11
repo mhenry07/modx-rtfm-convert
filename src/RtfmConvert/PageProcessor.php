@@ -21,6 +21,7 @@ class PageProcessor {
     }
 
     public function processPage($source, $dest, $saveStats = true) {
+        echo 'Processing: ', $source, PHP_EOL;
         $pageData = $this->pageLoader->getData($source);
 
         /** @var ProcessorOperationInterface $operation */

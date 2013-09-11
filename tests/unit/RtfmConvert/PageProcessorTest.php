@@ -30,8 +30,33 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $pageLoader->expects($this->any())->method('getData')
             ->will($this->returnValue($pageData));
         $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
+        $fileIo->expects($this->any())->method('exists')
+            ->will($this->returnValue(true));
 
-        $fileIo->expects($this->at(0))->method('write')
+        $fileIo->expects($this->at(1))->method('write')
+            ->with($dest, '<html></html>');
+        $processor = new PageProcessor($pageLoader, $fileIo);
+
+        $processor->processPage($url, $dest);
+    }
+
+    /**
+     * @depends testProcessPageShouldSaveProcessedPage
+     */
+    public function testProcessPageShouldCreateDirIfNotExist() {
+        $url = 'http://oldrtfm.modx.com/display/revolution20/Getting+Started';
+        $dest = 'path/to/temp.html';
+        $pageData = new PageData('<html></html>');
+        $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
+        $pageLoader->expects($this->any())->method('getData')
+            ->will($this->returnValue($pageData));
+        $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
+        $fileIo->expects($this->any())->method('exists')
+            ->will($this->returnValue(false));
+
+        $fileIo->expects($this->at(1))->method('mkdir')
+            ->with('path/to');
+        $fileIo->expects($this->at(2))->method('write')
             ->with($dest, '<html></html>');
         $processor = new PageProcessor($pageLoader, $fileIo);
 
@@ -52,8 +77,10 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
         $pageLoader->expects($this->any())->method('getData')
             ->will($this->returnValue($pageData));
         $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
+        $fileIo->expects($this->any())->method('exists')
+            ->will($this->returnValue(true));
 
-        $fileIo->expects($this->at(1))->method('write')
+        $fileIo->expects($this->at(2))->method('write')
             ->with($statsDest, '{"stat":{"value":1}}');
         $processor = new PageProcessor($pageLoader, $fileIo);
 

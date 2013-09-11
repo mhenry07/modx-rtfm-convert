@@ -48,6 +48,8 @@ class PageProcessor {
      * @param PageData $pageData
      */
     protected function savePage($dest, PageData $pageData) {
+        if (!$this->fileIo->exists(dirname($dest)))
+            $this->fileIo->mkdir(dirname($dest));
         $html = $pageData->getHtmlString();
         $this->fileIo->write($dest, $html);
     }

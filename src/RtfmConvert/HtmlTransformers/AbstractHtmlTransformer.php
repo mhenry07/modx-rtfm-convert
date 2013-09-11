@@ -21,7 +21,6 @@ abstract class AbstractHtmlTransformer implements ProcessorOperationInterface {
      * @return \QueryPath\DOMQuery
      */
     abstract public function transform(PageData $pageData);
-    abstract protected function generateStatistics(PageData $pageData);
 
     /**
      * @param PageData $pageData

@@ -63,6 +63,20 @@ EOT;
         );
     }
 
+    /**
+     * @depends testTransformShouldTransformInfoAside
+     */
+    public function testTransformShouldGenerateExpectedStat() {
+        $content = 'Content';
+        $input = sprintf($this->panelMacroFormat, 'info', 'information.gif', $content);
+
+        $pageData = new PageData($input, $this->stats);
+        $transformer = new ConfluenceAsideHtmlTransformer();
+        $transformer->transform($pageData);
+        $this->assertTransformStat('asides', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
+    }
+
     public function testTransformShouldPreserveInnerParagraphs() {
         $content = <<<'EOT'
 First paragraph.

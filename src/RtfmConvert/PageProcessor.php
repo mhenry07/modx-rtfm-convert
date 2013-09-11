@@ -20,7 +20,7 @@ class PageProcessor {
         $this->fileIo = $fileIo ? : new FileIo();
     }
 
-    public function processPage($source, $dest) {
+    public function processPage($source, $dest, $saveStats = true) {
         $pageData = $this->pageLoader->getData($source);
 
         /** @var ProcessorOperationInterface $operation */
@@ -28,7 +28,8 @@ class PageProcessor {
             $pageData = $operation->process($pageData);
 
         $this->savePage($dest, $pageData);
-        $this->saveStats($dest, $pageData);
+        if ($saveStats)
+            $this->saveStats($dest, $pageData);
         return $pageData;
     }
 

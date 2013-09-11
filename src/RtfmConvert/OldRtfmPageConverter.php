@@ -17,6 +17,7 @@ use RtfmConvert\HtmlTransformers\ImageHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NamedAnchorHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NestedListHtmlTransformer;
 use RtfmConvert\Infrastructure\CachedPageLoader;
+use RtfmConvert\Infrastructure\FileIo;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
 use RtfmConvert\TextTransformers\ModxTagsToEntitiesTextTransformer;
 //use RtfmConvert\TextTransformers\NbspTextTransformer;
@@ -25,10 +26,14 @@ class OldRtfmPageConverter {
     /** @var PageProcessor */
     protected $processor;
 
+    /** @var FileIo */
+    protected $fileIo;
+
     public function __construct($cacheDir) {
         $pageLoader = new CachedPageLoader();
         $pageLoader->setBaseDirectory($cacheDir);
         $processor = new PageProcessor($pageLoader);
+        $this->fileIo = new FileIo();
         // pre-processing
         $processor->register(new OldRtfmContentExtractor());
         // PageTreeHtmlTransformer (external requests) // note: will require cleanup (nested lists, etc.)
@@ -61,17 +66,23 @@ class OldRtfmPageConverter {
     }
 
     // TODO: add a PageProcessor::processPages method and call that
-    // TODO: add an isBatch param to processPage and delay writing stats if true
-    // TODO: write all stats to a single file instead of one per page
-    public function convertAll($tocDir, $outputDir, $addHtmlExtension) {
+    public function convertAll($tocDir, $outputDir, $addHtmlExtension,
+                               $statsFile) {
+        $stats = array();
+
         $tocParser = new OldRtfmTocParser();
         $hrefs = $tocParser->parseTocDirectory($tocDir);
         foreach ($hrefs as $href) {
             $url = $href['url'];
             $destFile = $this->getDestinationFilename($url, $outputDir,
                 $addHtmlExtension);
-            $this->processor->processPage($url, $destFile);
+            $pageData = $this->processor->processPage($url, $destFile, false);
+
+            $statsObj = $pageData->getStats();
+            if (!is_null($statsObj))
+                $stats[$href['href']] = $statsObj->getStats();
         }
+        $this->saveStats($statsFile, $stats);
     }
 
     protected function getDestinationFilename($url, $baseDir, $addHtmlExtension) {
@@ -82,5 +93,14 @@ class OldRtfmPageConverter {
         if ($addHtmlExtension)
             $path .= '.html';
         return PathHelper::join($baseDir, $path);
+    }
+
+    /**
+     * @param string $dest
+     * @param array $stats
+     */
+    protected function saveStats($dest, array $stats) {
+        $json = json_encode($stats);
+        $this->fileIo->write("$dest", $json);
     }
 }

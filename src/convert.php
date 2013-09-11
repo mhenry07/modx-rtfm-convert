@@ -18,11 +18,15 @@ $tocDir = "{$root}/oldrtfm-toc";
 $outputDir = "{$data}/convert";
 $cacheDir = "{$data}/cache";
 
+$time = new DateTime();
+$timeString = $time->format('YmdTHi');
+$statsFile = "{$outputDir}/stats-{$timeString}.json";
+
 
 $converter = new OldRtfmPageConverter($cacheDir);
 
-$converter->convertPage(
-    "http://oldrtfm.modx.com/display/{$space}/{$page}",
-    "{$data}/{$page}.converted.html");
+//$converter->convertPage(
+//    "http://oldrtfm.modx.com/display/{$space}/{$page}",
+//    "{$data}/{$page}.converted.html");
 
-//$converter->convertAll($tocDir, $outputDir, $addHtmlExtension);
+$converter->convertAll($tocDir, $outputDir, $addHtmlExtension, $statsFile);

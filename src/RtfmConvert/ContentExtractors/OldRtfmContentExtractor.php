@@ -68,13 +68,16 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
                                                 PageStatistics $stats = null) {
         $content = str_replace('<!-- wiki content -->', '', $content, $count);
 
-        if (!is_null($stats)) {
-            $stats->addTransformStat('comments: wiki content', $count,
-                array(PageStatistics::TRANSFORM_ALL => true));
-            $stats->addTransformStat('comments: others',
-                substr_count($content, '<!--') - $count,
+        if (is_null($stats))
+            return $content;
+
+        $stats->addTransformStat('comments: wiki content', $count,
+            array(PageStatistics::TRANSFORM_ALL => true));
+        $otherCommentsCount = substr_count($content, '<!--');
+        if ($otherCommentsCount > 0)
+            $stats->addTransformStat('comments: others', $otherCommentsCount,
                 array(PageStatistics::WARN_IF_FOUND => true));
-        }
+
         return $content;
     }
 

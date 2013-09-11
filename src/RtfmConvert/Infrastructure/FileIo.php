@@ -55,4 +55,8 @@ class FileIo {
         if (file_put_contents($filename, $data) === false)
             throw new RtfmException("Error writing file: {$filename}");
     }
+
+    public function realpath($path) {
+        return realpath($path);
+    }
 }

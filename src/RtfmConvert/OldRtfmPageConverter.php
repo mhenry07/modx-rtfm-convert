@@ -69,7 +69,8 @@ class OldRtfmPageConverter {
     public function convertAll($tocDir, $outputDir, $addHtmlExtension,
                                $statsFile) {
         echo 'Converting old MODX RTFM pages', PHP_EOL;
-        echo 'Converted files will be written to: ', $outputDir, PHP_EOL;
+        echo 'Converted files will be written to: ',
+            $this->fileIo->realpath($outputDir), PHP_EOL;
         echo PHP_EOL;
 
         $stats = array();

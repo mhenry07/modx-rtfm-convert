@@ -18,9 +18,8 @@ $tocDir = "{$root}/oldrtfm-toc";
 $outputDir = "{$data}/convert";
 $cacheDir = "{$data}/cache";
 
-$time = new DateTime();
-$timeString = $time->format('YmdTHi');
-$statsFile = "{$outputDir}/stats-{$timeString}.json";
+$dateString = date('Ymd\THi');
+$statsFile = "{$outputDir}/stats-{$dateString}.json";
 
 
 $converter = new OldRtfmPageConverter($cacheDir);

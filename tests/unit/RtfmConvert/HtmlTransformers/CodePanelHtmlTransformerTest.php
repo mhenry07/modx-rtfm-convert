@@ -351,6 +351,8 @@ EOT;
         $transformer->transform($pageData);
         $this->assertTransformStat('.code.panel pre:has(span[class^="code-"])',
             1, array(self::TRANSFORM => 1, self::WARNING => 0));
+        $this->assertStatsNotContain(
+            '.code.panel pre:has(*:not(span[class^="code-"]))');
     }
 
     /**
@@ -367,7 +369,7 @@ EOT;
         $transformer = new CodePanelHtmlTransformer();
         $transformer->transform($pageData);
         $this->assertTransformStat(
-            '.code.panel pre:has(:not(span[class^="code-"]))', 1,
+            '.code.panel pre:has(*:not(span[class^="code-"]))', 1,
             array(self::TRANSFORM => 0, self::WARNING => 1));
     }
 }

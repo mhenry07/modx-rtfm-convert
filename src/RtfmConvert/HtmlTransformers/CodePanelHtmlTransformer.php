@@ -40,10 +40,12 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
     protected function generateStatistics(PageData $pageData) {
         if (is_null($pageData->getStats())) return;
         $codePanelPres = $pageData->getHtmlQuery('.code.panel pre');
-        $pageData->addQueryStat(
-            '.code.panel pre:has(:not(span[class^="code-"]))',
-            $codePanelPres->has(':not(span[class^="code-"])'),
-            array(self::WARN_IF_FOUND => true));
+        $unhandledChildren = $codePanelPres->has('*')
+            ->not('span[class^="code-"]');
+        if ($unhandledChildren->count() > 0)
+            $pageData->addQueryStat(
+                '.code.panel pre:has(*:not(span[class^="code-"]))',
+                $unhandledChildren, array(self::WARN_IF_FOUND => true));
     }
 
     protected function transformCodeSpans($label, DOMQuery $codePanelPres,

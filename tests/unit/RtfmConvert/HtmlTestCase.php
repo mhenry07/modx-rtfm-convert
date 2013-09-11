@@ -57,6 +57,13 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
             $this->normalizeHtml($actualQp), $message);
     }
 
+    /**
+     * @param string $label
+     */
+    public function assertStatsNotContain($label) {
+        $this->assertArrayNotHasKey($label, $this->stats->getStats());
+    }
+
     /*
      * @param string $label
      * @param int $expectedFound

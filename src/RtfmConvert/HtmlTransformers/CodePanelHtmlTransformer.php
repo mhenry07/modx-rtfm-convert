@@ -83,7 +83,10 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
                                            PageData $pageData) {
         $transformFn = function (DOMQuery $query) {
             $query->find('pre.code-java')
-                ->removeClass('code-java')->addClass('brush: php')->unwrap();
+                ->removeClass('code-java')->addClass('brush: php');
+            $query->find('pre.code-html')
+                ->removeClass('code-html')->addClass('brush: php');
+            $query->find('pre')->unwrap();
             $query->contents()->unwrap();
         };
 

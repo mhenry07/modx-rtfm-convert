@@ -41,6 +41,31 @@ EOT;
         $this->assertHtmlEquals($expectedHtml, $result);
     }
 
+    public function testTransformShouldTransformHtmlCodePanel() {
+        $sourceHtml = <<<'EOT'
+<div class="code panel" style="border-width: 1px;">
+<div class="codeContent panelContent">
+<pre class="code-html">        .ajaxSearch_paging {
+
+        }
+</pre>
+</div>
+</div>
+EOT;
+
+        $expectedHtml = <<<'EOT'
+<pre class="brush: php">        .ajaxSearch_paging {
+
+        }
+</pre>
+EOT;
+
+        $pageData = new PageData($sourceHtml);
+        $transformer = new CodePanelHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expectedHtml, $result);
+    }
+
     /**
      * @depends testTransformShouldTransformSimpleCodePanel
      */

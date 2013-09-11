@@ -14,20 +14,19 @@ class BrAtlForcedNewlineHtmlTransformer extends AbstractHtmlTransformer {
         $this->generateStatistics($pageData);
         $qp = $pageData->getHtmlQuery();
         $pageData->beginTransform($qp);
-        $expectedRemovals = 0;
+        $expectedDiff = 0;
 
         if ($qp->firstChild()->is('p > br.atl-forced-newline:only-child')) {
-            $expectedRemovals++;
+            $expectedDiff -= 2;
             $qp->firstChild()->remove();
         }
         if ($qp->lastChild()->is('p > br.atl-forced-newline:only-child')) {
-            $expectedRemovals++;
+            $expectedDiff -= 2;
             $qp->lastChild()->remove();
         }
         $qp->find('br.atl-forced-newline')->removeAttr('class');
 
-        $pageData->checkTransform('br.atl-forced-newline', $qp,
-            -$expectedRemovals);
+        $pageData->checkTransform('br.atl-forced-newline', $qp, $expectedDiff);
         return $qp;
     }
 

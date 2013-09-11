@@ -17,10 +17,12 @@ class BrAtlForcedNewlineHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
 {$expected}
 EOT;
 
-        $pageData = new PageData($html);
+        $pageData = new PageData($html, $this->stats);
         $transformer = new BrAtlForcedNewlineHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
+        $this->assertTransformStat('br.atl-forced-newline', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
     }
 
     public function testTransformShouldRemoveLastBrAtlForcedNewline() {

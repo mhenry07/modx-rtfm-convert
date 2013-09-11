@@ -68,6 +68,10 @@ class OldRtfmPageConverter {
     // TODO: add a PageProcessor::processPages method and call that
     public function convertAll($tocDir, $outputDir, $addHtmlExtension,
                                $statsFile) {
+        echo 'Converting old MODX RTFM pages', PHP_EOL;
+        echo 'Converted files will be written to: ', $outputDir, PHP_EOL;
+        echo PHP_EOL;
+
         $stats = array();
 
         $tocParser = new OldRtfmTocParser();
@@ -100,6 +104,7 @@ class OldRtfmPageConverter {
      * @param array $stats
      */
     protected function saveStats($dest, array $stats) {
+        echo PHP_EOL, 'Writing stats to: ', $dest, PHP_EOL;
         $json = json_encode($stats);
         $this->fileIo->write("$dest", $json);
     }

@@ -3,8 +3,8 @@
 // note: uncomment extension=php_tidy.dll in php.ini
 // should probably use indent => true and default wrap for posting to new rtfm
 
-$src = '../data/dest.html';
-$dest = '../data/tidy.html';
+$src = '../../data/dest.html';
+$dest = '../../data/tidy.html';
 
 // see http://tidy.sourceforge.net/docs/quickref.html
 $config = array(

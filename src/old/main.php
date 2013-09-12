@@ -1,5 +1,5 @@
 <?php
-require '../vendor/autoload.php';
+require '../../vendor/autoload.php';
 
 // FIXED: strip &Acirc; (injected before &nbsp;)
 //  * passing qp->html() to create a second qp object seemed to contribute to this
@@ -19,9 +19,9 @@ require '../vendor/autoload.php';
 //  * unrecognized cases
 
 //$src = 'http://oldrtfm.modx.com/display/revolution20/Tag+Syntax';
-$src = '../data/tag-syntax.html';
+$src = '../../data/tag-syntax.html';
 //$src = 'http://oldrtfm.modx.com/display/revolution20/Server+Requirements';
-$dest = '../data/dest.html';
+$dest = '../../data/dest.html';
 
 $options = array(
     'encoding' => 'utf-8',

@@ -77,9 +77,7 @@ EOT;
         $transformer = new NamedAnchorHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertTransformStat('named anchors: headings', 0,
-            array(self::TRANSFORM => 0, self::WARNING => 0));
-        $this->assertTransformStat('named anchors: heading exceptions', 1,
+        $this->assertTransformStat('named anchors: headings', 1,
             array(self::TRANSFORM => 0, self::WARNING => 1));
     }
 
@@ -90,9 +88,7 @@ EOT;
         $transformer = new NamedAnchorHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertTransformStat('named anchors: headings', 0,
-            array(self::TRANSFORM => 0, self::WARNING => 0));
-        $this->assertTransformStat('named anchors: heading exceptions', 1,
+        $this->assertTransformStat('named anchors: headings', 1,
             array(self::TRANSFORM => 0, self::WARNING => 1));
     }
 

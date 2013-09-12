@@ -14,6 +14,8 @@ use RtfmConvert\RtfmException;
 class CachedPageLoader implements PageLoaderInterface {
     /** @var string */
     protected $baseDirectory;
+    /** @var string */
+    protected $statsPrefix = '';
     /** @var PageLoaderInterface */
     protected $basePageLoader;
     /** @var FileIo */
@@ -33,6 +35,11 @@ class CachedPageLoader implements PageLoaderInterface {
         $this->baseDirectory = $baseDirectory;
     }
 
+    public function setStatsPrefix($prefix) {
+        $this->statsPrefix = $prefix;
+        $this->basePageLoader->setStatsPrefix($prefix);
+    }
+
     function get($url, PageStatistics $stats = null) {
         $fileIo = $this->fileIo;
         if (is_null($stats))
@@ -42,13 +49,13 @@ class CachedPageLoader implements PageLoaderInterface {
 
         $cacheFile = $this->getCachePath($url);
         if ($fileIo->exists($cacheFile)) {
-            $stats->addValueStat('cache: loaded from',
+            $stats->addValueStat($this->statsPrefix . 'cache: loaded from',
                 PathHelper::normalize($cacheFile));
             return $fileIo->read($cacheFile);
         }
         $contents = $this->basePageLoader->get($url, $stats);
         if (!$fileIo->exists(dirname($cacheFile))) {
-            $stats->addValueStat('cache: saved to',
+            $stats->addValueStat($this->statsPrefix . 'cache: saved to',
                 PathHelper::normalize($cacheFile));
             $fileIo->mkdir(dirname($cacheFile));
         }

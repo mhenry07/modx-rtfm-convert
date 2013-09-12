@@ -27,6 +27,7 @@ class PageProcessor {
         $stats->addValueStat('source: url', $source);
         $stats->addValueStat('time: start', \DateTime::W3C);
         try {
+            $this->pageLoader->setStatsPrefix('source: ');
             $pageData = $this->pageLoader->getData($source, $stats);
 
             /** @var ProcessorOperationInterface $operation */

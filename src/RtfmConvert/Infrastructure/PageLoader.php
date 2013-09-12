@@ -12,12 +12,18 @@ use RtfmConvert\RtfmException;
  * @package RtfmConvert.
  */
 class PageLoader implements PageLoaderInterface {
+    protected $statsPrefix = '';
     protected $curlWrapper;
     protected $fileIo;
 
-    function __construct(CurlWrapper $curlWrapper = null, FileIo $fileIo = null) {
+    function __construct(CurlWrapper $curlWrapper = null,
+                         FileIo $fileIo = null) {
         $this->curlWrapper = $curlWrapper ? : new CurlWrapper();
         $this ->fileIo = $fileIo ? : new FileIo();
+    }
+
+    public function setStatsPrefix($prefix) {
+        $this->statsPrefix = $prefix;
     }
 
     /**
@@ -72,24 +78,32 @@ class PageLoader implements PageLoaderInterface {
             ));
             $output = $curl->exec();
             $httpCode = $curl->getinfo(CURLINFO_HTTP_CODE);
-            $contentLengthHeader = intval($curl->getinfo(CURLINFO_CONTENT_LENGTH_DOWNLOAD));
+            $contentLengthHeader =
+                intval($curl->getinfo(CURLINFO_CONTENT_LENGTH_DOWNLOAD));
         } finally {
             $curl->close();
         }
 
-        $options = $httpCode >= 400 || $output === false ? array(PageStatistics::ERROR, 1) : array();
-        $stats->addValueStat('http status code', $httpCode, $options);
+        $options = $httpCode >= 400 || $output === false ?
+            array(PageStatistics::ERROR, 1) : array();
+        $stats->addValueStat($this->statsPrefix . 'http status code',
+            $httpCode, $options);
         if ($output === false)
-            throw new RtfmException("Failed to retrieve url (code {$httpCode}): {$url}");
+            throw new RtfmException(
+                "Failed to retrieve url (code {$httpCode}): {$url}");
 
         $downloadBytes = strlen($output);
-        $stats->addValueStat('content length header', $contentLengthHeader);
-        $options = $contentLengthHeader > 0 && $downloadBytes != $contentLengthHeader ?
+        $stats->addValueStat($this->statsPrefix . 'content length header',
+            $contentLengthHeader);
+        $options = $contentLengthHeader > 0 &&
+            $downloadBytes != $contentLengthHeader ?
             array(PageStatistics::ERROR, 1) : array();
-        $stats->addValueStat('downloaded bytes', $downloadBytes, $options);
+        $stats->addValueStat($this->statsPrefix . 'bytes', $downloadBytes,
+            $options);
         if (!is_null($contentLengthHeader) && $contentLengthHeader > 0 &&
             $downloadBytes != $contentLengthHeader) {
-            throw new RtfmException("Bytes downloaded ({$downloadBytes}) does not match Content-Length header ({$contentLengthHeader})");
+            throw new RtfmException(
+                "Bytes downloaded ({$downloadBytes}) does not match Content-Length header ({$contentLengthHeader})");
         }
 
         return $output;

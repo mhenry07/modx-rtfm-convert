@@ -51,7 +51,10 @@ class CachedPageLoader implements PageLoaderInterface {
         if ($fileIo->exists($cacheFile)) {
             $stats->addValueStat($this->statsPrefix . 'cache: loaded from',
                 PathHelper::normalize($cacheFile));
-            return $fileIo->read($cacheFile);
+            $contents = $fileIo->read($cacheFile);
+            $stats->addValueStat($this->statsPrefix . 'bytes',
+                strlen($contents));
+            return $contents;
         }
         $contents = $this->basePageLoader->get($url, $stats);
         if (!$fileIo->exists(dirname($cacheFile))) {

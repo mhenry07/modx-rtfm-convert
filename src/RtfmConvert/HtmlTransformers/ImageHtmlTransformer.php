@@ -13,16 +13,18 @@ class ImageHtmlTransformer extends AbstractHtmlTransformer {
     protected $execFn;
 
     function __construct() {
-        $this->execFn = function ($selector, DOMQuery $query,
+        $this->execFn = function ($label, $selector, DOMQuery $query,
                                    PageData $pageData, callable $transformFn,
-                                   $diffPerMatch) {
-            $addStatFn = function ($label, DOMQuery $query, PageData $pageData) {
-                $pageData->addQueryStat($label, $query,
-                    array(self::TRANSFORM_ALL => true));
+                                   $diffPerMatch, $transformDescription) {
+            $addStatFn = function ($label, DOMQuery $query, PageData $pageData)
+                use ($transformDescription) {
+                if ($query->count() > 0)
+                    $pageData->incrementStat($label, self::TRANSFORM,
+                        $query->count(), $transformDescription);
             };
             $matches = $query->find($selector);
             $expectedDiff = $matches->count() * $diffPerMatch;
-            $this->executeTransformStep($selector, $matches, $pageData,
+            $this->executeTransformStep($label, $matches, $pageData,
                 $transformFn, $addStatFn, $expectedDiff);
         };
     }
@@ -45,31 +47,36 @@ class ImageHtmlTransformer extends AbstractHtmlTransformer {
                 $qp->attr('href', $href);
             });
         };
-        $execFn($selector, $qp, $pageData, $transformFn, 0);
+        $execFn('a.confluence-thumbnail-link', $selector, $qp, $pageData,
+            $transformFn, 0, "converted {$selector} to relative URL");
 
         $selector = 'span.image-wrap[style=""]';
         $transformFn = function (DOMQuery $query) {
             $query->contents()->unwrap();
         };
-        $execFn($selector, $qp, $pageData, $transformFn, -1);
+        $execFn('span.image-wrap', $selector, $qp, $pageData, $transformFn, -1,
+            "stripped tag {$selector}");
 
         $selector = 'img[style="border: 0px solid black"]';
         $transformFn = function (DOMQuery $query) {
             $query->removeAttr('style');
         };
-        $execFn($selector, $qp, $pageData, $transformFn, 0);
+        $execFn('img', $selector, $qp, $pageData, $transformFn, 0,
+            'removed attribute style="border: 0px solid black" from img');
 
         $selector = 'img.emoticon[src="/images/icons/emoticons/smile.gif"]';
         $transformFn = function (DOMQuery $query) {
             $query->replaceWith(':)');
         };
-        $execFn($selector, $qp, $pageData, $transformFn, -1);
+        $execFn('img.emoticon', $selector, $qp, $pageData, $transformFn, -1,
+            'converted smile emoticon img to text :)');
 
         $selector = 'img.emoticon[src="/images/icons/emoticons/wink.gif"]';
         $transformFn = function (DOMQuery $query) {
             $query->replaceWith(';)');
         };
-        $execFn($selector, $qp, $pageData, $transformFn, -1);
+        $execFn('img.emoticon', $selector, $qp, $pageData, $transformFn, -1,
+            'converted wink emoticon img to text ;)');
 
         return $qp;
     }
@@ -80,19 +87,24 @@ class ImageHtmlTransformer extends AbstractHtmlTransformer {
             $pageData->addQueryStat($selector, $qp->find($selector));
         };
         $addStat('span.image-wrap');
+        if ($qp->find('a.confluence-thumbnail-link')->count() > 0)
+            $addStat('a.confluence-thumbnail-link');
         $addStat('img');
+        if ($qp->find('img')->count() == 0)
+            return;
+
         $addStat('img.emoticon');
 
         $emoticonCount = $qp->find('img.emoticon')->count();
-        if ($emoticonCount > 0) {
-            $smiles = $qp->find('img.emoticon[src="/images/icons/emoticons/smile.gif"]');
-            $winks = $qp->find('img.emoticon[src="/images/icons/emoticons/wink.gif"]');
-            $unhandledEmoticonCount = $emoticonCount - $smiles->count() -
-                $winks->count();
-            if ($unhandledEmoticonCount > 0)
-                $pageData->addTransformStat('img.emoticon (unhandled)',
-                    $unhandledEmoticonCount,
-                    array(self::WARN_IF_FOUND => true));
-        }
+        if ($emoticonCount == 0)
+            return;
+
+        $smiles = $qp->find('img.emoticon[src="/images/icons/emoticons/smile.gif"]');
+        $winks = $qp->find('img.emoticon[src="/images/icons/emoticons/wink.gif"]');
+        $unhandledEmoticonCount = $emoticonCount - $smiles->count() -
+            $winks->count();
+        if ($unhandledEmoticonCount > 0)
+            $pageData->incrementStat('img.emoticon', self::WARNING,
+                $unhandledEmoticonCount, 'found unhandled emoticon(s)');
     }
 }

@@ -21,7 +21,6 @@ use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\Infrastructure\FileIo;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
 use RtfmConvert\TextTransformers\ModxTagsToEntitiesTextTransformer;
-//use RtfmConvert\TextTransformers\NbspTextTransformer;
 
 class OldRtfmPageConverter {
     /** @var PageProcessor */
@@ -58,7 +57,6 @@ class OldRtfmPageConverter {
         // post-processing
         $processor->register(new HtmlTidyTextTransformer());
         $processor->register(new ModxTagsToEntitiesTextTransformer());
-        //$processor->register(new NbspTextTransformer());
 
         $this->processor = $processor;
     }

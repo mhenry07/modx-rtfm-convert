@@ -33,6 +33,7 @@ class ExternalLinkHtmlTransformer extends AbstractHtmlTransformer {
     protected function generateStatistics(PageData $pageData) {
         $externalLinks = $pageData->getHtmlQuery('a.external-link');
         $pageData->addQueryStat('a.external-link', $externalLinks,
-            array(self::TRANSFORM_ALL => true));
+            array(self::TRANSFORM_ALL => true, self::TRANSFORM_MESSAGES =>
+                'removing external-link class and rel="nofollow" attribute'));
     }
 }

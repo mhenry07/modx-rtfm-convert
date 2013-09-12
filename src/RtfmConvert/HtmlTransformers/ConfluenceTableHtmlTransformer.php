@@ -35,6 +35,8 @@ class ConfluenceTableHtmlTransformer extends AbstractHtmlTransformer {
         $confluenceTables = $pageData
             ->getHtmlQuery('div.table-wrap table.confluenceTable');
         $pageData->addQueryStat('div.table-wrap table.confluenceTable',
-            $confluenceTables, array(self::TRANSFORM_ALL => true));
+            $confluenceTables,
+                array(self::TRANSFORM_ALL => true, self::TRANSFORM_MESSAGES =>
+                    'stripping div.table-wrap, removing confluenceTable, confluenceTh, confluenceTd classes'));
     }
 }

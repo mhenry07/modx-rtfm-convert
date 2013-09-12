@@ -50,7 +50,8 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         if (!is_null($stats)) {
             $stats->beginTransform($query);
             $stats->addQueryStat($selector, $matches,
-                array(PageStatistics::TRANSFORM_ALL => true));
+                array(PageStatistics::TRANSFORM_ALL => true,
+                    PageStatistics::TRANSFORM_MESSAGES => 'removed'));
         }
 
         $matches->remove();
@@ -72,11 +73,14 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
             return $content;
 
         $stats->addTransformStat('comments: wiki content', $count,
-            array(PageStatistics::TRANSFORM_ALL => true));
+            array(PageStatistics::TRANSFORM_ALL => true,
+                PageStatistics::TRANSFORM_MESSAGES =>
+                'removed <!-- wiki content -->'));
         $otherCommentsCount = substr_count($content, '<!--');
         if ($otherCommentsCount > 0)
             $stats->addTransformStat('comments: others', $otherCommentsCount,
-                array(PageStatistics::WARN_IF_FOUND => true));
+                array(PageStatistics::WARN_IF_FOUND => true,
+                    PageStatistics::WARNING_MESSAGES => 'unhandled comments'));
 
         return $content;
     }
@@ -98,7 +102,8 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         if ($qp->top('#content #pageId')->count() == 0) {
             $stats->addTransformStat('#content #pageId', 0,
                 array(PageStatistics::WARN_IF_MISSING => true,
-                    PageStatistics::WARNING_MESSAGES => '#pageId not found in #content. Attempting to search from body.'));
+                    PageStatistics::WARNING_MESSAGES =>
+                    '#pageId not found in #content. Attempting to search from body.'));
             $content = $qp->top('body');
         }
 
@@ -128,7 +133,10 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
 
         $stats->addQueryStat('div.wiki-content', $wikiContent,
             array(PageStatistics::TRANSFORM_ALL => true,
-                PageStatistics::ERROR_IF_MISSING => true));
+                PageStatistics::TRANSFORM_MESSAGES => 'extracted',
+                PageStatistics::ERROR_IF_MISSING => true,
+                PageStatistics::ERROR_MESSAGES => 'missing'
+            ));
     }
 
     protected function checkForErrors($html, PageStatistics $stats = null) {
@@ -142,7 +150,8 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         $diff = $divOpenTags - $divCloseTags;
         if ($divOpenTags !== $divCloseTags && !is_null($stats))
             $stats->addTransformStat('warning: unmatched div(s)', abs($diff),
-                array(PageStatistics::WARN_IF_FOUND => true));
+                array(PageStatistics::WARN_IF_FOUND => true,
+                    PageStatistics::WARNING_MESSAGES => 'unmatched div(s)'));
     }
 
     /**

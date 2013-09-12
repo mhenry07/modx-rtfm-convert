@@ -7,6 +7,7 @@ namespace RtfmConvert\HtmlTransformers;
 
 
 use RtfmConvert\PageData;
+use RtfmConvert\RtfmQueryPath;
 
 class CodePanelHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
 
@@ -350,6 +351,32 @@ EOT;
         $transformer->transform($pageData);
         $this->assertTransformStat('.code.panel pre:has(span[class^="code-"])',
             1, array(self::TRANSFORM => 1, self::WARNING => 0));
+        $this->assertStatsNotContain(
+            '.code.panel pre:has(*:not(span[class^="code-"]))');
+    }
+
+    /**
+     * Note: this was previously having issues when PageData contained an
+     * instance of \QueryPath\DOMQuery.
+     * @depends testGenerateStatisticsShouldAddExpectedStats
+     */
+    public function testGenerateStatisticsShouldNotAddPreNotSpanStats() {
+        $sourceHtml = <<<'EOT'
+<html>
+<head><title>Test</title></head>
+<body>
+<p>content</p>
+<div class="code panel"><div class="codeContent panelContent">
+<pre class="code-java">[[*createdby]] <span class="code-comment">// renders the ID of the user who created this Resource</span></pre>
+</div></div>
+</body>
+</html>
+EOT;
+
+        $qp = RtfmQueryPath::htmlqp($sourceHtml);
+        $pageData = new PageData($qp, $this->stats);
+        $transformer = new CodePanelHtmlTransformer();
+        $transformer->transform($pageData);
         $this->assertStatsNotContain(
             '.code.panel pre:has(*:not(span[class^="code-"]))');
     }

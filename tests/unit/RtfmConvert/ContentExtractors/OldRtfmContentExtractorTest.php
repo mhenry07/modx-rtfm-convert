@@ -9,6 +9,7 @@ namespace RtfmConvert\ContentExtractors;
 
 require_once('RtfmConvert/HtmlTestCase.php');
 use RtfmConvert\HtmlTestCase;
+use RtfmConvert\PageStatistics;
 
 class OldRtfmContentExtractorTest extends HtmlTestCase {
     const WIKI_CONTENT_FORMAT = <<<'EOT'
@@ -249,12 +250,15 @@ EOT;
 
         $extractor = new OldRtfmContentExtractor();
         $extractor->extract($source, $this->stats);
-        $this->assertValueStat('source: pageId', $pageId,
+        $this->assertValueStat(PageStatistics::SOURCE_PAGE_ID_LABEL, $pageId,
             array(self::WARNING => 0));
-        $this->assertValueStat('source: pageTitle', $pageTitle);
-        $this->assertValueStat('source: spaceKey', $spaceKey);
-        $this->assertValueStat('source: spaceName', $spaceName);
-        $this->assertValueStat('source: modification-info',
+        $this->assertValueStat(PageStatistics::SOURCE_PAGE_TITLE_LABEL,
+            $pageTitle);
+        $this->assertValueStat(PageStatistics::SOURCE_SPACE_KEY_LABEL,
+            $spaceKey);
+        $this->assertValueStat(PageStatistics::SOURCE_SPACE_NAME_LABEL,
+            $spaceName);
+        $this->assertValueStat(PageStatistics::SOURCE_MODIFICATION_INFO_LABEL,
             'Added by Shaun McCormick, last edited by Jay Gilmore on Sep 28, 2012');
     }
 

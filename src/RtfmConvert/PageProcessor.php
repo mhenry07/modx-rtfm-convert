@@ -24,7 +24,7 @@ class PageProcessor {
         $startTime = microtime(true);
         echo 'Processing: ', $source, PHP_EOL;
         $stats = new PageStatistics();
-        $stats->addValueStat('source: url', $source);
+        $stats->addValueStat(PageStatistics::SOURCE_URL_LABEL, $source);
         $stats->addValueStat('time: start', \DateTime::W3C);
         try {
             $this->pageLoader->setStatsPrefix('source: ');

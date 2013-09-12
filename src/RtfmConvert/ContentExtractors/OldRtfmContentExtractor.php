@@ -113,19 +113,19 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         if ($pageId->count() == 0)
             $pageIdOptions = array(PageStatistics::WARNING => 1,
                 PageStatistics::WARNING_MESSAGES => 'Unable to locate pageId');
-        $stats->addValueStat('source: pageId', $pageId->attr('value'),
-            $pageIdOptions);
-        $stats->addValueStat('source: pageTitle',
+        $stats->addValueStat(PageStatistics::SOURCE_PAGE_ID_LABEL,
+            $pageId->attr('value'), $pageIdOptions);
+        $stats->addValueStat(PageStatistics::SOURCE_PAGE_TITLE_LABEL,
             $content->find('input[title="pageTitle"]')->first()->attr('value'));
-        $stats->addValueStat('source: spaceKey',
+        $stats->addValueStat(PageStatistics::SOURCE_SPACE_KEY_LABEL,
             $content->find('#spaceKey')->attr('value'));
-        $stats->addValueStat('source: spaceName',
+        $stats->addValueStat(PageStatistics::SOURCE_SPACE_NAME_LABEL,
             $content->find('input[title="spaceName"]')->first()->attr('value'));
         $modificationInfo = $content
             ->find('.page-metadata .page-metadata-modification-info')
             ->first();
         $modificationInfo->remove('.noprint');
-        $stats->addValueStat('source: modification-info',
+        $stats->addValueStat(PageStatistics::SOURCE_MODIFICATION_INFO_LABEL,
             trim($modificationInfo->text()));
 
         // stats

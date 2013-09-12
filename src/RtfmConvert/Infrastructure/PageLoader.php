@@ -31,7 +31,6 @@ class PageLoader implements PageLoaderInterface {
     public function get($url, PageStatistics $stats = null) {
         if (is_null($stats))
             $stats = new PageStatistics();
-        $stats->add('url', $url);
 
         try {
             $contents = $this->getContents($url, $stats);
@@ -78,15 +77,16 @@ class PageLoader implements PageLoaderInterface {
             $curl->close();
         }
 
-        $stats->add('http status code', $httpCode,
-            $httpCode >= 400 || $output === false);
+        $options = $httpCode >= 400 || $output === false ? array(PageStatistics::ERROR, 1) : array();
+        $stats->addValueStat('http status code', $httpCode, $options);
         if ($output === false)
             throw new RtfmException("Failed to retrieve url (code {$httpCode}): {$url}");
 
         $downloadBytes = strlen($output);
-        $stats->add('content length header', $contentLengthHeader);
-        $stats->add('downloaded bytes', $downloadBytes,
-            $contentLengthHeader > 0 && $downloadBytes != $contentLengthHeader);
+        $stats->addValueStat('content length header', $contentLengthHeader);
+        $options = $contentLengthHeader > 0 && $downloadBytes != $contentLengthHeader ?
+            array(PageStatistics::ERROR, 1) : array();
+        $stats->addValueStat('downloaded bytes', $downloadBytes, $options);
         if (!is_null($contentLengthHeader) && $contentLengthHeader > 0 &&
             $downloadBytes != $contentLengthHeader) {
             throw new RtfmException("Bytes downloaded ({$downloadBytes}) does not match Content-Length header ({$contentLengthHeader})");

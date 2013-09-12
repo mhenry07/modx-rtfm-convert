@@ -8,7 +8,6 @@ namespace RtfmConvert\HtmlTransformers;
 
 use RtfmConvert\HtmlTestCase;
 use RtfmConvert\PageData;
-use RtfmConvert\PageStatistics;
 
 class ConfluenceTableHtmlTransformerTest extends HtmlTestCase {
 
@@ -80,6 +79,7 @@ EOT;
         $pageData = new PageData($input, $this->stats);
         $transformer = new ConfluenceTableHtmlTransformer();
         $transformer->transform($pageData);
-        $this->assertStat('div.table-wrap table.confluenceTable', 1, true);
+        $this->assertTransformStat('div.table-wrap table.confluenceTable', 1,
+            array(self::TRANSFORM => 1));
     }
 }

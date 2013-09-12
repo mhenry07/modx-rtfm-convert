@@ -23,33 +23,66 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
      * See notes from 8/26.
      */
     public function extract($html, PageStatistics $stats = null) {
+        $this->checkForErrors($html, $stats);
         // preprocess HTML that causes issues with QueryPath
-        $html = $this->escapeAtlassianTemplate($html);
+        $html = $this->escapeAtlassianTemplates($html);
 
         $qp = RtfmQueryPath::htmlqp($html, 'div.wiki-content');
         $this->generateDomStatistics($qp, $stats);
         if ($qp->count() === 0)
             throw new RtfmException('Unable to locate div.wiki-content.');
-        $qp->remove('script, style, div.Scrollbar');
 
-        $content = '';
-        /** @var DOMQuery $item */
-        foreach ($qp->contents() as $item) {
-            $content .= $qp->document()->saveHTML($item->get(0));
-        }
+        $this->removeSelector('script', $qp, $stats);
+        $this->removeSelector('style', $qp, $stats);
+        // note: each div.Scrollbar can have 5 - 18 elements
+        $this->removeSelector('div.Scrollbar', $qp, $stats);
 
-        $this->generateTextStatistics($content, $stats);
-        $content = $this->removeWikiContentComment($content);
+        $content = RtfmQueryPath::getHtmlString($qp->contents());
+        $content = $this->removeWikiContentComment($content, $stats);
 
         return $content;
     }
 
+    protected function removeSelector($selector, DOMQuery $query,
+                                      PageStatistics $stats = null) {
+        $matches = $query->find($selector);
+        $expectedDiff = -RtfmQueryPath::countAll($matches, true);
+        if (!is_null($stats)) {
+            $stats->beginTransform($query);
+            $stats->addQueryStat($selector, $matches,
+                array(PageStatistics::TRANSFORM_ALL => true,
+                    PageStatistics::TRANSFORM_MESSAGES => 'removed'));
+        }
+
+        $matches->remove();
+
+        if (!is_null($stats))
+            $stats->checkTransform($selector, $query, $expectedDiff);
+    }
+
     /**
      * @param string $content
+     * @param \RtfmConvert\PageStatistics $stats
      * @return string
      */
-    private function removeWikiContentComment($content) {
-        return str_replace('<!-- wiki content -->', '', $content);
+    protected function removeWikiContentComment($content,
+                                                PageStatistics $stats = null) {
+        $content = str_replace('<!-- wiki content -->', '', $content, $count);
+
+        if (is_null($stats))
+            return $content;
+
+        $stats->addTransformStat('comments: wiki content', $count,
+            array(PageStatistics::TRANSFORM_ALL => true,
+                PageStatistics::TRANSFORM_MESSAGES =>
+                'removed <!-- wiki content -->'));
+        $otherCommentsCount = substr_count($content, '<!--');
+        if ($otherCommentsCount > 0)
+            $stats->addTransformStat('comments: others', $otherCommentsCount,
+                array(PageStatistics::WARN_IF_FOUND => true,
+                    PageStatistics::WARNING_MESSAGES => 'unhandled comments'));
+
+        return $content;
     }
 
     /**
@@ -57,56 +90,68 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
      * This may happen if scripts contain </ and/or there are self-closing
      * div's <div/>, either of which may cause div#content to be closed
      * prematurely due to the way QueryPath parses those.
-     * escapeAtlassianTemplate() should take care of </ within scripts and
+     * escapeAtlassianTemplates() should take care of </ within scripts and
      * RtfmQueryPath::htmlqp should prevent self-closing div's from being
      * generated.
      */
-    private function generateDomStatistics(DOMQuery $qp,
-                                           PageStatistics $stats = null) {
+    protected function generateDomStatistics(DOMQuery $qp,
+                                             PageStatistics $stats = null) {
         if (is_null($stats)) return;
 
-        $isTransforming = true;
         $content = $qp->top('#content');
+        if ($qp->top('#content #pageId')->count() == 0) {
+            $stats->addTransformStat('#content #pageId', 0,
+                array(PageStatistics::WARN_IF_MISSING => true,
+                    PageStatistics::WARNING_MESSAGES =>
+                    '#pageId not found in #content. Attempting to search from body.'));
+            $content = $qp->top('body');
+        }
 
         // page metadata
         $pageId = $content->find('#pageId');
-        $stats->add('sourcePageId', $pageId->attr('value'), false,
-            $pageId->count() > 0);
-        $stats->add('pageTitle',
+        $pageIdOptions = array();
+        if ($pageId->count() == 0)
+            $pageIdOptions = array(PageStatistics::WARNING => 1,
+                PageStatistics::WARNING_MESSAGES => 'Unable to locate pageId');
+        $stats->addValueStat('source: pageId', $pageId->attr('value'),
+            $pageIdOptions);
+        $stats->addValueStat('source: pageTitle',
             $content->find('input[title="pageTitle"]')->first()->attr('value'));
-        $stats->add('confluenceSpaceKey', $content->find('#spaceKey')->attr('value'));
-        $stats->add('confluenceSpaceName',
+        $stats->addValueStat('source: spaceKey',
+            $content->find('#spaceKey')->attr('value'));
+        $stats->addValueStat('source: spaceName',
             $content->find('input[title="spaceName"]')->first()->attr('value'));
         $modificationInfo = $content
             ->find('.page-metadata .page-metadata-modification-info')
             ->first();
         $modificationInfo->remove('.noprint');
-        $stats->add('source-modification-info', trim($modificationInfo->text()));
+        $stats->addValueStat('source: modification-info',
+            trim($modificationInfo->text()));
 
         // stats
         $wikiContent = $content->find('div.wiki-content');
 
-        $stats->addCountStat('div.wiki-content', $wikiContent->count(),
-            $isTransforming, false, true);
-        $stats->addCountStat('script',
-            $wikiContent->find('script')->count(), $isTransforming);
-        $stats->addCountStat('style',
-            $wikiContent->find('style')->count(), $isTransforming);
-        $stats->addCountStat('div.Scrollbar',
-            $wikiContent->find('div.Scrollbar')->count(), $isTransforming);
+        $stats->addQueryStat('div.wiki-content', $wikiContent,
+            array(PageStatistics::TRANSFORM_ALL => true,
+                PageStatistics::TRANSFORM_MESSAGES => 'extracted',
+                PageStatistics::ERROR_IF_MISSING => true,
+                PageStatistics::ERROR_MESSAGES => 'missing'
+            ));
     }
 
-    private function generateTextStatistics($html,
-                                            PageStatistics $stats = null) {
-        if (is_null($stats)) return;
-        $isTransforming = true;
+    protected function checkForErrors($html, PageStatistics $stats = null) {
+        if (strpos($html, '</body>') === false ||
+            strpos($html, '</html>') === false)
+            throw new RtfmException('Document appears to be corrupt. Missing end tag for body and/or html element.');
 
-        $wikiContentCommentCount = substr_count($html, '<!-- wiki content -->');
-        $stats->addCountStat('comments: wiki content',
-            $wikiContentCommentCount, $isTransforming);
-        $stats->addCountStat('comments: others',
-            substr_count($html, '<!--') - $wikiContentCommentCount,
-            false, true);
+        // check for unmatched div tags which could be an indication of missing content
+        $divOpenTags = preg_match_all('#<div\b#', $html);
+        $divCloseTags = preg_match_all('#</div>#', $html);
+        $diff = $divOpenTags - $divCloseTags;
+        if ($divOpenTags !== $divCloseTags && !is_null($stats))
+            $stats->addTransformStat('warning: unmatched div(s)', abs($diff),
+                array(PageStatistics::WARN_IF_FOUND => true,
+                    PageStatistics::WARNING_MESSAGES => 'unmatched div(s)'));
     }
 
     /**
@@ -125,11 +170,11 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
      * AJS.renderTemplate only matches numeric values, \{\d+\} e.g. {1}
      * See also https://developer.atlassian.com/display/AUI/Template
      */
-    private function escapeAtlassianTemplate($html) {
-        $pattern = '/<script type="text\/x-template"((?:[^>](?!\/>))*)>((?:(?!<[\/]?script>).)+)<\/script>/s'; // (?!]]>)
+    protected function escapeAtlassianTemplates($html) {
+        $pattern = '#<script type="text/x-template"((?:[^>](?!/>))*)>((?:(?!<[/]?script>).)+)</script>#s'; // (?!]]>)
         $callback = function ($matches) {
             $scriptAttributes = $matches[1];
-            $scriptCdata = preg_replace('/<\//', '<\/', $matches[2]);
+            $scriptCdata = preg_replace('#</#', '<\/', $matches[2]);
             return "<script{$scriptAttributes}>{$scriptCdata}</script>";
         };
         return preg_replace_callback($pattern, $callback, $html);

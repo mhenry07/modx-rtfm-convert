@@ -6,6 +6,8 @@
 namespace RtfmConvert\TextTransformers;
 
 
+use RtfmConvert\PageStatistics;
+
 class RegexTextTransformer extends AbstractTextTransformer {
     protected $pattern;
     protected $replacement;
@@ -26,7 +28,8 @@ class RegexTextTransformer extends AbstractTextTransformer {
         $result = preg_replace($this->pattern, $this->replacement, $subject,
             -1, $count);
         if (!is_null($this->statLabel) && is_object($input))
-            $input->addCountStat($this->statLabel, $count, $count > 0);
+            $input->addTransformStat($this->statLabel, $count,
+                array(PageStatistics::TRANSFORM_ALL => true));
         return $result;
     }
 }

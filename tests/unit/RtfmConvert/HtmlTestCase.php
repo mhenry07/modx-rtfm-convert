@@ -6,12 +6,13 @@
 namespace RtfmConvert;
 
 
-use DOMElement;
-use PHPUnit_Util_XML;
 use QueryPath\DOMQuery;
 use tidy;
 
 class HtmlTestCase extends \PHPUnit_Framework_TestCase {
+    const TRANSFORM = PageStatistics::TRANSFORM;
+    const WARNING = PageStatistics::WARNING;
+
     /** @var PageStatistics */
     protected $stats;
 
@@ -56,21 +57,77 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
             $this->normalizeHtml($actualQp), $message);
     }
 
-    public function assertStat($expectedLabel, $expectedValue, $expectedTransformed = null, $expectedWarning = null) {
+    /**
+     * @param string $label
+     */
+    public function assertStatsNotContain($label) {
+        $this->assertArrayNotHasKey($label, $this->stats->getStats());
+    }
+
+    /*
+     * @param string $label
+     * @param int $expectedFound
+     * @param array $options An associative array of options.
+     *  Possible options:
+     * * warnings: an int representing the number of warnings
+     */
+    public function assertValueStat($expectedLabel, $expectedValue,
+                                    array $options = array()) {
         if (is_null($this->stats))
             $this->fail('the test class requires a valid PageStatistics object');
         $statsArray = $this->stats->getStats();
         $this->assertArrayHasKey($expectedLabel, $statsArray);
         $stat = $statsArray[$expectedLabel];
-        $this->assertEquals($expectedValue, $stat['value']);
-        if (!is_null($expectedTransformed))
-            $this->assertEquals($expectedTransformed, $stat['transformed']);
-        if (!is_null($expectedWarning))
-            $this->assertEquals($expectedWarning, $stat['warning']);
+        $this->assertEquals($expectedValue, $stat[PageStatistics::VALUE]);
+
+        $expectedWarnings = $this->getOption($options, PageStatistics::WARNING);
+        if (!is_null($expectedWarnings)) {
+            if ($expectedWarnings == 0) {
+                $this->assertArrayNotHasKey(PageStatistics::WARNING, $stat);
+            } else {
+                $this->assertEquals($expectedWarnings, $stat[PageStatistics::WARNING]);
+            }
+        }
+    }
+
+
+    /*
+     * @param string $label
+     * @param int $expectedFound
+     * @param array $options An associative array of options.
+     *  Possible options:
+     * * transformed: an int representing the number of transformations performed
+     * * warnings: an int representing the number of warnings
+     */
+    public function assertTransformStat($label, $expectedFound,
+                                        array $options = array()) {
+        if (is_null($this->stats))
+            $this->fail('the test class requires a valid PageStatistics object');
+        $statsArray = $this->stats->getStats();
+        $this->assertArrayHasKey($label, $statsArray);
+        $stat = $statsArray[$label];
+        $this->assertEquals($expectedFound, $stat[PageStatistics::FOUND]);
+
+        $expectedTransformed = $this->getOption($options, PageStatistics::TRANSFORM);
+        if (!is_null($expectedTransformed)) {
+            if ($expectedTransformed == 0) {
+                $this->assertArrayNotHasKey(PageStatistics::TRANSFORM, $stat);
+            } else {
+                $this->assertEquals($expectedTransformed, $stat[PageStatistics::TRANSFORM]);
+            }
+        }
+        $expectedWarnings = $this->getOption($options, PageStatistics::WARNING);
+        if (!is_null($expectedWarnings)) {
+            if ($expectedWarnings == 0) {
+                $this->assertArrayNotHasKey(PageStatistics::WARNING, $stat);
+            } else {
+                $this->assertEquals($expectedWarnings, $stat[PageStatistics::WARNING]);
+            }
+        }
     }
 
     protected function normalizeHtml(DOMQuery $qp) {
-        $html = $qp->xhtml();
+        $html = RtfmQueryPath::getHtmlString($qp);
         $config = array(
             'output-html' => true,
             'show-body-only' => true,
@@ -86,5 +143,9 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
             'tidy-mark' => false);
         $tidy = new tidy();
         return $tidy->repairString($html, $config, 'utf8');
+    }
+
+    protected function getOption(array $options, $key) {
+        return array_key_exists($key, $options) ? $options[$key] : null;
     }
 }

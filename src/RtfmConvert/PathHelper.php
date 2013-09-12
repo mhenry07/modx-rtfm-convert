@@ -25,6 +25,17 @@ class PathHelper {
      */
     public static function join($part1, $part2) {
         return preg_replace('#[/\\\\]$#', '', $part1) . '/' .
-        preg_replace('#^[/\\\\]#', '', $part2);
+            preg_replace('#^[/\\\\]#', '', $part2);
+    }
+
+    /**
+     * Normalize directory separators in a path.
+     * @param string $path
+     * @return string
+     */
+    public static function normalize($path) {
+        if (DIRECTORY_SEPARATOR == '\\')
+            $path = strtr($path, '/', DIRECTORY_SEPARATOR);
+        return $path;
     }
 }

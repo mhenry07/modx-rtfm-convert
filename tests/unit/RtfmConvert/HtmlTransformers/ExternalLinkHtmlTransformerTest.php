@@ -24,6 +24,7 @@ EOT;
         $transformer = new ExternalLinkHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('a.external-link', 1, true);
+        $this->assertTransformStat('a.external-link', 1,
+            array(self::TRANSFORM => true));
     }
 }

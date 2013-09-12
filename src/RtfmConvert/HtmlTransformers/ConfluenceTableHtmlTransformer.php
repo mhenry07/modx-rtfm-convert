@@ -17,16 +17,26 @@ class ConfluenceTableHtmlTransformer extends AbstractHtmlTransformer {
     public function transform(PageData $pageData) {
         $this->generateStatistics($pageData);
         $qp = $pageData->getHtmlQuery();
-        $table = $qp->find('div.table-wrap table.confluenceTable');
-        $table->unwrap()
-            ->removeClass('confluenceTable');
-        $table->find('th.confluenceTh')->removeClass('confluenceTh');
-        $table->find('td.confluenceTd')->removeClass('confluenceTd');
+        $pageData->beginTransform($qp);
 
+        $tables = $qp->find('div.table-wrap table.confluenceTable');
+        $tableCount = $tables->count();
+
+        $tables->unwrap()->removeClass('confluenceTable');
+        $tables->find('th.confluenceTh')->removeClass('confluenceTh');
+        $tables->find('td.confluenceTd')->removeClass('confluenceTd');
+
+        $pageData->checkTransform('div.table-wrap table.confluenceTable', $qp,
+            -$tableCount);
         return $qp;
     }
 
     protected function generateStatistics(PageData $pageData) {
-        $pageData->addSimpleStat('div.table-wrap table.confluenceTable', true);
+        $confluenceTables = $pageData
+            ->getHtmlQuery('div.table-wrap table.confluenceTable');
+        $pageData->addQueryStat('div.table-wrap table.confluenceTable',
+            $confluenceTables,
+                array(self::TRANSFORM_ALL => true, self::TRANSFORM_MESSAGES =>
+                    'stripping div.table-wrap, removing confluenceTable, confluenceTh, confluenceTd classes'));
     }
 }

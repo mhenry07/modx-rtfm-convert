@@ -20,15 +20,26 @@ class PageProcessor {
         $this->fileIo = $fileIo ? : new FileIo();
     }
 
-    public function processPage($source, $dest) {
-        $pageData = $this->pageLoader->getData($source);
+    public function processPage($source, $dest, $saveStats = true) {
+        $startTime = microtime(true);
+        echo 'Processing: ', $source, PHP_EOL;
+        $stats = new PageStatistics();
+        $stats->addValueStat('source: url', $source);
+        $stats->addValueStat('time: start', \DateTime::W3C);
+        $pageData = $this->pageLoader->getData($source, $stats);
 
         /** @var ProcessorOperationInterface $operation */
         foreach ($this->operations as $operation)
             $pageData = $operation->process($pageData);
 
         $this->savePage($dest, $pageData);
-        $this->saveStats($dest, $pageData);
+        $stats->addValueStat('output: file', PathHelper::normalize($dest));
+
+        $elapsedTime = microtime(true) - $startTime;
+        $stats->addValueStat('time: elapsed (s)', $elapsedTime);
+
+        if ($saveStats)
+            $this->saveStats($dest, $pageData);
         return $pageData;
     }
 
@@ -46,6 +57,8 @@ class PageProcessor {
      * @param PageData $pageData
      */
     protected function savePage($dest, PageData $pageData) {
+        if (!$this->fileIo->exists(dirname($dest)))
+            $this->fileIo->mkdir(dirname($dest));
         $html = $pageData->getHtmlString();
         $this->fileIo->write($dest, $html);
     }

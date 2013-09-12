@@ -9,9 +9,7 @@ namespace RtfmConvert\ContentExtractors;
 
 require_once('RtfmConvert/HtmlTestCase.php');
 use RtfmConvert\HtmlTestCase;
-use RtfmConvert\PageStatistics;
 
-// TODO: handle incomplete content (i.e. missing /div for .wiki-content)
 class OldRtfmContentExtractorTest extends HtmlTestCase {
     const WIKI_CONTENT_FORMAT = <<<'EOT'
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -95,7 +93,7 @@ EOT;
     }
 
     public function testExtractShouldRemoveScrollbarFromContent() {
-        $expected = 'content';
+        $expected = '<p>content</p>';
         $scrollbar = <<<'EOT'
 <div class="Scrollbar"><table class='ScrollbarTable'><tr><td class='ScrollbarPrevIcon'><a href="/display/revolution20/Structuring+Your+Site"><img border='0' align='middle' src='/images/icons/back_16.gif' width='16' height='16'></a></td><td width='33%' class='ScrollbarPrevName'><a href="/display/revolution20/Structuring+Your+Site">Structuring Your Site</a>&nbsp;</td><td width='33%' class='ScrollbarParent'><sup><a href="/display/revolution20/Making+Sites+with+MODx"><img border='0' align='middle' src='/images/icons/up_16.gif' width='8' height='8'></a></sup><a href="/display/revolution20/Making+Sites+with+MODx">Making Sites with MODx</a></td><td width='33%' class='ScrollbarNextName'>&nbsp;<a href="/display/revolution20/Customizing+Content">Customizing Content</a></td><td class='ScrollbarNextIcon'><a href="/display/revolution20/Customizing+Content"><img border='0' align='middle' src='/images/icons/forwd_16.gif' width='16' height='16'></a></td></tr></table></div>
 EOT;
@@ -103,8 +101,10 @@ EOT;
         $source = $this->formatTestData("{$expected}\n{$scrollbar}");
 
         $extractor = new OldRtfmContentExtractor();
-        $extracted = $extractor->extract($source);
+        $extracted = $extractor->extract($source, $this->stats);
         $this->assertEquals($expected, trim($extracted));
+        $this->assertTransformStat('div.Scrollbar', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
     }
 
     public function testExtractMissingContentShouldThrowException() {
@@ -247,14 +247,53 @@ EOT;
 </html>
 EOT;
 
-        $this->stats = new PageStatistics();
         $extractor = new OldRtfmContentExtractor();
         $extractor->extract($source, $this->stats);
-        $this->assertStat('sourcePageId', $pageId);
-        $this->assertStat('pageTitle', $pageTitle);
-        $this->assertStat('confluenceSpaceKey', $spaceKey);
-        $this->assertStat('confluenceSpaceName', $spaceName);
-        $this->assertStat('source-modification-info', 'Added by Shaun McCormick, last edited by Jay Gilmore on Sep 28, 2012');
+        $this->assertValueStat('source: pageId', $pageId,
+            array(self::WARNING => 0));
+        $this->assertValueStat('source: pageTitle', $pageTitle);
+        $this->assertValueStat('source: spaceKey', $spaceKey);
+        $this->assertValueStat('source: spaceName', $spaceName);
+        $this->assertValueStat('source: modification-info',
+            'Added by Shaun McCormick, last edited by Jay Gilmore on Sep 28, 2012');
+    }
+
+    public function testExtractShouldThrowExceptionIfBodyOrHtmlEndTagMissing() {
+        $source = <<<'EOT'
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Test</title>
+</head>
+<body>
+    <div class="wiki-content">
+        content
+    </div>
+EOT;
+
+        $extractor = new OldRtfmContentExtractor();
+        $this->setExpectedException('\RtfmConvert\RtfmException');
+        $extractor->extract($source);
+    }
+
+    public function testExtractShouldWarnIfDivUnmatched() {
+        $source = <<<'EOT'
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Test</title>
+</head>
+<body>
+    <div class="wiki-content">
+        content
+</body>
+</html>
+EOT;
+
+        $extractor = new OldRtfmContentExtractor();
+        $extractor->extract($source, $this->stats);
+        $this->assertTransformStat('warning: unmatched div(s)', 1,
+            array(self::WARNING => 1));
     }
 
     // helper methods

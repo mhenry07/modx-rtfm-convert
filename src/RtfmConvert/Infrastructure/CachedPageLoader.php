@@ -42,12 +42,14 @@ class CachedPageLoader implements PageLoaderInterface {
 
         $cacheFile = $this->getCachePath($url);
         if ($fileIo->exists($cacheFile)) {
-            $stats->add('cache: loaded from', $cacheFile);
+            $stats->addValueStat('cache: loaded from',
+                PathHelper::normalize($cacheFile));
             return $fileIo->read($cacheFile);
         }
         $contents = $this->basePageLoader->get($url, $stats);
         if (!$fileIo->exists(dirname($cacheFile))) {
-            $stats->add('cache: saved to', $cacheFile);
+            $stats->addValueStat('cache: saved to',
+                PathHelper::normalize($cacheFile));
             $fileIo->mkdir(dirname($cacheFile));
         }
         $fileIo->write($cacheFile, $contents);

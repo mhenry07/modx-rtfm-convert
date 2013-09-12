@@ -6,6 +6,8 @@
 namespace RtfmConvert;
 
 
+use QueryPath\DOMQuery;
+
 class PageData {
     /** @var \QueryPath\DOMQuery|string */
     protected $html;
@@ -47,11 +49,17 @@ class PageData {
     }
 
     /**
+     * @param string|null $selector
      * @return \QueryPath\DOMQuery
      */
-    public function getHtmlQuery() {
-        if (is_string($this->html))
-            return RtfmQueryPath::htmlqp($this->html, 'body');
+    public function getHtmlQuery($selector = null) {
+        if (is_string($this->html)) {
+            if (is_null($selector))
+                $selector = 'body';
+            return RtfmQueryPath::htmlqp($this->html, $selector);
+        }
+        if (isset($selector))
+            return $this->html->top($selector);
         return $this->html;
     }
 
@@ -63,32 +71,53 @@ class PageData {
     }
 
     /**
-     * @param $label
-     * @param $count
-     * @param bool $isTransformed
-     * @param bool $warnIfFound
-     * @param bool $isRequired
+     * @see PageStatistics::addTransformStat()
      */
-    public function addCountStat($label, $count, $isTransformed = false,
-                                 $warnIfFound = false, $isRequired = false) {
+    public function addTransformStat($label, $found, array $options = array()) {
         if (is_null($this->stats))
             return;
-        $this->stats->addCountStat($label, $count, $isTransformed,
-            $warnIfFound, $isRequired);
+        $this->stats->addTransformStat($label, $found, $options);
     }
 
     /**
-     * @param string $selector
-     * @param bool $isTransforming
-     * @param bool $warnIfFound
-     * @param bool $isRequired
+     * @see PageStatistics::addQueryStat()
      */
-    public function addSimpleStat($selector, $isTransforming = false,
-                                  $warnIfFound = false, $isRequired = false) {
+    public function addQueryStat($label, DOMQuery $query,
+                                 array $options = array()) {
         if (is_null($this->stats))
             return;
-        $qp = $this->getHtmlQuery();
-        $this->stats->addCountStat($selector, $qp->find($selector)->count(),
-            $isTransforming, $warnIfFound, $isRequired);
+        $this->stats->addQueryStat($label, $query, $options);
+    }
+
+    /**
+     * @see PageStatistics::incrementStat()
+     */
+    public function incrementStat($label, $type, $count = 1, $messages = null) {
+        if (is_null($this->stats))
+            return;
+        $this->stats->incrementStat($label, $type, $count, $messages);
+    }
+
+    /**
+     * @see PageStatistics::beginTransform()
+     */
+    public function beginTransform(DOMQuery $query) {
+        if (is_null($this->stats))
+            return;
+        $this->stats->beginTransform($query);
+    }
+
+    /**
+     * @see PageStatistics::checkTransform()
+     * @param $statLabel
+     * @param \QueryPath\DOMQuery $query
+     * @param $expectedElementDiff
+     */
+    public function checkTransform($statLabel, DOMQuery $query,
+                                   $expectedElementDiff) {
+        if (is_null($this->stats))
+            return;
+        $this->stats->checkTransform($statLabel, $query,
+            $expectedElementDiff);
     }
 }

@@ -6,6 +6,8 @@
 namespace RtfmConvert\TextTransformers;
 
 
+use RtfmConvert\PageStatistics;
+
 class ReplaceTextTransformer extends AbstractTextTransformer {
     protected $search;
     protected $replace;
@@ -25,7 +27,8 @@ class ReplaceTextTransformer extends AbstractTextTransformer {
         $subject = is_string($input) ? $input : $input->getHtmlString();
         $result = str_replace($this->search, $this->replace, $subject, $count);
         if (!is_null($this->statLabel) && is_object($input))
-            $input->addCountStat($this->statLabel, $count, $count > 0);
+            $input->addTransformStat($this->statLabel, $count,
+                array(PageStatistics::TRANSFORM_ALL => true));
         return $result;
     }
 }

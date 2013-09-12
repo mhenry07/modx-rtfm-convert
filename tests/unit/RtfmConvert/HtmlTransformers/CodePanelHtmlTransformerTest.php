@@ -7,12 +7,9 @@ namespace RtfmConvert\HtmlTransformers;
 
 
 use RtfmConvert\PageData;
-use RtfmConvert\PageStatistics;
+use RtfmConvert\RtfmQueryPath;
 
 class CodePanelHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
-    public function setUp() {
-        $this->stats = new PageStatistics();
-    }
 
     public function testTransformShouldKeepNonCodeContent() {
         $html = '<h2>Title</h2><p>Text</p>';
@@ -36,6 +33,31 @@ EOT;
         $expectedHtml = <<<'EOT'
 <pre class="brush: php">
 [[!getResources? &amp;parents=`123` &amp;limit=`5`]]
+</pre>
+EOT;
+
+        $pageData = new PageData($sourceHtml);
+        $transformer = new CodePanelHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expectedHtml, $result);
+    }
+
+    public function testTransformShouldTransformHtmlCodePanel() {
+        $sourceHtml = <<<'EOT'
+<div class="code panel" style="border-width: 1px;">
+<div class="codeContent panelContent">
+<pre class="code-html">        .ajaxSearch_paging {
+
+        }
+</pre>
+</div>
+</div>
+EOT;
+
+        $expectedHtml = <<<'EOT'
+<pre class="brush: php">        .ajaxSearch_paging {
+
+        }
 </pre>
 EOT;
 
@@ -307,9 +329,11 @@ EOT;
         $transformer = new CodePanelHtmlTransformer();
         $transformer->transform($pageData);
 
-        $this->assertStat('.code.panel', 1, true);
-        $this->assertStat('.code.panel .codeHeader', 1, true);
-        $this->assertStat('.code.panel pre:has(span[class^="code-"])', 0, false);
+        $this->assertTransformStat('.code.panel', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
+        $this->assertTransformStat('.code.panel .codeHeader', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
+        $this->assertStatsNotContain('.code.panel pre:has(span[class^="code-"])');
     }
 
     /**
@@ -325,7 +349,36 @@ EOT;
         $pageData = new PageData($sourceHtml, $this->stats);
         $transformer = new CodePanelHtmlTransformer();
         $transformer->transform($pageData);
-        $this->assertStat('.code.panel pre:has(span[class^="code-"])', 1, true);
+        $this->assertTransformStat('.code.panel pre:has(span[class^="code-"])',
+            1, array(self::TRANSFORM => 1, self::WARNING => 0));
+        $this->assertStatsNotContain(
+            '.code.panel pre:has(*:not(span[class^="code-"]))');
+    }
+
+    /**
+     * Note: this was previously having issues when PageData contained an
+     * instance of \QueryPath\DOMQuery.
+     * @depends testGenerateStatisticsShouldAddExpectedStats
+     */
+    public function testGenerateStatisticsShouldNotAddPreNotSpanStats() {
+        $sourceHtml = <<<'EOT'
+<html>
+<head><title>Test</title></head>
+<body>
+<p>content</p>
+<div class="code panel"><div class="codeContent panelContent">
+<pre class="code-java">[[*createdby]] <span class="code-comment">// renders the ID of the user who created this Resource</span></pre>
+</div></div>
+</body>
+</html>
+EOT;
+
+        $qp = RtfmQueryPath::htmlqp($sourceHtml);
+        $pageData = new PageData($qp, $this->stats);
+        $transformer = new CodePanelHtmlTransformer();
+        $transformer->transform($pageData);
+        $this->assertStatsNotContain(
+            '.code.panel pre:has(*:not(span[class^="code-"]))');
     }
 
     /**
@@ -341,6 +394,8 @@ EOT;
         $pageData = new PageData($sourceHtml, $this->stats);
         $transformer = new CodePanelHtmlTransformer();
         $transformer->transform($pageData);
-        $this->assertStat('.code.panel pre:has(:not(span[class^="code-"]))', 1, false, true);
+        $this->assertTransformStat(
+            '.code.panel pre:has(*:not(span[class^="code-"]))', 1,
+            array(self::TRANSFORM => 0, self::WARNING => 1));
     }
 }

@@ -18,7 +18,8 @@ class NamedAnchorHtmlTransformerTest extends HtmlTestCase {
         $transformer = new NamedAnchorHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('named anchors: headings', 1, true, false);
+        $this->assertTransformStat('named anchors: headings', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
     }
 
     public function testTransformH3ShouldConvertNamedAnchorToH3Id() {
@@ -28,7 +29,8 @@ class NamedAnchorHtmlTransformerTest extends HtmlTestCase {
         $transformer = new NamedAnchorHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('named anchors: headings', 1, true, false);
+        $this->assertTransformStat('named anchors: headings', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
     }
 
     public function testTransformShouldConvertNamedAnchorWithId() {
@@ -38,7 +40,8 @@ class NamedAnchorHtmlTransformerTest extends HtmlTestCase {
         $transformer = new NamedAnchorHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('named anchors: headings', 1, true, false);
+        $this->assertTransformStat('named anchors: headings', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
     }
 
     public function testTransformShouldConvertNamedAnchorWithWhitespace() {
@@ -52,7 +55,8 @@ EOT;
         $transformer = new NamedAnchorHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('named anchors: headings', 1, true, false);
+        $this->assertTransformStat('named anchors: headings', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
     }
 
     public function testTransformShouldPreserveNamedAnchorWithContent() {
@@ -62,7 +66,8 @@ EOT;
         $transformer = new NamedAnchorHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('named anchors: headings', 1, true, false);
+        $this->assertTransformStat('named anchors: headings', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
     }
 
     public function testTransformShouldPreserveNamedAnchorWhenH2HasDifferentId() {
@@ -72,8 +77,8 @@ EOT;
         $transformer = new NamedAnchorHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('named anchors: headings', 0, false, false);
-        $this->assertStat('named anchors: heading exceptions', 1, false, true);
+        $this->assertTransformStat('named anchors: headings', 1,
+            array(self::TRANSFORM => 0, self::WARNING => 1));
     }
 
     public function testTransformShouldPreserveNamedAnchorWithDifferentAnchorId() {
@@ -83,8 +88,8 @@ EOT;
         $transformer = new NamedAnchorHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('named anchors: headings', 0, false, false);
-        $this->assertStat('named anchors: heading exceptions', 1, false, true);
+        $this->assertTransformStat('named anchors: headings', 1,
+            array(self::TRANSFORM => 0, self::WARNING => 1));
     }
 
     public function testTransformShouldPreservePercentAndDot() {
@@ -94,6 +99,7 @@ EOT;
         $transformer = new NamedAnchorHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStat('named anchors: headings', 1, true, false);
+        $this->assertTransformStat('named anchors: headings', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
     }
 }

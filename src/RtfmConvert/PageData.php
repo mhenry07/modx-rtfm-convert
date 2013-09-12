@@ -85,6 +85,15 @@ class PageData {
     }
 
     /**
+     * @see PageStatistics::incrementStat()
+     */
+    public function incrementStat($label, $type, $count = 1, $messages = null) {
+        if (is_null($this->stats))
+            return;
+        $this->stats->incrementStat($label, $type, $count, $messages);
+    }
+
+    /**
      * @see PageStatistics::beginTransform()
      */
     public function beginTransform(DOMQuery $query) {

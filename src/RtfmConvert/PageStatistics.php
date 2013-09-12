@@ -123,12 +123,14 @@ class PageStatistics {
             return;
         }
         $stat = $this->stats[$label];
+        if ($count > 1 && is_string($messages))
+            $messages = array(self::MESSAGE => $messages, self::COUNT => $count);
+        $this->appendMessages($stat, $type, $messages);
         if (array_key_exists($type, $stat)) {
             $stat[$type] += $count;
         } else {
             $stat[$type] = $count;
         }
-        $this->appendMessages($stat, $type, $messages);
         $this->stats[$label] = $stat;
     }
 
@@ -206,9 +208,13 @@ class PageStatistics {
             return;
         }
 
-        if (is_string($stat[$msgKey]))
+        if (is_array($stat[$msgKey]) && array_key_exists(self::MESSAGE, $stat[$msgKey]))
             $stat[$msgKey] = array($stat[$msgKey]);
-        if (is_string($messages))
+        if (is_string($stat[$msgKey]))
+            $stat[$msgKey] = array(array(self::MESSAGE => $stat[$msgKey],
+                self::COUNT => $stat[$type]));
+        if (is_string($messages) ||
+            is_array($messages) && array_key_exists(self::MESSAGE, $messages))
             $messages = array($messages);
 
         foreach ($messages as $msg)

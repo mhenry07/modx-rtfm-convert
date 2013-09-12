@@ -71,7 +71,7 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
     /**
      * @depends testAddTransformStatShouldAddExpectedStat
      */
-    public function testIncrementStatShouldUpdateExpectedStat() {
+    public function testIncrementStatShouldAddNewStatType() {
         $expected = array(
             PageStatistics::FOUND => 1,
             PageStatistics::WARNING => 1,
@@ -81,6 +81,28 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
         $stats = new PageStatistics();
         $stats->addTransformStat('key', 1);
         $stats->incrementStat('key', PageStatistics::WARNING, 1, 'message');
+
+        $statsArray = $stats->getStats();
+        $this->assertEquals($expected, $statsArray['key']);
+    }
+
+    /**
+     * @depends testAddTransformStatShouldAddExpectedStat
+     */
+    public function testIncrementStatShouldUpdateExistingType() {
+        $expected = array(
+            PageStatistics::FOUND => 3,
+            PageStatistics::TRANSFORM => 3,
+            PageStatistics::TRANSFORM_MESSAGES => array(
+                array(PageStatistics::MESSAGE => 'message1', PageStatistics::COUNT => 1),
+                array(PageStatistics::MESSAGE => 'message2', PageStatistics::COUNT => 2))
+        );
+
+        $stats = new PageStatistics();
+        $stats->addTransformStat('key', 3,
+            array(PageStatistics::TRANSFORM => 1,
+                PageStatistics::TRANSFORM_MESSAGES => 'message1'));
+        $stats->incrementStat('key', PageStatistics::TRANSFORM, 2, 'message2');
 
         $statsArray = $stats->getStats();
         $this->assertEquals($expected, $statsArray['key']);

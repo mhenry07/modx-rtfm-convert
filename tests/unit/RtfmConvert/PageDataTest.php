@@ -74,4 +74,18 @@ EOT;
         $qp = $pageData->getHtmlQuery('p');
         $this->assertEquals($qp->tag(), 'p');
     }
+
+    public function testGetHtmlQueryWithSelectorShouldReturnExpectedTagGivenDomQuery() {
+        $html = <<<'EOT'
+<html>
+<head><title>Test</title></head>
+<body><p>test</p></body>
+</html>
+EOT;
+
+        $sourceQp = RtfmQueryPath::htmlqp($html);
+        $pageData = new PageData($sourceQp);
+        $result = $pageData->getHtmlQuery('p');
+        $this->assertEquals('p', $result->tag());
+    }
 }

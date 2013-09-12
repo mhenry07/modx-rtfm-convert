@@ -49,12 +49,17 @@ class PageData {
     }
 
     /**
-     * @param string $selector
+     * @param string|null $selector
      * @return \QueryPath\DOMQuery
      */
-    public function getHtmlQuery($selector = 'body') {
-        if (is_string($this->html))
+    public function getHtmlQuery($selector = null) {
+        if (is_string($this->html)) {
+            if (is_null($selector))
+                $selector = 'body';
             return RtfmQueryPath::htmlqp($this->html, $selector);
+        }
+        if (isset($selector))
+            return $this->html->findInPlace($selector);
         return $this->html;
     }
 

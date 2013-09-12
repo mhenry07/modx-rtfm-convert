@@ -12,8 +12,10 @@ use RtfmConvert\PageStatistics;
 use RtfmConvert\ProcessorOperationInterface;
 
 abstract class AbstractHtmlTransformer implements ProcessorOperationInterface {
+    const TRANSFORM = PageStatistics::TRANSFORM;
     const TRANSFORM_ALL = PageStatistics::TRANSFORM_ALL;
     const TRANSFORM_MESSAGES = PageStatistics::TRANSFORM_MESSAGES;
+    const WARNING = PageStatistics::WARNING;
     const WARN_IF_FOUND = PageStatistics::WARN_IF_FOUND;
     const WARN_IF_MISSING = PageStatistics::WARN_IF_MISSING;
     const WARNING_MESSAGES = PageStatistics::WARNING_MESSAGES;

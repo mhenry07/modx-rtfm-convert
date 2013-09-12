@@ -59,7 +59,7 @@ class PageData {
             return RtfmQueryPath::htmlqp($this->html, $selector);
         }
         if (isset($selector))
-            return $this->html->findInPlace($selector);
+            return $this->html->top($selector);
         return $this->html;
     }
 

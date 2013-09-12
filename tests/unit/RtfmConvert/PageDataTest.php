@@ -79,11 +79,11 @@ EOT;
         $html = <<<'EOT'
 <html>
 <head><title>Test</title></head>
-<body><p>test</p></body>
+<body><div>1</div><p>test</p></body>
 </html>
 EOT;
 
-        $sourceQp = RtfmQueryPath::htmlqp($html);
+        $sourceQp = RtfmQueryPath::htmlqp($html, 'div');
         $pageData = new PageData($sourceQp);
         $result = $pageData->getHtmlQuery('p');
         $this->assertEquals('p', $result->tag());

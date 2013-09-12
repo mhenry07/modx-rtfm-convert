@@ -68,7 +68,7 @@ class NamedAnchorHtmlTransformer extends AbstractHtmlTransformer {
         $qp = $pageData->getHtmlQuery();
         $headingAnchors = $qp->find('h1, h2, h3, h4, h5, h6')
             ->find('a[name]:first-child');
-        $otherNamedAnchors = $qp->find('a[name]')->not($headingAnchors);
+        $otherNamedAnchors = $qp->find('a[name]')->not($headingAnchors->get());
         if ($otherNamedAnchors->count() > 0)
             $pageData->addQueryStat('named anchors: others', $otherNamedAnchors,
                 array(self::WARN_IF_FOUND => true,

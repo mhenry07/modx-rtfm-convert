@@ -28,7 +28,7 @@ class ReplaceTextTransformer extends AbstractTextTransformer {
         $result = str_replace($this->search, $this->replace, $subject, $count);
         if (!is_null($this->statLabel) && is_object($input))
             $input->addTransformStat($this->statLabel, $count,
-                array(PageStatistics::TRANSFORM_ALL));
+                array(PageStatistics::TRANSFORM_ALL => true));
         return $result;
     }
 }

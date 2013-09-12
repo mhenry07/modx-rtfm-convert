@@ -21,9 +21,11 @@ class PageProcessor {
     }
 
     public function processPage($source, $dest, $saveStats = true) {
+        $startTime = microtime(true);
         echo 'Processing: ', $source, PHP_EOL;
         $stats = new PageStatistics();
         $stats->addValueStat('source: url', $source);
+        $stats->addValueStat('time: start', \DateTime::W3C);
         $pageData = $this->pageLoader->getData($source, $stats);
 
         /** @var ProcessorOperationInterface $operation */
@@ -31,6 +33,11 @@ class PageProcessor {
             $pageData = $operation->process($pageData);
 
         $this->savePage($dest, $pageData);
+        $stats->addValueStat('output: file', PathHelper::normalize($dest));
+
+        $elapsedTime = microtime(true) - $startTime;
+        $stats->addValueStat('time: elapsed (s)', $elapsedTime);
+
         if ($saveStats)
             $this->saveStats($dest, $pageData);
         return $pageData;

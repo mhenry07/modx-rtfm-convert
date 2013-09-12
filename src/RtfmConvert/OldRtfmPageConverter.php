@@ -68,16 +68,20 @@ class OldRtfmPageConverter {
     // TODO: add a PageProcessor::processPages method and call that
     public function convertAll($tocDir, $outputDir, $addHtmlExtension,
                                $statsFile) {
+        $startTime = time();
         echo 'Converting old MODX RTFM pages', PHP_EOL;
+        echo date('D M d H:i:s Y'), PHP_EOL;
         echo 'Converted files will be written to: ',
             PathHelper::normalize($outputDir), PHP_EOL;
         echo PHP_EOL;
 
+        $count = 0;
         $stats = array();
 
         $tocParser = new OldRtfmTocParser();
         $hrefs = $tocParser->parseTocDirectory($tocDir);
         foreach ($hrefs as $href) {
+            $count++;
             $url = $href['url'];
             $destFile = $this->getDestinationFilename($url, $outputDir,
                 $addHtmlExtension);
@@ -88,6 +92,10 @@ class OldRtfmPageConverter {
                 $stats[$href['href']] = $statsObj->getStats();
         }
         $this->saveStats($statsFile, $stats);
+
+        echo 'Processed ', $count, ' pages', PHP_EOL;
+        $elapsedTime = time() - $startTime;
+        echo 'Elapsed time: ', $elapsedTime, ' sec', PHP_EOL;
     }
 
     protected function getDestinationFilename($url, $baseDir, $addHtmlExtension) {

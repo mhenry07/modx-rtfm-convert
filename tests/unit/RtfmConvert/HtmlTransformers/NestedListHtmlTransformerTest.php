@@ -100,7 +100,7 @@ EOT;
         $transformer = new NestedListHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expected, $result);
-        $this->assertTransformStat('lists: nested w/o prev li', 1,
+        $this->assertTransformStat('lists: nested', 1,
             array(self::TRANSFORM => 1, self::WARNING => 1));
     }
 

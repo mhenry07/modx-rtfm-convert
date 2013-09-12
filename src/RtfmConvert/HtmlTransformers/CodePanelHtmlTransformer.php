@@ -11,17 +11,6 @@ use RtfmConvert\PageData;
 
 class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
 
-    /** @var callable $addStatFn */
-    protected $addStatFn;
-
-    function __construct() {
-        $this->addStatFn = function ($label, DOMQuery $query,
-                                        PageData $pageData) {
-            $pageData->addQueryStat($label, $query,
-                array(self::TRANSFORM_ALL => true));
-        };
-    }
-
     // note: using wrapInner inside each since it seems to cause issues with multiple matches
     public function transform(PageData $pageData) {
         $this->generateStatistics($pageData);
@@ -29,7 +18,7 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
         $codePanels = $qp->find('.code.panel');
 
         $this->transformCodeSpans('.code.panel pre:has(span[class^="code-"])',
-            $codePanels->find('pre.code-java'), $pageData);
+            $codePanels->find('pre'), $pageData);
         $this->transformCodeHeaders('.code.panel .codeHeader',
             $codePanels->find('div.codeHeader'), $pageData);
         $this->transformCodePanels('.code.panel', $codePanels, $pageData);
@@ -45,7 +34,9 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
         if ($unhandledChildren->count() > 0)
             $pageData->addQueryStat(
                 '.code.panel pre:has(*:not(span[class^="code-"]))',
-                $unhandledChildren, array(self::WARN_IF_FOUND => true));
+                $unhandledChildren,
+                array(self::WARN_IF_FOUND => true,
+                    self::WARNING_MESSAGES => 'pre contains unhandled children'));
     }
 
     protected function transformCodeSpans($label, DOMQuery $codePanelPres,
@@ -59,8 +50,10 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             use ($selector) {
             if ($query->count() > 0)
                 $query = $query->has($selector);
-            $pageData->addQueryStat($label, $query,
-                array(self::TRANSFORM_ALL => true));
+            if ($query->count() > 0)
+                $pageData->addQueryStat($label, $query,
+                    array(self::TRANSFORM_ALL => true,
+                        self::TRANSFORM_MESSAGES => 'stripped tags'));
         };
 
         $preCodeSpans = $codePanelPres->find($selector);
@@ -77,8 +70,16 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             });
         };
 
+        $addStatFn = function ($label, DOMQuery $query,
+                              PageData $pageData) {
+            if ($query->count() > 0)
+                $pageData->addQueryStat($label, $query,
+                    array(self::TRANSFORM_ALL => true,
+                        self::TRANSFORM_MESSAGES => 'extracted to p'));
+        };
+
         $this->executeTransformStep($label, $codeHeaders, $pageData,
-            $transformFn, $this->addStatFn, 0);
+            $transformFn, $addStatFn, 0);
     }
 
     protected function transformCodePanels($label, DOMQuery $codePanels,
@@ -92,8 +93,15 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             $query->contents()->unwrap();
         };
 
+        $addStatFn = function ($label, DOMQuery $query,
+                               PageData $pageData) {
+            $pageData->addQueryStat($label, $query,
+                array(self::TRANSFORM_ALL => true, self::TRANSFORM_MESSAGES =>
+                    'stripped divs & changed pre class to "brush: php"'));
+        };
+
         $expectedDiff = -$codePanels->count() * 2;
         $this->executeTransformStep($label, $codePanels, $pageData,
-            $transformFn, $this->addStatFn, $expectedDiff);
+            $transformFn, $addStatFn, $expectedDiff);
     }
 }

@@ -26,14 +26,23 @@ class PageProcessor {
         $stats = new PageStatistics();
         $stats->addValueStat('source: url', $source);
         $stats->addValueStat('time: start', \DateTime::W3C);
-        $pageData = $this->pageLoader->getData($source, $stats);
+        try {
+            $pageData = $this->pageLoader->getData($source, $stats);
 
-        /** @var ProcessorOperationInterface $operation */
-        foreach ($this->operations as $operation)
-            $pageData = $operation->process($pageData);
+            /** @var ProcessorOperationInterface $operation */
+            foreach ($this->operations as $operation)
+                $pageData = $operation->process($pageData);
 
-        $this->savePage($dest, $pageData);
-        $stats->addValueStat('output: file', PathHelper::normalize($dest));
+            $this->savePage($dest, $pageData);
+            $stats->addValueStat('output: file', PathHelper::normalize($dest));
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+            $stats->addValueStat('Errors', null,
+                array(PageStatistics::ERROR => 1,
+                    PageStatistics::ERROR_MESSAGES => $e->getMessage()));
+            if (!isset($pageData))
+                $pageData = new PageData(null, $stats);
+        }
 
         $elapsedTime = microtime(true) - $startTime;
         $stats->addValueStat('time: elapsed (s)', $elapsedTime);

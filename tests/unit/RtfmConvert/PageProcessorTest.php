@@ -129,4 +129,17 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
 
         $processor->processPage($url, 'temp');
     }
+
+    public function testProcessPageShouldAddErrorOnException() {
+        $url = 'http://oldrtfm.modx.com/display/revolution20/Getting+Started';
+        $pageLoader = $this->getMock('\RtfmConvert\Infrastructure\PageLoader');
+        $pageLoader->expects($this->any())->method('getData')->with($url)
+            ->will($this->throwException(new RtfmException()));
+        $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
+        $processor = new PageProcessor($pageLoader, $fileIo);
+
+        $pageData = $processor->processPage($url, 'temp');
+        $statsArray = $pageData->getStats()->getStats();
+        $this->assertArrayHasKey('Errors', $statsArray);
+    }
 }

@@ -123,7 +123,8 @@ class PageStatistics {
             return;
         }
         $stat = $this->stats[$label];
-        if ($count > 1 && is_string($messages))
+        if (is_string($messages) &&
+            array_key_exists($this->getMessagesKeyFor($type), $stat))
             $messages = array(self::MESSAGE => $messages, self::COUNT => $count);
         $this->appendMessages($stat, $type, $messages);
         if (array_key_exists($type, $stat)) {

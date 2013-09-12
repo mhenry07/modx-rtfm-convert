@@ -27,7 +27,7 @@ class PageLoaderTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function tearDown() {
-        echo '\nStats: ', print_r($this->stats->getStats());
+        echo PHP_EOL, 'Stats: ', print_r($this->stats->getStats());
         if (isset($this->tempFile) && file_exists($this->tempFile))
             unlink($this->tempFile);
     }

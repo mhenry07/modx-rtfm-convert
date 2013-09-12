@@ -22,7 +22,9 @@ class PageProcessor {
 
     public function processPage($source, $dest, $saveStats = true) {
         echo 'Processing: ', $source, PHP_EOL;
-        $pageData = $this->pageLoader->getData($source);
+        $stats = new PageStatistics();
+        $stats->addValueStat('source: url', $source);
+        $pageData = $this->pageLoader->getData($source, $stats);
 
         /** @var ProcessorOperationInterface $operation */
         foreach ($this->operations as $operation)

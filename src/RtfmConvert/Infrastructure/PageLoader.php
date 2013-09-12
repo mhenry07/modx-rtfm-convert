@@ -31,7 +31,6 @@ class PageLoader implements PageLoaderInterface {
     public function get($url, PageStatistics $stats = null) {
         if (is_null($stats))
             $stats = new PageStatistics();
-        $stats->addValueStat('url', $url);
 
         try {
             $contents = $this->getContents($url, $stats);

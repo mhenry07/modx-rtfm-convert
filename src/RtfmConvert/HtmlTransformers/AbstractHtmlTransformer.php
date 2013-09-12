@@ -13,8 +13,10 @@ use RtfmConvert\ProcessorOperationInterface;
 
 abstract class AbstractHtmlTransformer implements ProcessorOperationInterface {
     const TRANSFORM_ALL = PageStatistics::TRANSFORM_ALL;
+    const TRANSFORM_MESSAGES = PageStatistics::TRANSFORM_MESSAGES;
     const WARN_IF_FOUND = PageStatistics::WARN_IF_FOUND;
     const WARN_IF_MISSING = PageStatistics::WARN_IF_MISSING;
+    const WARNING_MESSAGES = PageStatistics::WARNING_MESSAGES;
 
     /**
      * @param \RtfmConvert\PageData $pageData

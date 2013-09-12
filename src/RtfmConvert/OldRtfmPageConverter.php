@@ -11,6 +11,7 @@ use RtfmConvert\HtmlTransformers\BrAtlForcedNewlineHtmlTransformer;
 use RtfmConvert\HtmlTransformers\CodePanelHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ConfluenceAsideHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ConfluenceTableHtmlTransformer;
+use RtfmConvert\HtmlTransformers\ConversionMetadataHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ExternalLinkHtmlTransformer;
 use RtfmConvert\HtmlTransformers\FormattingElementHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ImageHtmlTransformer;
@@ -50,8 +51,9 @@ class OldRtfmPageConverter {
         $processor->register(new ExternalLinkHtmlTransformer());
 
         // RtfmLinkHtmlTransformer (external lookup) // if using [[~id]] links, they would have to be ignored by ModxTagsToEntitiesTextTransformer or done as a text transformer after ModxTagsToEntitiesTextTransformer
-        // ConversionMetadataLoader (external lookup)
-        // ConversionMetadataHtmlTransformer
+        // DestinationMetadataLoader (external lookup)
+
+        $processor->register(new ConversionMetadataHtmlTransformer());
 
         // post-processing
         $processor->register(new HtmlTidyTextTransformer());

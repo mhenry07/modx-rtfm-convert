@@ -70,8 +70,7 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             });
         };
 
-        $addStatFn = function ($label, DOMQuery $query,
-                              PageData $pageData) {
+        $addStatFn = function ($label, DOMQuery $query, PageData $pageData) {
             if ($query->count() > 0)
                 $pageData->addQueryStat($label, $query,
                     array(self::TRANSFORM_ALL => true,
@@ -93,8 +92,7 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             $query->contents()->unwrap();
         };
 
-        $addStatFn = function ($label, DOMQuery $query,
-                               PageData $pageData) {
+        $addStatFn = function ($label, DOMQuery $query, PageData $pageData) {
             $pageData->addQueryStat($label, $query,
                 array(self::TRANSFORM_ALL => true, self::TRANSFORM_MESSAGES =>
                     'stripped divs & changed pre class to "brush: php"'));

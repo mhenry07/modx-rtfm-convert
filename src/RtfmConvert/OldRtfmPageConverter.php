@@ -70,7 +70,7 @@ class OldRtfmPageConverter {
                                $statsFile) {
         echo 'Converting old MODX RTFM pages', PHP_EOL;
         echo 'Converted files will be written to: ',
-            $this->fileIo->realpath($outputDir), PHP_EOL;
+            PathHelper::normalize($outputDir), PHP_EOL;
         echo PHP_EOL;
 
         $stats = array();
@@ -105,7 +105,8 @@ class OldRtfmPageConverter {
      * @param array $stats
      */
     protected function saveStats($dest, array $stats) {
-        echo PHP_EOL, 'Writing stats to: ', $dest, PHP_EOL;
+        echo PHP_EOL;
+        echo 'Writing stats to: ', PathHelper::normalize($dest), PHP_EOL;
         $json = json_encode($stats);
         $this->fileIo->write("$dest", $json);
     }

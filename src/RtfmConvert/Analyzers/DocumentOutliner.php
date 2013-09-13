@@ -60,10 +60,9 @@ class DocumentOutliner  implements ProcessorOperationInterface {
     }
 
     protected function compare(PageData $pageData, $outline2) {
-        $statsArray = $pageData->getStats()->getStats();
+        $stats = $pageData->getStats();
         $label1 = $this->getLabel($this->compareToPrefix);
-        $outline1 = array_key_exists($label1, $statsArray) ?
-            $statsArray[$label1][PageStatistics::VALUE] : array();
+        $outline1 = $stats->getStat($label1, PageStatistics::VALUE) ? : array();
         $diff = array_merge(array_diff($outline1, $outline2),
             array_diff($outline2, $outline1));
         $diffCount = count($diff);

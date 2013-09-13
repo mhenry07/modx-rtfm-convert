@@ -52,8 +52,9 @@ class TextConverter implements ProcessorOperationInterface {
      * @return \RtfmConvert\PageData
      */
     public function process($pageData) {
-        $statsArray = $pageData->getStats()->getStats();
-        $pagePath = $statsArray[PageStatistics::PATH_LABEL][PageStatistics::VALUE];
+        $stats = $pageData->getStats();
+        $pagePath = $stats->getStat(PageStatistics::PATH_LABEL,
+            PageStatistics::VALUE);
         $path = PathHelper::join($this->basePath, $pagePath);
         if (!$this->fileIo->exists($path))
             $this->fileIo->mkdir($path);

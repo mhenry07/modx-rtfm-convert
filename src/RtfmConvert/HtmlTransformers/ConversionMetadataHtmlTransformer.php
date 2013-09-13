@@ -81,9 +81,6 @@ class ConversionMetadataHtmlTransformer extends AbstractHtmlTransformer {
     protected function getStatValue($label, PageStatistics $stats) {
         if (is_null($stats))
             return null;
-        $statsArray = $stats->getStats();
-        if (!array_key_exists($label, $statsArray))
-            return null;
-        return $statsArray[$label][PageStatistics::VALUE];
+        return $stats->getStat($label, PageStatistics::VALUE);
     }
 }

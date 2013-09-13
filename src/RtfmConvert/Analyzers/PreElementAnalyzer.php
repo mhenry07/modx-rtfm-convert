@@ -34,11 +34,10 @@ class PreElementAnalyzer implements ProcessorOperationInterface {
     }
 
     public function compare(PageData $pageData, $preCount2) {
-        $statsArray = $pageData->getStats()->getStats();
+        $stats = $pageData->getStats();
         $prefix1 = $this->compareToPrefix;
         $label1 = $this->getLabel($prefix1);
-        $preCount1 = array_key_exists($label1, $statsArray) ?
-            $statsArray[$label1][PageStatistics::FOUND] : 0;
+        $preCount1 = $stats->getStat($label1, PageStatistics::FOUND) ? : 0;
         if ($preCount2 != $preCount1) {
             $prefix2 = $this->prefix;
             $label2 = $this->getLabel($prefix2);

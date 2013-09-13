@@ -72,6 +72,8 @@ EOT;
         $this->stats->addValueStat(
             PageStatistics::SOURCE_PAGE_ID_LABEL, '12345');
         $this->stats->addValueStat(
+            PageStatistics::SOURCE_PARENT_PAGE_ID_LABEL, '67890');
+        $this->stats->addValueStat(
             PageStatistics::SOURCE_SPACE_KEY_LABEL, 'revolution20');
         $this->stats->addValueStat(
             PageStatistics::SOURCE_SPACE_NAME_LABEL, 'Revolution 2.0');
@@ -81,14 +83,16 @@ EOT;
         $pageData = new PageData($html, $this->stats);
         $transformer = new ConversionMetadataHtmlTransformer();
         $result = $transformer->transform($pageData);
-        $body = $result->top('body');
 
+        $body = $result->top('body');
         $assertBodyAttr = function ($expected, $attributeName) use ($body) {
             $this->assertTrue($body->hasAttr($attributeName));
             $this->assertEquals($expected, $body->attr($attributeName));
         };
         $assertBodyAttr('12345',
             ConversionMetadataHtmlTransformer::SOURCE_PAGE_ID_ATTR);
+        $assertBodyAttr('67890',
+            ConversionMetadataHtmlTransformer::SOURCE_PARENT_PAGE_ID_ATTR);
         $assertBodyAttr('revolution20',
             ConversionMetadataHtmlTransformer::SOURCE_SPACE_KEY_ATTR);
         $assertBodyAttr('Revolution 2.0',

@@ -167,8 +167,9 @@ EOT;
     }
 
     public function testExtractShouldGetPageInfo() {
-        $pageId = '18678050';
-        $pageTitle = 'Page Title';
+        $pageId = '18678198';
+        $pageTitle = 'Getting Started';
+        $parentPageId = '18678050';
         $spaceKey = 'revolution20';
         $spaceName = 'MODx Revolution 2.x';
         $source = <<<EOT
@@ -206,6 +207,10 @@ EOT;
 <script type="text/x-template" title="movePageBreadcrumb">
     <div><li><a class="{2}" title="{3}" tabindex="-1"><span>{0}</span></a></li></div>
 </script>
+
+        <fieldset class="hidden parameters">
+            <input type="hidden" title="parentPageId" value="{$parentPageId}">
+        </fieldset>
 
 <div class="page-metadata">
         <ul>
@@ -250,10 +255,13 @@ EOT;
 
         $extractor = new OldRtfmContentExtractor();
         $extractor->extract($source, $this->stats);
+
         $this->assertValueStat(PageStatistics::SOURCE_PAGE_ID_LABEL, $pageId,
             array(self::WARNING => 0));
         $this->assertValueStat(PageStatistics::SOURCE_PAGE_TITLE_LABEL,
             $pageTitle);
+        $this->assertValueStat(PageStatistics::SOURCE_PARENT_PAGE_ID_LABEL,
+            $parentPageId);
         $this->assertValueStat(PageStatistics::SOURCE_SPACE_KEY_LABEL,
             $spaceKey);
         $this->assertValueStat(PageStatistics::SOURCE_SPACE_NAME_LABEL,

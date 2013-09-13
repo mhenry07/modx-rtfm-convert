@@ -115,6 +115,8 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
                 PageStatistics::WARNING_MESSAGES => 'Unable to locate pageId');
         $stats->addValueStat(PageStatistics::SOURCE_PAGE_ID_LABEL,
             $pageId->attr('value'), $pageIdOptions);
+        $stats->addValueStat(PageStatistics::SOURCE_PARENT_PAGE_ID_LABEL,
+            $content->find('input[title="parentPageId"]')->first()->attr('value'));
         $stats->addValueStat(PageStatistics::SOURCE_PAGE_TITLE_LABEL,
             $content->find('input[title="pageTitle"]')->first()->attr('value'));
         $stats->addValueStat(PageStatistics::SOURCE_SPACE_KEY_LABEL,

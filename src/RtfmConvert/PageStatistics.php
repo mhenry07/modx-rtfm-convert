@@ -34,6 +34,7 @@ class PageStatistics {
     const SOURCE_URL_LABEL = 'source: url';
     const SOURCE_PAGE_ID_LABEL = 'source: pageId';
     const SOURCE_PAGE_TITLE_LABEL = 'source: pageTitle';
+    const SOURCE_PARENT_PAGE_ID_LABEL = 'source: parentPageId';
     const SOURCE_SPACE_KEY_LABEL = 'source: spaceKey';
     const SOURCE_SPACE_NAME_LABEL = 'source: spaceName';
     const SOURCE_MODIFICATION_INFO_LABEL = 'source: modification-info';

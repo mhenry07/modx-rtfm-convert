@@ -81,7 +81,8 @@ class PageProcessorTest extends \PHPUnit_Framework_TestCase {
             ->will($this->returnValue(true));
 
         $fileIo->expects($this->at(2))->method('write')
-            ->with($statsDest, '{"stat":{"value":1}}');
+            ->with($this->equalTo($statsDest),
+                $this->stringStartsWith('{"stat":{"value":1}'));
         $processor = new PageProcessor($pageLoader, $fileIo);
 
         $processor->processPage($url, $dest);

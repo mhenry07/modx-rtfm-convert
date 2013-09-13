@@ -13,7 +13,7 @@ class CodePanelHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
 
     public function testTransformShouldKeepNonCodeContent() {
         $html = '<h2>Title</h2><p>Text</p>';
-        $pageData = new PageData($html);
+        $pageData = new PageData($html, $this->stats);
         $transformer = new CodePanelHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($html, $result);

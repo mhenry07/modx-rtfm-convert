@@ -29,6 +29,8 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
     protected function generateStatistics(PageData $pageData) {
         if (is_null($pageData->getStats())) return;
         $codePanelPres = $pageData->getHtmlQuery('.code.panel pre');
+        if ($codePanelPres->count() == 0)
+            return;
         $unhandledChildren = $codePanelPres->has('*')
             ->not('span[class^="code-"]');
         if ($unhandledChildren->count() > 0)

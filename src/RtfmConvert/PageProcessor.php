@@ -25,7 +25,7 @@ class PageProcessor {
         echo 'Processing: ', $source, PHP_EOL;
         $stats = new PageStatistics();
         $stats->addValueStat(PageStatistics::SOURCE_URL_LABEL, $source);
-        $stats->addValueStat('time: start', \DateTime::W3C);
+        $stats->addValueStat('time: start', date(DATE_W3C));
         try {
             $this->pageLoader->setStatsPrefix('source: ');
             $pageData = $this->pageLoader->getData($source, $stats);

@@ -41,8 +41,8 @@ class OldRtfmPageConverter {
         $processor->register(new OldRtfmContentExtractor());
 
         // initial analysis
-        $processor->register(new DocumentOutliner('source: '));
-        $processor->register(new PreElementAnalyzer('source: '));
+        $processor->register(new DocumentOutliner('before: '));
+        $processor->register(new PreElementAnalyzer('before: '));
 
         // pre-processing
         // PageTreeHtmlTransformer (external requests) // note: will require cleanup (nested lists, etc.)
@@ -68,8 +68,8 @@ class OldRtfmPageConverter {
         $processor->register(new ModxTagsToEntitiesTextTransformer());
 
         // final analysis
-        $processor->register(new DocumentOutliner('converted: ', 'source: '));
-        $processor->register(new PreElementAnalyzer('converted: ', 'source: '));
+        $processor->register(new DocumentOutliner('after: ', 'before: '));
+        $processor->register(new PreElementAnalyzer('after: ', 'before: '));
 
         $this->processor = $processor;
     }

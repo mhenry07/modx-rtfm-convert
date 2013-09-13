@@ -26,7 +26,7 @@ class PreElementAnalyzer implements ProcessorOperationInterface {
     public function process($pageData) {
         $qp = $pageData->getHtmlQuery();
         $pres = $qp->find('pre');
-        if ($pres->count() > 0)
+        if ($pres->count() > 0 || isset($this->compareToPrefix))
             $pageData->addQueryStat($this->getLabel($this->prefix), $pres);
         if (isset($this->compareToPrefix))
             $this->compare($pageData, $pres->count());
@@ -35,14 +35,17 @@ class PreElementAnalyzer implements ProcessorOperationInterface {
 
     public function compare(PageData $pageData, $preCount2) {
         $statsArray = $pageData->getStats()->getStats();
-        $label1 = $this->getLabel($this->compareToPrefix);
+        $prefix1 = $this->compareToPrefix;
+        $label1 = $this->getLabel($prefix1);
         $preCount1 = array_key_exists($label1, $statsArray) ?
             $statsArray[$label1][PageStatistics::FOUND] : 0;
         if ($preCount2 != $preCount1) {
-            $msg = 'Number of pre elements does not match. Content is missing.';
+            $prefix2 = $this->prefix;
+            $label2 = $this->getLabel($prefix2);
+            $msg = "Number of pre elements does not match. Content is missing. {$prefix1}{$preCount1} {$prefix2}{$preCount2}";
             echo 'Error: ', $msg, PHP_EOL;
-            $pageData->incrementStat($this->getLabel($this->prefix),
-                PageStatistics::ERROR, abs($preCount1 - $preCount2), $msg);
+            $pageData->incrementStat($label2, PageStatistics::ERROR,
+                abs($preCount1 - $preCount2), $msg);
         }
     }
 

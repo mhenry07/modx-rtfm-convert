@@ -35,18 +35,17 @@ class PageProcessor {
                 $pageData = $operation->process($pageData);
 
             $this->savePage($dest, $pageData);
-            $stats->addValueStat('output: file', PathHelper::normalize($dest));
         } catch (\Exception $e) {
             echo $e->getMessage();
-            $stats->addValueStat('Errors', null,
-                array(PageStatistics::ERROR => 1,
-                    PageStatistics::ERROR_MESSAGES => $e->getMessage()));
             if (!isset($pageData))
                 $pageData = new PageData(null, $stats);
+            $pageData->addValueStat('Errors', null,
+                array(PageStatistics::ERROR => 1,
+                    PageStatistics::ERROR_MESSAGES => $e->getMessage()));
         }
 
         $elapsedTime = microtime(true) - $startTime;
-        $stats->addValueStat('time: elapsed (s)', $elapsedTime);
+        $pageData->addValueStat('time: elapsed (s)', $elapsedTime);
 
         if ($saveStats)
             $this->saveStats($dest, $pageData);
@@ -71,6 +70,9 @@ class PageProcessor {
             $this->fileIo->mkdir(dirname($dest));
         $html = $pageData->getHtmlString();
         $this->fileIo->write($dest, $html);
+
+        $pageData->addValueStat('output: file', PathHelper::normalize($dest));
+        $pageData->addValueStat('output: bytes', strlen($html));
     }
 
     /**

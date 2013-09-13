@@ -71,6 +71,15 @@ class PageData {
     }
 
     /**
+     * @see PageStatistics::addValueStat()
+     */
+    public function addValueStat($label, $value, array $options = array()) {
+        if (is_null($this->stats))
+            return;
+        $this->stats->addValueStat($label, $value, $options);
+    }
+
+    /**
      * @see PageStatistics::addTransformStat()
      */
     public function addTransformStat($label, $found, array $options = array()) {

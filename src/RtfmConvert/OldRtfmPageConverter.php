@@ -8,6 +8,7 @@ namespace RtfmConvert;
 
 use RtfmConvert\Analyzers\DocumentOutliner;
 use RtfmConvert\Analyzers\PreElementAnalyzer;
+use RtfmConvert\Analyzers\TextConverter;
 use RtfmConvert\ContentExtractors\OldRtfmContentExtractor;
 use RtfmConvert\HtmlTransformers\BrAtlForcedNewlineHtmlTransformer;
 use RtfmConvert\HtmlTransformers\CodePanelHtmlTransformer;
@@ -31,7 +32,7 @@ class OldRtfmPageConverter {
     /** @var FileIo */
     protected $fileIo;
 
-    public function __construct($cacheDir) {
+    public function __construct($cacheDir, $textDir) {
         $pageLoader = new CachedPageLoader();
         $pageLoader->setBaseDirectory($cacheDir);
         $processor = new PageProcessor($pageLoader);
@@ -43,6 +44,8 @@ class OldRtfmPageConverter {
         // initial analysis
         $processor->register(new DocumentOutliner('before: '));
         $processor->register(new PreElementAnalyzer('before: '));
+        $processor->register(TextConverter::create('before', $textDir,
+            $this->fileIo));
 
         // pre-processing
         // PageTreeHtmlTransformer (external requests) // note: will require cleanup (nested lists, etc.)
@@ -70,6 +73,8 @@ class OldRtfmPageConverter {
         // final analysis
         $processor->register(new DocumentOutliner('after: ', 'before: '));
         $processor->register(new PreElementAnalyzer('after: ', 'before: '));
+        $processor->register(TextConverter::create('after', $textDir,
+            $this->fileIo));
 
         $this->processor = $processor;
     }

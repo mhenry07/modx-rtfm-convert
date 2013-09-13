@@ -184,4 +184,48 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertNull($stats->getStat('test', PageStatistics::WARNING));
     }
+
+    public function testCountWarningsShouldReturnNone() {
+        $stats = new PageStatistics();
+        $stats->addTransformStat('test', 1);
+
+        $warnings = PageStatistics::countWarnings($stats->getStats());
+        $this->assertEquals(0, $warnings);
+    }
+
+    public function testCountWarningsShouldReturn1() {
+        $stats = new PageStatistics();
+        $stats->addTransformStat('test', 1, array(PageStatistics::WARNING => 1));
+
+        $warnings = PageStatistics::countWarnings($stats->getStats());
+        $this->assertEquals(1, $warnings);
+    }
+
+    public function testCountWarningsShouldReturn3() {
+        $stats = new PageStatistics();
+        $stats->addTransformStat('test', 1);
+        $stats->addTransformStat('test1', 1, array(PageStatistics::WARNING => 1));
+        $stats->addTransformStat('test2', 1, array(PageStatistics::WARNING => 2));
+
+        $warnings = PageStatistics::countWarnings($stats->getStats());
+        $this->assertEquals(3, $warnings);
+    }
+
+    public function testCountErrorsShouldReturnNone() {
+        $stats = new PageStatistics();
+        $stats->addTransformStat('test', 1);
+
+        $errors = PageStatistics::countErrors($stats->getStats());
+        $this->assertEquals(0, $errors);
+    }
+
+    public function testCountErrorsShouldReturn3() {
+        $stats = new PageStatistics();
+        $stats->addTransformStat('test', 1);
+        $stats->addTransformStat('test1', 1, array(PageStatistics::ERROR => 1));
+        $stats->addTransformStat('test2', 1, array(PageStatistics::ERROR => 2));
+
+        $errors = PageStatistics::countErrors($stats->getStats());
+        $this->assertEquals(3, $errors);
+    }
 }

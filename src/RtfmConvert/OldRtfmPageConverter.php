@@ -118,9 +118,8 @@ class OldRtfmPageConverter {
         }
         $this->saveStats($statsFile, $stats);
 
-        echo 'Processed ', $count, ' pages', PHP_EOL;
         $elapsedTime = time() - $startTime;
-        echo 'Elapsed time: ', $elapsedTime, ' sec', PHP_EOL;
+        $this->printSummary($stats, $elapsedTime);
     }
 
     protected function getDestinationFilename($url, $baseDir, $addHtmlExtension) {
@@ -142,5 +141,26 @@ class OldRtfmPageConverter {
         echo 'Writing stats to: ', PathHelper::normalize($dest), PHP_EOL;
         $json = json_encode($stats);
         $this->fileIo->write("$dest", $json);
+    }
+
+    /**
+     * @param array $stats
+     * @param int $elapsedTime
+     */
+    protected function printSummary(array $stats, $elapsedTime) {
+        $pagesWithErrors = count(array_filter($stats, function ($pageStats) {
+            return PageStatistics::countErrors($pageStats) > 0;
+        }));
+        $pagesWithWarnings = count(array_filter($stats, function ($pageStats) {
+            return PageStatistics::countWarnings($pageStats) > 0;
+        }));
+        echo 'Processed ', count($stats), ' pages';
+        if ($pagesWithErrors > 0)
+            echo ", ($pagesWithErrors) with errors";
+        if ($pagesWithWarnings > 0)
+            echo ", ($pagesWithWarnings) with warnings";
+        echo PHP_EOL;
+
+        echo 'Elapsed time: ', $elapsedTime, ' sec', PHP_EOL;
     }
 }

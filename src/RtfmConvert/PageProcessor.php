@@ -15,6 +15,8 @@ class PageProcessor {
     protected $fileIo;
     protected $operations = array();
 
+    const OUTPUT_FILE_LABEL = 'output: file';
+
     function __construct(PageLoaderInterface $pageLoader = null, FileIo $fileIo = null) {
         $this->pageLoader = $pageLoader ? : new CachedPageLoader();
         $this->fileIo = $fileIo ? : new FileIo();
@@ -50,6 +52,7 @@ class PageProcessor {
 
         if ($saveStats)
             $this->saveStats($dest, $pageData);
+        $this->printSummary($pageData);
         return $pageData;
     }
 
@@ -72,7 +75,8 @@ class PageProcessor {
         $html = $pageData->getHtmlString();
         $this->fileIo->write($dest, $html);
 
-        $pageData->addValueStat('output: file', PathHelper::normalize($dest));
+        $pageData->addValueStat(self::OUTPUT_FILE_LABEL,
+            PathHelper::normalize($dest));
         $pageData->addValueStat('output: bytes', strlen($html));
     }
 
@@ -85,5 +89,20 @@ class PageProcessor {
             return;
         $json = json_encode($pageData->getStats()->getStats());
         $this->fileIo->write("{$dest}.json", $json);
+    }
+
+    protected function printSummary(PageData $pageData) {
+        $stats = $pageData->getStats();
+        if (is_null($stats))
+            return;
+        $statsArray = $stats->getStats();
+        $errors = PageStatistics::countErrors($statsArray);
+        $errorString = $errors ? "Errors: {$errors} " : '';
+        $warnings = PageStatistics::countWarnings($statsArray);
+        $warningString = $warnings ? "Warnings: {$warnings} " : '';
+        $file = $stats->getStat(self::OUTPUT_FILE_LABEL, PageStatistics::VALUE);
+        $fileString = $file ? "Saved to: {$file}" : '';
+
+        echo '  ', $errorString, $warningString, $fileString, PHP_EOL;
     }
 }

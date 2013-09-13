@@ -58,6 +58,14 @@ class PageStatistics {
         return "{$type}Messages";
     }
 
+    public static function countWarnings(array $stats) {
+        return self::countType($stats, self::WARNING);
+    }
+
+    public static function countErrors(array $stats) {
+        return self::countType($stats, self::ERROR);
+    }
+
     /**
      * @param string $label
      * @param string|bool|float|int $value
@@ -320,5 +328,18 @@ class PageStatistics {
         }
 
         return $options;
+    }
+
+    // expects a type which only contains numeric values
+    protected static function countType(array $stats, $type) {
+        $hasType = function ($value) use ($type) {
+            return array_key_exists($type, $value);
+        };
+        $getTypeCount = function ($value) use ($type) {
+            return $value[$type];
+        };
+        $statsWithType = array_filter($stats, $hasType);
+        $counts = array_map($getTypeCount, $statsWithType);
+        return array_sum($counts);
     }
 }

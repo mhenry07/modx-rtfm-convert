@@ -78,8 +78,8 @@ class TextDiffAnalyzer implements ProcessorOperationInterface {
     }
 
     protected function getDiffHeader($file1, $file2) {
-        $file1 = pathinfo($file1, PATHINFO_FILENAME);
-        $file2 = pathinfo($file2, PATHINFO_FILENAME);
+        $file1 = pathinfo($file1, PATHINFO_BASENAME);
+        $file2 = pathinfo($file2, PATHINFO_BASENAME);
         return "--- {$file1}\n+++ {$file2}\n";
     }
 

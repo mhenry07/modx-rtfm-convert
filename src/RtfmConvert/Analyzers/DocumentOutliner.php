@@ -17,6 +17,7 @@ class DocumentOutliner  implements ProcessorOperationInterface {
 
     public function __construct($prefix = '', $compareToPrefix = null) {
         $this->prefix = $prefix;
+        $this->compareToPrefix = $compareToPrefix;
     }
 
     /**
@@ -25,12 +26,10 @@ class DocumentOutliner  implements ProcessorOperationInterface {
      */
     function process($pageData) {
         $outline = $this->getOutline($pageData);
-        $options = array();
+        if (count($outline) > 0 || isset($this->compareToPrefix))
+            $pageData->addValueStat($this->getLabel($this->prefix), $outline);
         if (isset($this->compareToPrefix))
-            array_merge($options, $this->compare($pageData));
-        if (count($outline) > 0 || count($options) > 0)
-            $pageData->addValueStat($this->prefix . 'outline', $outline,
-                $options);
+            $this->compare($pageData, $outline);
         return $pageData;
     }
 
@@ -60,22 +59,24 @@ class DocumentOutliner  implements ProcessorOperationInterface {
         return $outline;
     }
 
-    protected function compare(PageData $pageData) {
-        if (is_null($this->compareToPrefix))
-            return array();
+    protected function compare(PageData $pageData, $outline2) {
         $statsArray = $pageData->getStats()->getStats();
-        $label1 = $this->compareToPrefix . 'outline';
-        $label2 = $this->prefix . 'outline';
+        $label1 = $this->getLabel($this->compareToPrefix);
         $outline1 = array_key_exists($label1, $statsArray) ?
             $statsArray[$label1][PageStatistics::VALUE] : array();
-        $outline2 = array_key_exists($label2, $statsArray) ?
-            $statsArray[$label2][PageStatistics::VALUE] : array();
         $diff = array_merge(array_diff($outline1, $outline2),
             array_diff($outline2, $outline1));
         $diffCount = count($diff);
-        if ($diffCount > 0)
-            return array(PageStatistics::ERROR => $diffCount,
-                PageStatistics::ERROR_MESSAGES =>
-                'Page outlines do not match. This likely means content is missing.');
+        if ($diffCount > 0) {
+            $msg = "Page outlines don't match. Content is probably missing.";
+            echo 'Error: ', $msg, PHP_EOL;
+            $label2 = $this->getLabel($this->prefix);
+            $pageData->incrementStat($label2, PageStatistics::ERROR,
+                $diffCount, $msg);
+        }
+    }
+
+    protected function getLabel($prefix) {
+        return $prefix . 'outline';
     }
 }

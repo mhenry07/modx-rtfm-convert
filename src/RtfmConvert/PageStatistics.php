@@ -31,6 +31,7 @@ class PageStatistics {
     const ERROR_IF_MISSING = 'errorIfMissing';
 
     // metadata labels
+    const PATH_LABEL = 'path';
     const SOURCE_URL_LABEL = 'source: url';
     const SOURCE_PAGE_ID_LABEL = 'source: pageId';
     const SOURCE_PAGE_TITLE_LABEL = 'source: pageTitle';

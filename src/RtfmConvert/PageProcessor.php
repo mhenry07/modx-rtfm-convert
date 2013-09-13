@@ -20,10 +20,11 @@ class PageProcessor {
         $this->fileIo = $fileIo ? : new FileIo();
     }
 
-    public function processPage($source, $dest, $saveStats = true) {
+    public function processPage($source, $dest, $stats = null, $saveStats = true) {
         $startTime = microtime(true);
         echo 'Processing: ', $source, PHP_EOL;
-        $stats = new PageStatistics();
+        if (is_null($stats))
+            $stats = new PageStatistics();
         $stats->addValueStat(PageStatistics::SOURCE_URL_LABEL, $source);
         $stats->addValueStat('time: start', date(DATE_W3C));
         try {

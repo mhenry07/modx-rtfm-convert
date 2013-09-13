@@ -95,14 +95,18 @@ class OldRtfmPageConverter {
         $hrefs = $tocParser->parseTocDirectory($tocDir);
         foreach ($hrefs as $href) {
             $count++;
+            $path = $href['href'];
             $url = $href['url'];
             $destFile = $this->getDestinationFilename($url, $outputDir,
                 $addHtmlExtension);
-            $pageData = $this->processor->processPage($url, $destFile, false);
+            $pageStats = new PageStatistics();
+            $pageStats->addValueStat(PageStatistics::PATH_LABEL, $path);
+            $pageData = $this->processor->processPage($url, $destFile,
+                $pageStats, false);
 
             $statsObj = $pageData->getStats();
             if (!is_null($statsObj))
-                $stats[$href['href']] = $statsObj->getStats();
+                $stats[$path] = $statsObj->getStats();
         }
         $this->saveStats($statsFile, $stats);
 

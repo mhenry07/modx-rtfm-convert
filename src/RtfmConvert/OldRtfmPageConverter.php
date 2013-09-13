@@ -9,6 +9,7 @@ namespace RtfmConvert;
 use RtfmConvert\Analyzers\DocumentOutliner;
 use RtfmConvert\Analyzers\PreElementAnalyzer;
 use RtfmConvert\Analyzers\TextConverter;
+use RtfmConvert\Analyzers\TextDiffAnalyzer;
 use RtfmConvert\ContentExtractors\OldRtfmContentExtractor;
 use RtfmConvert\HtmlTransformers\BrAtlForcedNewlineHtmlTransformer;
 use RtfmConvert\HtmlTransformers\CodePanelHtmlTransformer;
@@ -75,6 +76,8 @@ class OldRtfmPageConverter {
         $processor->register(new PreElementAnalyzer('after: ', 'before: '));
         $processor->register(TextConverter::create('after', $textDir,
             $this->fileIo));
+        $processor->register(TextDiffAnalyzer::create('before', 'after',
+            $textDir, $this->fileIo));
 
         $this->processor = $processor;
     }

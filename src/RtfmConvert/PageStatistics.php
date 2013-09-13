@@ -16,6 +16,7 @@ class PageStatistics {
     const TRANSFORM = 'transformed';
     const WARNING = 'warnings';
     const ERROR = 'errors';
+    const DATA = 'data';
     // message labels
     const TRANSFORM_MESSAGES = 'transformMessages';
     const WARNING_MESSAGES = 'warningMessages';
@@ -71,7 +72,7 @@ class PageStatistics {
      * array of assoc. arrays with the inner arrays having keys: message, count
      */
     public function addValueStat($label, $value, array $options = array()) {
-        $types = array(self::WARNING, self::ERROR);
+        $types = array(self::DATA, self::WARNING, self::ERROR);
         $stat = $this->createStat(self::VALUE, $value);
         $stat = $this->buildStat($stat, $types, $options);
         $this->stats[$label] = $stat;
@@ -101,7 +102,7 @@ class PageStatistics {
      * at most one of errorIfFound, errorIfMissing, and errors.
      */
     public function addTransformStat($label, $found, array $options = array()) {
-        $types = array(self::TRANSFORM, self::WARNING, self::ERROR);
+        $types = array(self::DATA, self::TRANSFORM, self::WARNING, self::ERROR);
         $options = $this->normalizeStatOptions($found, $options);
 
         $stat = $this->createStat(self::FOUND, $found);

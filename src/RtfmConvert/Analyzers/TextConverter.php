@@ -13,6 +13,12 @@ use RtfmConvert\PathHelper;
 use RtfmConvert\ProcessorOperationInterface;
 use tidy;
 
+/**
+ * Class TextConverter
+ * This class is intended for use in conjunction with TextDiffAnalyzer.
+ *
+ * @package RtfmConvert\Analyzers
+ */
 class TextConverter implements ProcessorOperationInterface {
     protected $fileIo;
     protected $basePath;
@@ -23,6 +29,10 @@ class TextConverter implements ProcessorOperationInterface {
         $converter->setName($name);
         $converter->setBasePath($basePath);
         return $converter;
+    }
+
+    public static function getLabel($name) {
+        return $name . ': text file';
     }
 
     public function __construct(FileIo $fileIo = null) {
@@ -51,7 +61,7 @@ class TextConverter implements ProcessorOperationInterface {
 
         $this->fileIo->write($file, $this->convertToText($pageData));
 
-        $pageData->addValueStat($this->getLabel(),
+        $pageData->addValueStat(self::getLabel($this->name),
             PathHelper::normalize($file));
         return $pageData;
     }
@@ -94,9 +104,5 @@ class TextConverter implements ProcessorOperationInterface {
         $str = preg_replace('/(?<=\S)[ ]{2,}/', ' ', $str);
         $str = preg_replace('/\n{2,}/', "\n", $str);
         return trim($str);
-    }
-
-    protected function getLabel() {
-        return $this->name . ': text file';
     }
 }

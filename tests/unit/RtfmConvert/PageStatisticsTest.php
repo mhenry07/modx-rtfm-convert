@@ -152,4 +152,36 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertEquals($expected, $stats->getStats()['font']);
     }
+
+    public function testGetStatShouldReturnExpectedStat() {
+        $expected = array(PageStatistics::FOUND => 1);
+
+        $stats = new PageStatistics();
+        $stats->addTransformStat('test', 1);
+
+        $this->assertEquals($expected, $stats->getStat('test'));
+    }
+
+    public function testGetStatShouldReturnNullIfStatNotExist() {
+        $stats = new PageStatistics();
+
+        $this->assertNull($stats->getStat('test'));
+    }
+
+    public function testGetStatTypeShouldReturnExpectedValueForType() {
+        $stats = new PageStatistics();
+        $stats->addTransformStat('test', 2,
+            array(PageStatistics::TRANSFORM => 1));
+
+        $this->assertEquals(1,
+            $stats->getStat('test', PageStatistics::TRANSFORM));
+    }
+
+    public function testGetStatTypeShouldReturnNullIfTypeNotExist() {
+        $stats = new PageStatistics();
+        $stats->addTransformStat('test', 2,
+            array(PageStatistics::TRANSFORM => 1));
+
+        $this->assertNull($stats->getStat('test', PageStatistics::WARNING));
+    }
 }

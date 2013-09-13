@@ -164,8 +164,20 @@ class PageStatistics {
                 "Changed element count does not match expected. Expected: {$expectedElementDiff} Actual: {$actual}");
     }
 
+    // TODO: rename to getArray();
     public function getStats() {
         return $this->stats;
+    }
+
+    public function getStat($label, $type = null) {
+        if (!array_key_exists($label, $this->stats))
+            return null;
+        $stat = $this->stats[$label];
+        if (is_null($type))
+            return $stat;
+        if (!array_key_exists($type, $stat))
+            return null;
+        return $stat[$type];
     }
 
     protected function createStat($type = null, $value = null, $messages = null) {

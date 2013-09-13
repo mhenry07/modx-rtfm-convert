@@ -7,6 +7,7 @@ namespace RtfmConvert;
 
 
 use RtfmConvert\ContentExtractors\OldRtfmContentExtractor;
+use RtfmConvert\Analyzers\DocumentOutliner;
 use RtfmConvert\HtmlTransformers\BrAtlForcedNewlineHtmlTransformer;
 use RtfmConvert\HtmlTransformers\CodePanelHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ConfluenceAsideHtmlTransformer;
@@ -34,8 +35,14 @@ class OldRtfmPageConverter {
         $pageLoader->setBaseDirectory($cacheDir);
         $processor = new PageProcessor($pageLoader);
         $this->fileIo = new FileIo();
-        // pre-processing
+
+        // content extraction
         $processor->register(new OldRtfmContentExtractor());
+
+        // initial analysis
+        $processor->register(new DocumentOutliner('source: '));
+
+        // pre-processing
         // PageTreeHtmlTransformer (external requests) // note: will require cleanup (nested lists, etc.)
         $processor->register(new NestedListHtmlTransformer());
 
@@ -57,6 +64,9 @@ class OldRtfmPageConverter {
         // post-processing
         $processor->register(new HtmlTidyTextTransformer());
         $processor->register(new ModxTagsToEntitiesTextTransformer());
+
+        // final analysis
+        $processor->register(new DocumentOutliner('converted: ', 'source: '));
 
         $this->processor = $processor;
     }

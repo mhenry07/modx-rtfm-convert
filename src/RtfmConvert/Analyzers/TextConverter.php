@@ -59,10 +59,13 @@ class TextConverter implements ProcessorOperationInterface {
             $this->fileIo->mkdir($path);
         $file = PathHelper::join($path, $this->name . '.txt');
 
-        $this->fileIo->write($file, $this->convertToText($pageData));
+        $text = $this->convertToText($pageData);
+        $this->fileIo->write($file, $text);
 
+        $data = array('lines' => $this->countLines($text),
+            'bytes' => strlen($text));
         $pageData->addValueStat(self::getLabel($this->name),
-            PathHelper::normalize($file));
+            PathHelper::normalize($file), array(PageStatistics::DATA => $data));
         return $pageData;
     }
 
@@ -104,5 +107,11 @@ class TextConverter implements ProcessorOperationInterface {
         $str = preg_replace('/(?<=\S)[ ]{2,}/', ' ', $str);
         $str = preg_replace('/\n{2,}/', "\n", $str);
         return trim($str);
+    }
+
+    protected function countLines($text) {
+        if ($text === '')
+            return 0;
+        return substr_count($text, "\n") + 1;
     }
 }

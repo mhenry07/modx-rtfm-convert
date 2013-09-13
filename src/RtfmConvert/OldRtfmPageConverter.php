@@ -6,8 +6,9 @@
 namespace RtfmConvert;
 
 
-use RtfmConvert\ContentExtractors\OldRtfmContentExtractor;
 use RtfmConvert\Analyzers\DocumentOutliner;
+use RtfmConvert\Analyzers\PreElementAnalyzer;
+use RtfmConvert\ContentExtractors\OldRtfmContentExtractor;
 use RtfmConvert\HtmlTransformers\BrAtlForcedNewlineHtmlTransformer;
 use RtfmConvert\HtmlTransformers\CodePanelHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ConfluenceAsideHtmlTransformer;
@@ -41,6 +42,7 @@ class OldRtfmPageConverter {
 
         // initial analysis
         $processor->register(new DocumentOutliner('source: '));
+        $processor->register(new PreElementAnalyzer('source: '));
 
         // pre-processing
         // PageTreeHtmlTransformer (external requests) // note: will require cleanup (nested lists, etc.)
@@ -67,6 +69,7 @@ class OldRtfmPageConverter {
 
         // final analysis
         $processor->register(new DocumentOutliner('converted: ', 'source: '));
+        $processor->register(new PreElementAnalyzer('converted: ', 'source: '));
 
         $this->processor = $processor;
     }

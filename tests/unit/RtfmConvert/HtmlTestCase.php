@@ -80,14 +80,8 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
         $stat = $statsArray[$expectedLabel];
         $this->assertEquals($expectedValue, $stat[PageStatistics::VALUE]);
 
-        $expectedWarnings = $this->getOption($options, PageStatistics::WARNING);
-        if (!is_null($expectedWarnings)) {
-            if ($expectedWarnings == 0) {
-                $this->assertArrayNotHasKey(PageStatistics::WARNING, $stat);
-            } else {
-                $this->assertEquals($expectedWarnings, $stat[PageStatistics::WARNING]);
-            }
-        }
+        $this->assertStatType(PageStatistics::WARNING, $stat, $options);
+        $this->assertStatType(PageStatistics::ERROR, $stat, $options);
     }
 
 
@@ -108,22 +102,9 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
         $stat = $statsArray[$label];
         $this->assertEquals($expectedFound, $stat[PageStatistics::FOUND]);
 
-        $expectedTransformed = $this->getOption($options, PageStatistics::TRANSFORM);
-        if (!is_null($expectedTransformed)) {
-            if ($expectedTransformed == 0) {
-                $this->assertArrayNotHasKey(PageStatistics::TRANSFORM, $stat);
-            } else {
-                $this->assertEquals($expectedTransformed, $stat[PageStatistics::TRANSFORM]);
-            }
-        }
-        $expectedWarnings = $this->getOption($options, PageStatistics::WARNING);
-        if (!is_null($expectedWarnings)) {
-            if ($expectedWarnings == 0) {
-                $this->assertArrayNotHasKey(PageStatistics::WARNING, $stat);
-            } else {
-                $this->assertEquals($expectedWarnings, $stat[PageStatistics::WARNING]);
-            }
-        }
+        $this->assertStatType(PageStatistics::TRANSFORM, $stat, $options);
+        $this->assertStatType(PageStatistics::WARNING, $stat, $options);
+        $this->assertStatType(PageStatistics::ERROR, $stat, $options);
     }
 
     protected function normalizeHtml(DOMQuery $qp) {
@@ -147,5 +128,21 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
 
     protected function getOption(array $options, $key) {
         return array_key_exists($key, $options) ? $options[$key] : null;
+    }
+
+    /**
+     * @param string $statType
+     * @param array $stat
+     * @param array $options
+     */
+    private function assertStatType($statType, array $stat, array $options) {
+        $expected = $this->getOption($options, $statType);
+        if (!is_null($expected)) {
+            if ($expected == 0) {
+                $this->assertArrayNotHasKey($statType, $stat);
+            } else {
+                $this->assertEquals($expected, $stat[$statType]);
+            }
+        }
     }
 }

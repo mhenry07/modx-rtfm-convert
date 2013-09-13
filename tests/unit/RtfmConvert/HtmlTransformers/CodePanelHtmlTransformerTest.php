@@ -336,6 +336,21 @@ EOT;
         $this->assertStatsNotContain('.code.panel pre:has(span[class^="code-"])');
     }
 
+    public function testGenerateStatisticsShouldAddPreWarning() {
+        $sourceHtml = <<<'EOT'
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-unexpected">./configure --with-mysql --with-pdo-mysql --prefix=/usr/local --with-pdo-mysql --with-zlib</pre>
+</div></div>
+EOT;
+
+        $pageData = new PageData($sourceHtml, $this->stats);
+        $transformer = new CodePanelHtmlTransformer();
+        $transformer->transform($pageData);
+
+        $this->assertTransformStat('.code.panel', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 1));
+    }
+
     /**
      * @depends testGenerateStatisticsShouldAddExpectedStats
      */

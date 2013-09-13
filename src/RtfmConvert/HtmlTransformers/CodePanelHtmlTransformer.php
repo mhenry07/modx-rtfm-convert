@@ -96,6 +96,10 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             $pageData->addQueryStat($label, $query,
                 array(self::TRANSFORM_ALL => true, self::TRANSFORM_MESSAGES =>
                     'stripped divs & changed pre class to "brush: php"'));
+            $unhandledPres = $query->find('pre')->not('.code-java, .code-html');
+            if ($unhandledPres->count() > 0)
+                $pageData->incrementStat($label, self::WARNING,
+                    $unhandledPres->count(), 'pre has unhandled class');
         };
 
         $expectedDiff = -$codePanels->count() * 2;

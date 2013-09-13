@@ -14,7 +14,7 @@ class PreElementAnalyzer implements ProcessorOperationInterface {
     protected $prefix;
     protected $compareToPrefix;
 
-    function __construct($prefix = '', $compareToPrefix = null) {
+    public function __construct($prefix = '', $compareToPrefix = null) {
         $this->prefix = $prefix;
         $this->compareToPrefix = $compareToPrefix;
     }

@@ -24,7 +24,7 @@ class DocumentOutliner  implements ProcessorOperationInterface {
      * @param \RtfmConvert\PageData $pageData
      * @return \RtfmConvert\PageData
      */
-    function process($pageData) {
+    public function process($pageData) {
         $outline = $this->getOutline($pageData);
         if (count($outline) > 0 || isset($this->compareToPrefix))
             $pageData->addValueStat($this->getLabel($this->prefix), $outline);

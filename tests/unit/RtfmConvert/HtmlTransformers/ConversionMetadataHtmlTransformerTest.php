@@ -101,4 +101,22 @@ EOT;
             'Added by John Doe, last modified by Jane Doe on Sep 9, 2013',
             ConversionMetadataHtmlTransformer::SOURCE_MODIFICATION_INFO_ATTR);
     }
+
+    public function testTransformShouldAddHeadMetadataWhenHeadMissing() {
+        $html = <<<'EOT'
+<html>
+<body></body>
+</html>
+EOT;
+        $this->stats->addValueStat(
+            PageStatistics::SOURCE_PAGE_TITLE_LABEL, 'Page Title');
+        $pageData = new PageData($html, $this->stats);
+        $transformer = new ConversionMetadataHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $head = $result->top('head');
+        $this->assertEquals(1, $head->count(), 'head is missing');
+        $this->assertEquals('Page Title', trim($head->find('title')->text()));
+        $this->assertEquals('<meta charset="utf-8">',
+            RtfmQueryPath::getHtmlString($head->firstChild()));
+    }
 }

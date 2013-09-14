@@ -31,6 +31,8 @@ class ConversionMetadataHtmlTransformer extends AbstractHtmlTransformer {
     public function transform(PageData $pageData) {
         $qp = $pageData->getHtmlQuery();
         $stats = $pageData->getStats();
+        if ($qp->top('head')->count() == 0)
+            $qp->top('html')->prepend('<head><title></title></head>');
         $this->setTitle($qp, $stats);
         $this->addMetaCharset($qp, 'utf-8');
         $this->addSourceLink($qp, $stats);

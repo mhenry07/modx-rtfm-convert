@@ -115,7 +115,11 @@ class OldRtfmPageConverter {
             $statsObj = $pageData->getStats();
             if (!is_null($statsObj))
                 $stats[$path] = $statsObj->getStats();
+            if ($count % 100 == 0)
+                $this->saveStats($statsFile, $stats);
         }
+        echo PHP_EOL;
+        echo 'Writing stats to: ', PathHelper::normalize($statsFile), PHP_EOL;
         $this->saveStats($statsFile, $stats);
 
         $elapsedTime = time() - $startTime;
@@ -137,8 +141,6 @@ class OldRtfmPageConverter {
      * @param array $stats
      */
     protected function saveStats($dest, array $stats) {
-        echo PHP_EOL;
-        echo 'Writing stats to: ', PathHelper::normalize($dest), PHP_EOL;
         $json = json_encode($stats);
         $this->fileIo->write("$dest", $json);
     }

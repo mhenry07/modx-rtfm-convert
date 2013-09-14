@@ -174,7 +174,11 @@ class OldRtfmPageConverter {
             echo ", {$pagesWithWarnings} with warnings";
         echo PHP_EOL;
 
-        echo 'Elapsed time: ', $elapsedTime, ' seconds';
+        $elapsedTimeString = $elapsedTime . ' seconds';
+        if ($elapsedTime > 60)
+            $elapsedTimeString = $elapsedTime / 60 . ' minutes ' .
+                $elapsedTime % 60 . ' seconds';
+        echo 'Elapsed time: ', $elapsedTimeString;
         echo ' (avg. ' . $elapsedTime * 1.0 / $count . ' seconds/page)';
         echo PHP_EOL;
     }

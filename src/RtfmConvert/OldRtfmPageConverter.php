@@ -156,9 +156,9 @@ class OldRtfmPageConverter {
         }));
         echo 'Processed ', count($stats), ' pages';
         if ($pagesWithErrors > 0)
-            echo ", ($pagesWithErrors) with errors";
+            echo ", {$pagesWithErrors} with errors";
         if ($pagesWithWarnings > 0)
-            echo ", ($pagesWithWarnings) with warnings";
+            echo ", {$pagesWithWarnings} with warnings";
         echo PHP_EOL;
 
         echo 'Elapsed time: ', $elapsedTime, ' sec', PHP_EOL;

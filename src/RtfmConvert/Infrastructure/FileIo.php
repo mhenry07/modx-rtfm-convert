@@ -49,10 +49,13 @@ class FileIo {
     /**
      * @param string $filename
      * @param string $data
+     * @return int
      * @throws RtfmException
      */
     public function write($filename, $data) {
-        if (file_put_contents($filename, $data) === false)
+        $bytes = file_put_contents($filename, $data);
+        if ($bytes === false)
             throw new RtfmException("Error writing file: {$filename}");
+        return $bytes;
     }
 }

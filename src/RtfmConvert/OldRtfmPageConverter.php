@@ -96,13 +96,12 @@ class OldRtfmPageConverter {
             PathHelper::normalize($outputDir), PHP_EOL;
         echo PHP_EOL;
 
-        $count = 0;
         $stats = array();
+        $statsBytes = false;
 
         $tocParser = new OldRtfmTocParser();
         $hrefs = $tocParser->parseTocDirectory($tocDir);
         foreach ($hrefs as $href) {
-            $count++;
             $path = $href['href'];
             $url = $href['url'];
             $destFile = $this->getDestinationFilename($url, $outputDir,
@@ -113,17 +112,14 @@ class OldRtfmPageConverter {
                 $pageStats, false);
 
             $statsObj = $pageData->getStats();
-            if (!is_null($statsObj))
+            if (isset($statsObj)) {
                 $stats[$path] = $statsObj->getStats();
-            if ($count % 100 == 0)
-                $this->saveStats($statsFile, $stats);
+                $statsBytes = $this->saveStats($statsFile, $stats);
+            }
         }
-        echo PHP_EOL;
-        echo 'Writing stats to: ', PathHelper::normalize($statsFile), PHP_EOL;
-        $this->saveStats($statsFile, $stats);
 
         $elapsedTime = time() - $startTime;
-        $this->printSummary($stats, $elapsedTime);
+        $this->printSummary($stats, $statsFile, $statsBytes, $elapsedTime);
     }
 
     protected function getDestinationFilename($url, $baseDir, $addHtmlExtension) {
@@ -139,23 +135,37 @@ class OldRtfmPageConverter {
     /**
      * @param string $dest
      * @param array $stats
+     * @return int|bool
      */
     protected function saveStats($dest, array $stats) {
         $json = json_encode($stats);
-        $this->fileIo->write("$dest", $json);
+        if (json_last_error() != JSON_ERROR_NONE) {
+            echo '  JSON error: ', json_last_error_msg(), PHP_EOL;
+            echo '  Error: Stats file not saved', PHP_EOL;
+            return false;
+        }
+        return $this->fileIo->write($dest, $json);
     }
 
     /**
      * @param array $stats
+     * @param string $statsFile
+     * @param int|bool $statsBytes
      * @param int $elapsedTime
      */
-    protected function printSummary(array $stats, $elapsedTime) {
+    protected function printSummary(array $stats, $statsFile, $statsBytes,
+                                    $elapsedTime) {
         $pagesWithErrors = count(array_filter($stats, function ($pageStats) {
             return PageStatistics::countErrors($pageStats) > 0;
         }));
         $pagesWithWarnings = count(array_filter($stats, function ($pageStats) {
             return PageStatistics::countWarnings($pageStats) > 0;
         }));
+
+        echo PHP_EOL;
+        if ($statsBytes)
+            echo 'Stats saved to: ', PathHelper::normalize($statsFile), PHP_EOL;
+
         $count = count($stats);
         echo 'Processed ', $count, ' pages';
         if ($pagesWithErrors > 0)

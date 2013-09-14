@@ -11,6 +11,17 @@ use RtfmConvert\PageData;
 
 class NamedAnchorHtmlTransformerTest extends HtmlTestCase {
 
+    public function testTransformH2ShouldPreserveNonHeadings() {
+        $input = '<p>content</p>';
+        $expected = $input;
+        $pageData = new PageData($input, $this->stats);
+        $transformer = new NamedAnchorHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertTransformStat('named anchors: headings', 0,
+            array(self::TRANSFORM => 0, self::WARNING => 0));
+    }
+
     public function testTransformH2ShouldConvertNamedAnchorToH2Id() {
         $input = '<h2><a name="named-anchor"></a>Heading</h2>';
         $expected = '<h2 id="named-anchor">Heading</h2>';

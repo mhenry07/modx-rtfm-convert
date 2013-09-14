@@ -22,7 +22,9 @@ class NamedAnchorHtmlTransformer extends AbstractHtmlTransformer {
     public function transform(PageData $pageData) {
         $this->generateStatistics($pageData);
         $qp = $pageData->getHtmlQuery();
-        $matches = $qp->find('h1, h2, h3, h4, h5, h6')->has('a[name]:first-child');
+        $matches = $qp->find('h1, h2, h3, h4, h5, h6');
+        if ($matches->count() > 0)
+            $matches = $matches->has('a[name]:first-child');
         $pageData->addQueryStat('named anchors: headings', $matches);
         $pageData->beginTransform($qp);
         $expectedDiff = 0;

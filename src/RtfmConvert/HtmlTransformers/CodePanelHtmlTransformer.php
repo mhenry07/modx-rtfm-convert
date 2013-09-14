@@ -15,6 +15,8 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
     public function transform(PageData $pageData) {
         $this->generateStatistics($pageData);
         $qp = $pageData->getHtmlQuery();
+        if ($qp->count() == 0)
+            return $qp;
         $codePanels = $qp->find('.code.panel');
 
         $this->transformCodeSpans('.code.panel pre:has(span[class^="code-"])',

@@ -19,6 +19,15 @@ class CodePanelHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
         $this->assertHtmlEquals($html, $result);
     }
 
+    // see http://oldrtfm.modx.com/display/ADDON/Ditto+Extenders
+    public function testTransformShouldKeepEmptyContent() {
+        $html = '';
+        $pageData = new PageData($html, $this->stats);
+        $transformer = new CodePanelHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($html, $result);
+    }
+
     public function testTransformShouldTransformSimpleCodePanel() {
         $sourceHtml = <<<'EOT'
 <div class="code panel" style="border-width: 1px;">

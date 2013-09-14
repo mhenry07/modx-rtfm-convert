@@ -23,7 +23,6 @@ class DocumentOutlinerTest extends HtmlTestCase {
         $this->assertStatsNotContain('outline');
     }
 
-
     public function testProcessGivenH1ShouldAddExpectedOutline() {
         $expected = array('h1. heading 1');
         $html = '<html><head><title>Title</title></head><body><h1>heading 1</h1><p>content</p></body></html>';
@@ -117,4 +116,16 @@ EOT;
         $this->assertValueStat('prefix2: outline', $expected,
             array(PageStatistics::ERROR => 1));
     }
+
+    public function testProcessGivenH1ShouldCollapseWhitespace() {
+        $expected = array('h1. my heading 1');
+        $html = "<html><head><title>Title</title></head><body><h1> my  heading \n 1 </h1><p>content</p></body></html>";
+        $pageData = new PageData($html, $this->stats);
+
+        $outliner = new DocumentOutliner();
+        $result = $outliner->process($pageData);
+
+        $this->assertValueStat('outline', $expected);
+    }
+
 }

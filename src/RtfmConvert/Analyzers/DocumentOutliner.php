@@ -54,9 +54,14 @@ class DocumentOutliner  implements ProcessorOperationInterface {
         $outline = array();
         $headings->each(function ($index, $item) use (&$outline) {
             $qp = qp($item);
-            $outline[] = $qp->tag() . '. ' . trim($qp->text());
+            $outline[] = $qp->tag() . '. ' . $this->collapseWhitespace($qp->text());
         });
         return $outline;
+    }
+
+    protected function collapseWhitespace($text) {
+        $text = preg_replace('/\s+/', " ", $text);
+        return trim($text);
     }
 
     protected function compare(PageData $pageData, $outline2) {

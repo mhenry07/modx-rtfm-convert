@@ -154,13 +154,16 @@ class OldRtfmPageConverter {
         $pagesWithWarnings = count(array_filter($stats, function ($pageStats) {
             return PageStatistics::countWarnings($pageStats) > 0;
         }));
-        echo 'Processed ', count($stats), ' pages';
+        $count = count($stats);
+        echo 'Processed ', $count, ' pages';
         if ($pagesWithErrors > 0)
             echo ", {$pagesWithErrors} with errors";
         if ($pagesWithWarnings > 0)
             echo ", {$pagesWithWarnings} with warnings";
         echo PHP_EOL;
 
-        echo 'Elapsed time: ', $elapsedTime, ' sec', PHP_EOL;
+        echo 'Elapsed time: ', $elapsedTime, ' seconds';
+        echo ' (avg. ' . $elapsedTime * 1.0 / $count . ' seconds/page)';
+        echo PHP_EOL;
     }
 }

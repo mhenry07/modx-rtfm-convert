@@ -128,4 +128,20 @@ EOT;
         $this->assertValueStat('outline', $expected);
     }
 
+    // bin2hex was outputting nbsp as c2a0 normally, but c382c2 after calling
+    // DocumentOutliner::process
+    // corrupt utf-8 can cause the following json error when writing stats:
+    // Malformed UTF-8 characters, possibly incorrectly encoded
+    public function testProcessGivenNbspShouldNotCorruptUtf8() {
+        $utf8Nbsp = html_entity_decode('&nbsp;', ENT_HTML401, 'UTF-8');
+
+        $expected = array("h1. heading{$utf8Nbsp} 1");
+        $html = '<html><head><title>Title</title></head><body><h1>heading&nbsp; 1</h1><p>content</p></body></html>';
+        $pageData = new PageData($html, $this->stats);
+
+        $outliner = new DocumentOutliner();
+        $result = $outliner->process($pageData);
+
+        $this->assertValueStat('outline', $expected);
+    }
 }

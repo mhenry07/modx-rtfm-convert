@@ -54,13 +54,16 @@ class DocumentOutliner  implements ProcessorOperationInterface {
         $outline = array();
         $headings->each(function ($index, $item) use (&$outline) {
             $qp = qp($item);
-            $outline[] = $qp->tag() . '. ' . $this->collapseWhitespace($qp->text());
+            $tag = $qp->tag();
+            $text = $this->collapseWhitespace($qp->text());
+            $outline[] = "{$tag}. {$text}";
         });
         return $outline;
     }
 
+    // don't use \s in preg_replace, as it may corrupt utf-8 characters, e.g. nbsp
     protected function collapseWhitespace($text) {
-        $text = preg_replace('/\s+/', " ", $text);
+        $text = preg_replace('/[ \t\r\n]+/', " ", $text);
         return trim($text);
     }
 

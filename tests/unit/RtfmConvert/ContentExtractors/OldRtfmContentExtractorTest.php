@@ -157,6 +157,64 @@ EOT;
         $this->assertEquals($expected, trim($extracted));
     }
 
+    /**
+     * The following issue was occuring when no charset was defined:
+     * see http://oldrtfm.modx.com/pages/viewpage.action?pageId=13205690
+     * expected: YAMS Documentación Español
+     * erroneous output: YAMS DocumentaciÃ³n EspaÃ±ol
+     * Addressed by \RtfmConvert\TextTransformers\CharsetDeclarationTextTransformer
+     */
+    public function testExtractShouldPreserveEspanolWhenCharsetDeclared() {
+        $input = <<<'EOT'
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Test</title>
+</head>
+<body>
+    <div class="wiki-content">
+        %s
+    </div>
+</body>
+</html>
+EOT;
+
+        $expected = '<h1>YAMS: Documentación en Español</h1>';
+        $source = sprintf($input, $expected);
+
+        $extractor = new OldRtfmContentExtractor();
+        $extracted = $extractor->extract($source);
+        $this->assertEquals($expected, trim($extracted));
+    }
+
+    /**
+     * @see testExtractShouldPreserveEspanolWhenCharsetDeclared
+     */
+    public function testExtractShouldAddErrorIfCharsetIsNotDeclared() {
+        $input = <<<'EOT'
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Test</title>
+</head>
+<body>
+    <div class="wiki-content">
+        %s
+    </div>
+</body>
+</html>
+EOT;
+
+        $source = sprintf($input, '<h1>YAMS: Documentación en Español</h1>');
+
+        $extractor = new OldRtfmContentExtractor();
+        $extracted = $extractor->extract($source, $this->stats);
+
+        $this->assertTransformStat('charset declaration', 0,
+            array(PageStatistics::ERROR => 1));
+    }
+
     public function testExtractShouldNotReturnCrAsEntity() {
         $source = "<html><body><div class=\"wiki-content\"><p>\r\n</p></div></body></html>";
 

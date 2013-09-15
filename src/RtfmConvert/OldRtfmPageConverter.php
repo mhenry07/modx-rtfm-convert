@@ -24,6 +24,7 @@ use RtfmConvert\HtmlTransformers\NestedListHtmlTransformer;
 use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\Infrastructure\FileIo;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
+use RtfmConvert\TextTransformers\CharsetDeclarationTextTransformer;
 use RtfmConvert\TextTransformers\ModxTagsToEntitiesTextTransformer;
 
 class OldRtfmPageConverter {
@@ -39,6 +40,9 @@ class OldRtfmPageConverter {
         $processor = new PageProcessor($pageLoader);
         $this->fileIo = new FileIo();
 
+        // initial pre-processing
+        $processor->register(new CharsetDeclarationTextTransformer());
+
         // content extraction
         $processor->register(new OldRtfmContentExtractor());
 
@@ -48,7 +52,7 @@ class OldRtfmPageConverter {
         $processor->register(TextConverter::create('before', $textDir,
             $this->fileIo));
 
-        // pre-processing
+        // main pre-processing
         // PageTreeHtmlTransformer (external requests) // note: will require cleanup (nested lists, etc.)
         $processor->register(new NestedListHtmlTransformer());
 

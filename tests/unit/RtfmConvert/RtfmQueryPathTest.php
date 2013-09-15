@@ -127,4 +127,15 @@ EOT;
         $result = RtfmQueryPath::getHtmlString($qp);
         $this->assertEquals($expected, $result);
     }
+
+    // see http://oldrtfm.modx.com/pages/viewpage.action?pageId=13205690
+    // it was getting converted to: YAMS: DocumentaciÃ³n en EspaÃ±ol
+    public function testHtmlqpAndGetHtmlStringShouldPreserveEspanol() {
+        $input = '<h1>YAMS: Documentación en Español</h1>';
+        $expected = $input;
+
+        $qp = RtfmQueryPath::htmlqp($input, 'h1');
+        $result = RtfmQueryPath::getHtmlString($qp);
+        $this->assertEquals($expected, $result);
+    }
 }

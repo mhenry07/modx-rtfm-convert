@@ -86,4 +86,24 @@ EOT;
         $converter->setName('before');
         $result = $converter->process($pageData);
     }
+
+    public function testProcessShouldHandleEspanol() {
+        $html = '<h1>YAMS: Documentación en Español</h1>';
+
+        $expectedText = 'YAMS: Documentación en Español';
+
+        $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
+        $fileIo->expects($this->any())->method('exists')
+            ->will($this->returnValue(true));
+        $fileIo->expects($this->any())->method('write')
+            ->with('/page/path/before.txt', $expectedText);
+
+        $stats = new PageStatistics();
+        $stats->addValueStat(PageStatistics::PATH_LABEL, '/page/path');
+        $pageData = new PageData($html, $stats);
+
+        $converter = new TextConverter($fileIo);
+        $converter->setName('before');
+        $result = $converter->process($pageData);
+    }
 }

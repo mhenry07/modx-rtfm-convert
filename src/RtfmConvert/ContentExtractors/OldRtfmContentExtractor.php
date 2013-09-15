@@ -25,6 +25,7 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
     public function extract($html, PageStatistics $stats = null) {
         $this->checkForErrors($html, $stats);
         // preprocess HTML that causes issues with QueryPath
+        // see also \RtfmConvert\TextTransformers\CharsetDeclarationTextTransformer
         $html = $this->escapeAtlassianTemplates($html);
 
         $qp = RtfmQueryPath::htmlqp($html, 'div.wiki-content');
@@ -154,6 +155,14 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
             $stats->addTransformStat('warning: unmatched div(s)', abs($diff),
                 array(PageStatistics::WARN_IF_FOUND => true,
                     PageStatistics::WARNING_MESSAGES => 'unmatched div(s)'));
+
+        // check for missing charset declaration which should've been added by
+        // CharsetDeclarationTextTransformer
+        $charsetFound = preg_match('/<meta\b[^>]*\bcharset="?([-\w]+)"?/i', $html);
+        if ($charsetFound !== 1 && isset($stats))
+            $stats->addTransformStat('charset declaration', 0,
+                array(PageStatistics::ERROR_IF_MISSING => true,
+                    PageStatistics::ERROR_MESSAGES => 'charset is not declared'));
     }
 
     /**

@@ -28,22 +28,6 @@ EOT;
         $this->assertEquals('Page Title', trim($result->top('title')->text()));
     }
 
-    public function testTransformShouldAddMetaCharsetUtf8() {
-        $expected = '<meta charset="utf-8">';
-        $html = <<<'EOT'
-<html>
-<head><title></title></head>
-<body></body>
-</html>
-EOT;
-        $pageData = new PageData($html, $this->stats);
-        $transformer = new ConversionMetadataHtmlTransformer();
-        $result = $transformer->transform($pageData);
-        $head = $result->top('head');
-        $this->assertEquals($expected,
-            RtfmQueryPath::getHtmlString($head->firstChild()));
-    }
-
     public function testTransformShouldAddSourceLink() {
         $sourceUrl = 'http://oldrtfm.modx.com/display/revolution20/Getting+Started';
         $expected = "<link rel=\"alternate\" title=\"source\" href=\"{$sourceUrl}\">";

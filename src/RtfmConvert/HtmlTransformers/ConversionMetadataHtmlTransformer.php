@@ -32,9 +32,8 @@ class ConversionMetadataHtmlTransformer extends AbstractHtmlTransformer {
         $qp = $pageData->getHtmlQuery();
         $stats = $pageData->getStats();
         if ($qp->top('head')->count() == 0)
-            $qp->top('html')->prepend('<head><title></title></head>');
+            $qp->top('html')->prepend('<head><meta charset="utf-8" /><title></title></head>');
         $this->setTitle($qp, $stats);
-        $this->addMetaCharset($qp, 'utf-8');
         $this->addSourceLink($qp, $stats);
         $this->addSourceMetadata($qp, $stats);
         return $qp;
@@ -44,11 +43,6 @@ class ConversionMetadataHtmlTransformer extends AbstractHtmlTransformer {
         $label = PageStatistics::SOURCE_PAGE_TITLE_LABEL;
         $pageTitle = $this->getStatValue($label, $stats);
         $qp->top('title')->text($pageTitle);
-    }
-
-    // use self-closing meta tag since prepend requires valid XML
-    protected function addMetaCharset(DOMQuery $qp, $charset) {
-        $qp->top('head')->prepend("<meta charset=\"{$charset}\" />");
     }
 
     protected function addSourceLink(DOMQuery $qp, PageStatistics $stats) {

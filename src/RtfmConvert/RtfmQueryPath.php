@@ -38,9 +38,9 @@ class RtfmQueryPath {
             $document = $eolTransformer->transform($document);
 
             // wrap fragment in HTML5 template with utf-8 charset to avoid utf-8 issues
-            if (preg_match('/^\s*\<(?:!DOCTYPE|html)\b/i', $document) !== 1) {
+            if (preg_match('/^\s*<(?:!DOCTYPE|html)\b/i', $document) !== 1) {
                 $template = '<!DOCTYPE html><html><head><meta charset="utf-8"><title></title></head>%s</html>';
-                if (preg_match('/^\s*\<body\b/i', $document) !== 1)
+                if (preg_match('/^\s*<body\b/i', $document) !== 1)
                     $template = sprintf($template, '<body>%s</body>');
                 $document = sprintf($template, $document);
             }

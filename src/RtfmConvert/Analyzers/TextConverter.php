@@ -53,9 +53,10 @@ class TextConverter implements ProcessorOperationInterface {
      */
     public function process($pageData) {
         $stats = $pageData->getStats();
-        $pagePath = $stats->getStat(PageStatistics::PATH_LABEL,
+        $pageUrlPath = $stats->getStat(PageStatistics::PATH_LABEL,
             PageStatistics::VALUE);
-        $path = PathHelper::join($this->basePath, $pagePath);
+        $pageFilePath = PathHelper::convertRelativeUrlToFilePath($pageUrlPath);
+        $path = PathHelper::join($this->basePath, $pageFilePath);
         if (!$this->fileIo->exists($path))
             $this->fileIo->mkdir($path);
         $file = PathHelper::join($path, $this->name . '.txt');

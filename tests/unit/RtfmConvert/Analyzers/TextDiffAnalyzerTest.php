@@ -90,6 +90,26 @@ class TextDiffAnalyzerTest extends \PHPUnit_Framework_TestCase {
         $result = $analyzer->process($pageData);
     }
 
+    public function testProcessShouldWriteDiffFileForPathWithQueryString() {
+        $diffFile = '../data/text/pages/viewpage.action/pageId=43417765/before-after.txt.diff';
+        $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
+        $fileIo->expects($this->any())->method('read')
+            ->will($this->onConsecutiveCalls('a', 'b'));
+        $fileIo->expects($this->any())->method('exists')
+            ->will($this->returnValue(true));
+        $fileIo->expects($this->at(3))->method('write')
+            ->with($diffFile);
+
+        $stats = new PageStatistics();
+        $pageData = new PageData('', $stats);
+        $pageData->addValueStat(PageStatistics::PATH_LABEL,
+            '/pages/viewpage.action?pageId=43417765');
+
+        $analyzer = TextDiffAnalyzer::create('before', 'after', '../data/text',
+            $fileIo);
+        $result = $analyzer->process($pageData);
+    }
+
     // helper methods
     public function assertArrayValueEquals($expected, $key, array $array) {
         $this->assertArrayHasKey($key, $array);

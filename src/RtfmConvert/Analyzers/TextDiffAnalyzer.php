@@ -70,9 +70,10 @@ class TextDiffAnalyzer implements ProcessorOperationInterface {
 
     protected function getDiffFile(PageData $pageData) {
         $stats = $pageData->getStats();
-        $pagePath = $stats->getStat(PageStatistics::PATH_LABEL,
+        $pageUrlPath = $stats->getStat(PageStatistics::PATH_LABEL,
             PageStatistics::VALUE);
-        $path = PathHelper::join($this->baseDir, $pagePath);
+        $pageFilePath = PathHelper::convertRelativeUrlToFilePath($pageUrlPath);
+        $path = PathHelper::join($this->baseDir, $pageFilePath);
         $filename = $this->name1 . '-' . $this->name2 . '.txt.diff';
         return PathHelper::join($path, $filename);
     }

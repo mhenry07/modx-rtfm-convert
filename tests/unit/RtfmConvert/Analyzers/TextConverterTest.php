@@ -51,4 +51,39 @@ EOT;
         $converter->setName('before');
         $result = $converter->process($pageData);
     }
+
+
+    public function testProcessShouldWriteTextFileForPathWithQueryString() {
+        $html = <<<'EOT'
+<html>
+<head><title>Test</title></head>
+<body>
+    <h1>Heading 1</h1>
+    <p>Here is some content</p>
+</body>
+</html>
+EOT;
+
+        $expectedText = <<<'EOT'
+Heading 1
+Here is some content
+EOT;
+
+        $fileIo = $this->getMock('\RtfmConvert\Infrastructure\FileIo');
+        $fileIo->expects($this->any())->method('exists')
+            ->will($this->returnValue(true));
+        $fileIo->expects($this->any())->method('write')->with(
+            '../data/text/pages/viewpage.action/pageId=43417765/before.txt',
+            $expectedText);
+
+        $stats = new PageStatistics();
+        $stats->addValueStat(PageStatistics::PATH_LABEL,
+            '/pages/viewpage.action?pageId=43417765');
+        $pageData = new PageData($html, $stats);
+
+        $converter = new TextConverter($fileIo);
+        $converter->setBasePath('../data/text');
+        $converter->setName('before');
+        $result = $converter->process($pageData);
+    }
 }

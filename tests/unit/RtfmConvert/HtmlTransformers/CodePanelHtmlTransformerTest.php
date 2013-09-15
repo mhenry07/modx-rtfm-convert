@@ -422,4 +422,67 @@ EOT;
             '.code.panel pre:has(*:not(span[class^="code-"]))', 1,
             array(self::TRANSFORM => 0, self::WARNING => 1));
     }
+
+    /**
+     * htmlqp() chokes on the following (note the space is a utf-8 nbsp):
+     * <pre> &lt;meta http-equiv content="charset=utf-8"&gt;</pre>
+     * It would output: <pre>&lt;&gt;</pre>
+     * see http://oldrtfm.modx.com/pages/viewpage.action?pageId=18678051
+     * see see https://github.com/technosophos/querypath/issues/94
+     *
+     * note there are utf-8 non-breaking spaces in $sourceHtml
+     */
+    public function testTransformShouldHandlePreWithMetaCharsetAndNbsps() {
+        $sourceHtml = <<<'EOT'
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<pre class="code-java">&lt;!DOCTYPE html PUBLIC <span class="code-quote">"-<span class="code-comment">//W3C//DTD XHTML 1.1//EN"</span>  
+</span><span class="code-quote">"http:<span class="code-comment">//www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"</span>&gt;
+</span>&lt;html xmlns=<span class="code-quote">"http:<span class="code-comment">//www.w3.org/1999/xhtml"</span> xml:lang=<span class="code-quote">"en"</span>&gt;
+</span>&lt;head&gt;
+    &lt;title&gt;My First Revolutionary Page&lt;/title&gt;
+    &lt;meta http-equiv=<span class="code-quote">"Content-Type"</span> content=<span class="code-quote">"text/html; charset=utf-8"</span> /&gt;
+    &lt;style type=<span class="code-quote">"text/css"</span> media=<span class="code-quote">"screen"</span>&gt;
+        #content{width:80%;margin:auto;border:5px groove #a484ce;}
+        #content h1{color:#a484ce;padding:10px 20px;text-align:center;}
+        #content p{padding:20px;text-align:center;}
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id=<span class="code-quote">"content"</span>&gt;
+        [[*content]]
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</div></div>
+EOT;
+
+        $expectedHtml = <<<'EOT'
+<pre class="brush: php">
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"  
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"&gt;
+&lt;head&gt;
+    &lt;title&gt;My First Revolutionary Page&lt;/title&gt;
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+    &lt;style type="text/css" media="screen"&gt;
+        #content{width:80%;margin:auto;border:5px groove #a484ce;}
+        #content h1{color:#a484ce;padding:10px 20px;text-align:center;}
+        #content p{padding:20px;text-align:center;}
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="content"&gt;
+        [[*content]]
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+EOT;
+
+        $pageData = new PageData($sourceHtml);
+        $transformer = new CodePanelHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expectedHtml, $result);
+    }
 }

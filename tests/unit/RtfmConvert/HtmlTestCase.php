@@ -50,8 +50,8 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
         if (is_object($actualHtml))
             $actualHtml = clone $actualHtml;
 
-        $expectedQp = htmlqp($expectedHtml, 'body');
-        $actualQp = htmlqp($actualHtml, 'body');
+        $expectedQp = RtfmQueryPath::htmlqp($expectedHtml, 'body');
+        $actualQp = RtfmQueryPath::htmlqp($actualHtml, 'body');
 
         $this->assertEquals($this->normalizeHtml($expectedQp),
             $this->normalizeHtml($actualQp), $message);

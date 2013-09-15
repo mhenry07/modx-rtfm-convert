@@ -38,4 +38,10 @@ class PathHelper {
             $path = strtr($path, '/', DIRECTORY_SEPARATOR);
         return $path;
     }
+
+    public static function convertRelativeUrlToFilePath($relativeUrl) {
+        $specialChars = array('?', '"', '*');
+        $replacements = array('/', '%22', '%2A');
+        return str_replace($specialChars, $replacements, $relativeUrl);
+    }
 }

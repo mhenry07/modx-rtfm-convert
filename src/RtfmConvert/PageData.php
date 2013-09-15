@@ -45,7 +45,7 @@ class PageData {
     public function getHtmlDocument() {
         if (is_string($this->html))
             return $this->html;
-        return RtfmQueryPath::getHtmlString($this->html->top());
+        return RtfmQueryPath::getHtmlString($this->html->document());
     }
 
     /**

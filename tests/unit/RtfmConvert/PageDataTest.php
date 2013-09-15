@@ -41,7 +41,15 @@ EOT;
     public function testGetHtmlDocumentShouldReturnExpectedStringGivenDomQueryWithSelector() {
         $content = '<p>test</p>';
         $expected = <<<EOT
-<html><body>{$content}</body></html>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+</head>
+<body>{$content}</body>
+</html>
+
 EOT;
 
         $qp = RtfmQueryPath::htmlqp($content, 'body');

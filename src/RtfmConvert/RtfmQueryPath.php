@@ -53,14 +53,21 @@ class RtfmQueryPath {
         return htmlqp($document, $selector, $options);
     }
 
-    // TODO: add a selector
-    // note: DOMQuery::xhtml() may add undesired spaces between adjacent inline
-    // elements in some cases
-    public static function getHtmlString(DOMQuery $qp) {
+    /**
+     * @todo add a selector
+     * note: DOMQuery::xhtml() may add undesired spaces between adjacent inline
+     * elements in some cases
+     *
+     * @param DOMQuery|\DOMDocument $query
+     * @return string
+     */
+    public static function getHtmlString($query) {
+        if ($query instanceof \DOMDocument)
+            return $query->saveHTML();
         $html = '';
         /** @var DOMQuery $match */
-        foreach ($qp as $match)
-            $html .= $qp->document()->saveHTML($match->get(0));
+        foreach ($query as $match)
+            $html .= $query->document()->saveHTML($match->get(0));
         return trim($html);
     }
 

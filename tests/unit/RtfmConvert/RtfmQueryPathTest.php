@@ -93,4 +93,38 @@ EOT;
         $result = RtfmQueryPath::getHtmlString($qp);
         $this->assertEquals($expected, $result);
     }
+
+    public function testHtmlqpAndGetHtmlStringShouldPreserveRawNbsp() {
+        $utf8Nbsp = html_entity_decode('&nbsp;', ENT_HTML401, 'UTF-8');
+        $input = "<p>nbsp: {$utf8Nbsp}</p>";
+        $expected = $input;
+
+        $qp = RtfmQueryPath::htmlqp($input, 'p');
+        $result = RtfmQueryPath::getHtmlString($qp);
+        $this->assertEquals($expected, $result);
+    }
+
+    public function testHtmlqpAndGetHtmlStringShouldNotCorruptNbspEntity() {
+        $utf8Nbsp = html_entity_decode('&nbsp;', ENT_HTML401, 'UTF-8');
+        $input = '<p>nbsp: &nbsp;</p>';
+        $expected = "<p>nbsp: {$utf8Nbsp}</p>";
+
+        $qp = RtfmQueryPath::htmlqp($input, 'p');
+        $result = RtfmQueryPath::getHtmlString($qp);
+        $this->assertEquals($expected, $result);
+    }
+
+    public function testHtmlqpAndGetHtmlStringShouldPreserveUtf8() {
+        $input = <<<'EOT'
+<ul>
+<li>greek kosme: κόσμε</li>
+<li>check mark: ✓</li>
+</ul>
+EOT;
+        $expected = $input;
+
+        $qp = RtfmQueryPath::htmlqp($input, 'ul');
+        $result = RtfmQueryPath::getHtmlString($qp);
+        $this->assertEquals($expected, $result);
+    }
 }

@@ -7,6 +7,7 @@ namespace RtfmConvert;
 
 
 use RtfmConvert\Analyzers\DocumentOutliner;
+use RtfmConvert\Analyzers\ErrorClassAnalyzer;
 use RtfmConvert\Analyzers\PreElementAnalyzer;
 use RtfmConvert\Analyzers\TextConverter;
 use RtfmConvert\Analyzers\TextDiffAnalyzer;
@@ -76,6 +77,7 @@ class OldRtfmPageConverter {
         $processor->register(new ModxTagsToEntitiesTextTransformer());
 
         // final analysis
+        $processor->register(new ErrorClassAnalyzer());
         $processor->register(new DocumentOutliner('after: ', 'before: '));
         $processor->register(new PreElementAnalyzer('after: ', 'before: '));
         $processor->register(TextConverter::create('after', $textDir,

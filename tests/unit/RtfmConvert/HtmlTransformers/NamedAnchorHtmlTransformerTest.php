@@ -113,4 +113,16 @@ EOT;
         $this->assertTransformStat('named anchors: headings', 1,
             array(self::TRANSFORM => 1, self::WARNING => 0));
     }
+
+    // e.g. http://oldrtfm.modx.com/display/ADDON/Login.Login
+    public function testTransformNonHeadingNamedAnchorShouldConvertNameToId() {
+        $input = '<p><a name="named-anchor"></a>text</p>';
+        $expected = '<p><a id="named-anchor"></a>text</p>';
+        $pageData = new PageData($input, $this->stats);
+        $transformer = new NamedAnchorHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertTransformStat('named anchors: others', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
+    }
 }

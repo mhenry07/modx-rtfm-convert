@@ -1,18 +1,24 @@
 <?php
 /**
- * Convert headings with a named anchor into a heading with an id. The name
- * attribute is obsolete for <a> elements.
- * E.g. <h2><a name="identifier"></a>Heading</h2> to
- * <h2 id="identifier">Heading</h2>
- *
  * @author: Mike Henry
  */
 
 namespace RtfmConvert\HtmlTransformers;
 
 
+use QueryPath\DOMQuery;
 use RtfmConvert\PageData;
 
+/**
+ * Class NamedAnchorHtmlTransformer
+ * Convert headings with a named anchor into a heading with an id. The name
+ * attribute is obsolete for <a> elements.
+ * E.g. <h2><a name="identifier"></a>Heading</h2> to
+ * <h2 id="identifier">Heading</h2>
+ * Also convert other anchor names to ids.
+ *
+ * @package RtfmConvert\HtmlTransformers
+ */
 class NamedAnchorHtmlTransformer extends AbstractHtmlTransformer {
 
     /**
@@ -20,15 +26,20 @@ class NamedAnchorHtmlTransformer extends AbstractHtmlTransformer {
      * @return \QueryPath\DOMQuery
      */
     public function transform(PageData $pageData) {
-        $this->generateStatistics($pageData);
         $qp = $pageData->getHtmlQuery();
-        $matches = $qp->find('h1, h2, h3, h4, h5, h6');
-        if ($matches->count() > 0)
-            $matches = $matches->has('a[name]:first-child');
-        $pageData->addQueryStat('named anchors: headings', $matches);
+        $this->transformNamedAnchorHeadings($qp, $pageData);
+        $this->transformOtherNamedAnchors($qp, $pageData);
+
+        return $qp;
+    }
+
+    protected function transformNamedAnchorHeadings(DOMQuery $qp,
+                                                    PageData $pageData) {
+        $namedAnchorHeadings = $this->getNamedAnchorHeadings($qp);
+        $pageData->addQueryStat('named anchors: headings', $namedAnchorHeadings);
         $pageData->beginTransform($qp);
         $expectedDiff = 0;
-        $matches->each(
+        $namedAnchorHeadings->each(
             function ($index, $item) use ($pageData, &$expectedDiff) {
                 /** @var \DOMNode $item */
                 $anchor = qp($item)->find('a[name]:first-child');
@@ -39,7 +50,8 @@ class NamedAnchorHtmlTransformer extends AbstractHtmlTransformer {
                     $target = $anchor;
                 // skip if name does not match id of anchor or target
                 if ($anchor->hasAttr('id') && $anchor->attr('id') !== $name ||
-                    $target->hasAttr('id') && $target->attr('id') !== $name) {
+                    $target->hasAttr('id') && $target->attr('id') !== $name
+                ) {
                     $pageData->incrementStat('named anchors: headings',
                         self::WARNING, 1,
                         'anchor name does not match existing id of heading or anchor');
@@ -62,18 +74,40 @@ class NamedAnchorHtmlTransformer extends AbstractHtmlTransformer {
             }
         );
         $pageData->checkTransform('named anchors: headings', $qp, $expectedDiff);
-
-        return $qp;
     }
 
-    protected function generateStatistics(PageData $pageData) {
-        $qp = $pageData->getHtmlQuery();
+    // note: use multiple steps because if there are no matches,
+    // has() throws an error
+    protected function getNamedAnchorHeadings(DOMQuery $qp) {
+        $namedAnchorHeadings = $qp->find('h1, h2, h3, h4, h5, h6');
+        if ($namedAnchorHeadings->count() > 0)
+            $namedAnchorHeadings = $namedAnchorHeadings
+                ->has('a[name]:first-child');
+        return $namedAnchorHeadings;
+    }
+
+    protected function transformOtherNamedAnchors(DOMQuery $qp,
+                                                  PageData $pageData) {
         $headingAnchors = $qp->find('h1, h2, h3, h4, h5, h6')
             ->find('a[name]:first-child');
         $otherNamedAnchors = $qp->find('a[name]')->not($headingAnchors->get());
-        if ($otherNamedAnchors->count() > 0)
-            $pageData->addQueryStat('named anchors: others', $otherNamedAnchors,
-                array(self::WARN_IF_FOUND => true,
-                    self::WARNING_MESSAGES => 'unhandled named anchor(s)'));
+        $pageData->addQueryStat('named anchors: others', $otherNamedAnchors);
+        $pageData->beginTransform($qp);
+        $otherNamedAnchors->each(
+            function ($index, $item) use ($pageData, &$expectedDiff) {
+                $anchor = qp($item);
+                $name = $anchor->attr('name');
+                if ($anchor->hasAttr('id') && $anchor->attr('id') !== $name) {
+                    $pageData->incrementStat('named anchors: others',
+                        self::WARNING, 1,
+                        'anchor name does not match existing id of anchor');
+                    return;
+                }
+                $anchor->attr('id', $name)->removeAttr('name');
+                $pageData->incrementStat('named anchors: others',
+                    self::TRANSFORM, 1, 'converted name to id');
+            }
+        );
+        $pageData->checkTransform('named anchors: others', $qp, 0);
     }
 }

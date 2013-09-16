@@ -63,6 +63,31 @@ EOT;
         );
     }
 
+    // see http://oldrtfm.modx.com/display/revolution20/Automated+Server-Side+Image+Editing
+    public function testTransformShouldTransformAsideWithSingleTableCell() {
+        $content = <<<'EOT'
+<b>Performance Hit</b><br />If you are on a shared server, remember excessive image processing can affect other users. &nbsp;Your host may contact you and/or suspend your account if it causes problems.
+
+<p>Reducing the picture size, even if not to the exact dimensions, will reduce the resource usage and processing time.</p>
+EOT;
+        $input = <<<EOT
+<div class='panelMacro'><table class='noteMacro'><tr><td>{$content}</td></tr></table></div>
+EOT;
+
+        $expected = <<<EOT
+<div class="note">
+{$content}
+</div>
+EOT;
+
+        $pageData = new PageData($input, $this->stats);
+        $transformer = new ConfluenceAsideHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertTransformStat('asides', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
+    }
+
     /**
      * @depends testTransformShouldTransformInfoAside
      */

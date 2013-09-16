@@ -23,7 +23,7 @@ class ConfluenceAsideHtmlTransformer extends AbstractHtmlTransformer {
         $asides = $qp->find('div.panelMacro');
         // I think it's -8 per .panelMacro
         $expectedDiff = -(RtfmQueryPath::countAll($asides) -
-            RtfmQueryPath::countAll($asides->find('table > tr > td:nth-child(2)')));
+            RtfmQueryPath::countAll($asides->find('table > tr > td:last-child')));
         $pageData->addQueryStat('asides', $asides);
 
         $pageData->beginTransform($qp);
@@ -36,7 +36,7 @@ class ConfluenceAsideHtmlTransformer extends AbstractHtmlTransformer {
                         "extracting content to div.{$type}");
                     $panel->removeClass('panelMacro')->addClass($type);
                     $table->remove();
-                    $table->find('td')->eq(1)->contents()
+                    $table->find('td')->last()->contents()
                         ->detach()->attach($panel);
                     break;
                 }

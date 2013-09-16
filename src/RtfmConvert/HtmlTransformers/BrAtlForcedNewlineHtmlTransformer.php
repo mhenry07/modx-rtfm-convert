@@ -50,7 +50,9 @@ class BrAtlForcedNewlineHtmlTransformer extends AbstractHtmlTransformer {
         $firstBr = $qp->find('p > br.atl-forced-newline:only-child')->first();
         if ($firstBr->count() == 0)
             return false;
-        return $qp->firstChild()->is($firstBr->parent()->get(0));
+        $parent = $firstBr->parent();
+        return $qp->firstChild()->is($parent->get(0)) &&
+            $parent->contents()->count() == 1;
     }
 
     protected function isLastElementEmptyPBr(PageData $pageData) {
@@ -58,6 +60,8 @@ class BrAtlForcedNewlineHtmlTransformer extends AbstractHtmlTransformer {
         $lastBr = $qp->find('p > br.atl-forced-newline:only-child')->last();
         if ($lastBr->count() == 0)
             return false;
-        return $qp->lastChild()->is($lastBr->parent()->get(0));
+        $parent = $lastBr->parent();
+        return $qp->lastChild()->is($parent->get(0)) &&
+        $parent->contents()->count() == 1;
     }
 }

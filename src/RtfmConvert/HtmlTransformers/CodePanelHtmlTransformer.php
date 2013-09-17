@@ -10,6 +10,13 @@ use QueryPath\DOMQuery;
 use RtfmConvert\PageData;
 
 class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
+    protected $brushMappings = array(
+        'code-html' => 'html',
+        'code-java' => 'php',
+        'code-javascript' => 'javascript',
+        'code-php' => 'php',
+        'code-sql' => 'sql'
+    );
 
     // note: using wrapInner inside each since it seems to cause issues with multiple matches
     public function transform(PageData $pageData) {
@@ -87,23 +94,34 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
 
     protected function transformCodePanels($label, DOMQuery $codePanels,
                                            PageData $pageData) {
-        $transformFn = function (DOMQuery $query) {
-            $query->find('pre.code-java')
-                ->removeClass('code-java')->addClass('brush: php');
-            $query->find('pre.code-html')
-                ->removeClass('code-html')->addClass('brush: php');
-            $query->find('pre')->unwrap();
+        $transformFn = function (DOMQuery $query) use ($label, $pageData) {
+            $pre = $query->find('pre');
+            $pre->each(function ($index, $item) use ($label, $pageData) {
+                $hasMapping = false;
+                $pre = qp($item);
+                foreach ($this->brushMappings as $from => $to) {
+                    if ($pre->hasClass($from)) {
+                        $pre->removeClass($from)
+                            ->addClass('brush:')->addClass($to);
+                        $hasMapping = true;
+                        $pageData->incrementStat($label, self::TRANSFORM, 1,
+                            "stripped divs & changed pre class from {$from} to 'brush: {$to}'");
+                    }
+                }
+                if (!$hasMapping) {
+                    $class = $pre->attr('class');
+                    $pageData->incrementStat($label, self::TRANSFORM, 1,
+                        "stripped divs");
+                    $pageData->incrementStat($label, self::WARNING, 1,
+                        "pre has unhandled class: {$class}");
+                }
+            });
+            $pre->unwrap();
             $query->contents()->unwrap();
         };
 
         $addStatFn = function ($label, DOMQuery $query, PageData $pageData) {
-            $pageData->addQueryStat($label, $query,
-                array(self::TRANSFORM_ALL => true, self::TRANSFORM_MESSAGES =>
-                    'stripped divs & changed pre class to "brush: php"'));
-            $unhandledPres = $query->find('pre')->not('.code-java, .code-html');
-            if ($unhandledPres->count() > 0)
-                $pageData->incrementStat($label, self::WARNING,
-                    $unhandledPres->count(), 'pre has unhandled class');
+            $pageData->addQueryStat($label, $query);
         };
 
         $expectedDiff = -$codePanels->count() * 2;

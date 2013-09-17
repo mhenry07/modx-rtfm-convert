@@ -51,11 +51,14 @@ EOT;
         $this->assertHtmlEquals($expectedHtml, $result);
     }
 
-    public function testTransformShouldTransformHtmlCodePanel() {
-        $sourceHtml = <<<'EOT'
+    /**
+     * @dataProvider syntaxLanguageProvider
+     */
+    public function testTransformShouldTransformCodePanelLanguage($from, $to) {
+        $sourceHtml = <<<EOT
 <div class="code panel" style="border-width: 1px;">
 <div class="codeContent panelContent">
-<pre class="code-html">        .ajaxSearch_paging {
+<pre class="code-{$from}">        .ajaxSearch_paging {
 
         }
 </pre>
@@ -63,8 +66,8 @@ EOT;
 </div>
 EOT;
 
-        $expectedHtml = <<<'EOT'
-<pre class="brush: php">        .ajaxSearch_paging {
+        $expectedHtml = <<<EOT
+<pre class="brush: {$to}">        .ajaxSearch_paging {
 
         }
 </pre>
@@ -74,6 +77,16 @@ EOT;
         $transformer = new CodePanelHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expectedHtml, $result);
+    }
+
+    public function syntaxLanguageProvider() {
+        return array(
+            array('html', 'html'),
+            array('java', 'php'),
+            array('javascript', 'javascript'),
+            array('php', 'php'),
+            array('sql', 'sql')
+        );
     }
 
     /**

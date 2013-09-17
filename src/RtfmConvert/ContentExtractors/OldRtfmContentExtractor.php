@@ -130,6 +130,8 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         $modificationInfo->remove('.noprint');
         $stats->addValueStat(PageStatistics::SOURCE_MODIFICATION_INFO_LABEL,
             trim($modificationInfo->text()));
+        $labels = $content->find('#labelsList a.label')->textImplode(', ');
+        $stats->addValueStat(PageStatistics::SOURCE_LABELS_LABEL, $labels);
 
         // stats
         $wikiContent = $content->find('div.wiki-content');

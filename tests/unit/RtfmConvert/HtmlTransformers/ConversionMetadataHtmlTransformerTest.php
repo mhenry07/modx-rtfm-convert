@@ -66,6 +66,8 @@ EOT;
         $this->stats->addValueStat(
             PageStatistics::SOURCE_MODIFICATION_INFO_LABEL,
             'Added by John Doe, last modified by Jane Doe on Sep 9, 2013');
+        $this->stats->addValueStat(PageStatistics::SOURCE_LABELS_LABEL,
+            'svn, revolution, git, developer, advanced');
         $pageData = new PageData($html, $this->stats);
 
         $transformer = new ConversionMetadataHtmlTransformer();
@@ -84,6 +86,8 @@ EOT;
             'Added by John Doe, last modified by Jane Doe on Sep 9, 2013',
             $body,
             ConversionMetadataHtmlTransformer::SOURCE_MODIFICATION_INFO_ATTR);
+        $this->assertBodyAttr('svn, revolution, git, developer, advanced',
+            $body, ConversionMetadataHtmlTransformer::SOURCE_LABELS_ATTR);
     }
 
     public function testTransformShouldAddHeadMetadataWhenHeadMissing() {

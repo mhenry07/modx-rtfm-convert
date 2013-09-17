@@ -40,6 +40,7 @@ class PageStatistics {
     const SOURCE_SPACE_KEY_LABEL = 'source: spaceKey';
     const SOURCE_SPACE_NAME_LABEL = 'source: spaceName';
     const SOURCE_MODIFICATION_INFO_LABEL = 'source: modification-info';
+    const SOURCE_LABELS_LABEL = 'source: labels';
 
     protected $stats = array();
 

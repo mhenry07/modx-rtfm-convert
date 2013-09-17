@@ -366,6 +366,66 @@ EOT;
             array(self::WARNING => 1));
     }
 
+    // see http://oldrtfm.modx.com/display/revolution20/Git+Installation
+    public function testExtractShouldGetLabels() {
+        $html = <<<'EOT'
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Test</title>
+</head>
+<body>
+    <div class="wiki-content">
+        content
+    </div>
+<fieldset class="hidden parameters">
+    <legend>Labels parameters</legend>
+    <input type="hidden" id="editLabel" value="Edit">
+    <input type="hidden" id="addLabel" value="Add Labels">
+    <input type="hidden" id="domainName" value="http://oldrtfm.modx.com">
+    <input type="hidden" id="pageId" value="18678547">
+    <input type="hidden" id="spaceKey" value="revolution20">
+</fieldset>
+
+<div id="labels-section" class="pageSection">
+    <div id="default-labels-header" class="section-header">
+        <h2 id="labels-section-title" class="section-title ">Labels</h2>
+            </div>
+
+    <div class="labels-editor">
+        <div id="labelsList">
+            <div id="label-7471109" class="confluence-label">
+    <a class="label" rel="nofollow" href="/label/revolution20/svn">svn</a>    <span class="remove-label-caption">svn</span>
+    <a class="remove-label" href="#">Delete</a>
+</div>
+<div id="label-13074438" class="confluence-label">
+    <a class="label" rel="nofollow" href="/label/revolution20/revolution">revolution</a>    <span class="remove-label-caption">revolution</span>
+    <a class="remove-label" href="#">Delete</a>
+</div>
+<div id="label-26247169" class="confluence-label">
+    <a class="label" rel="nofollow" href="/label/revolution20/git">git</a>    <span class="remove-label-caption">git</span>
+    <a class="remove-label" href="#">Delete</a>
+</div>
+<div id="label-26247170" class="confluence-label">
+    <a class="label" rel="nofollow" href="/label/revolution20/developer">developer</a>    <span class="remove-label-caption">developer</span>
+    <a class="remove-label" href="#">Delete</a>
+</div>
+<div id="label-26247171" class="confluence-label">
+    <a class="label" rel="nofollow" href="/label/revolution20/advanced">advanced</a>    <span class="remove-label-caption">advanced</span>
+    <a class="remove-label" href="#">Delete</a>
+</div>
+        </div>
+</body>
+</html>
+EOT;
+        $expected = 'svn, revolution, git, developer, advanced';
+
+        $extractor = new OldRtfmContentExtractor();
+        $extractor->extract($html, $this->stats);
+
+        $this->assertValueStat(PageStatistics::SOURCE_LABELS_LABEL, $expected);
+    }
+
     // helper methods
     protected function formatTestData($contentHtml) {
         return sprintf(self::WIKI_CONTENT_FORMAT, $contentHtml);

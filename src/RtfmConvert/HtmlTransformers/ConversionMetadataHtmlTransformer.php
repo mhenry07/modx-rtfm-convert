@@ -24,6 +24,7 @@ class ConversionMetadataHtmlTransformer extends AbstractHtmlTransformer {
     const SOURCE_SPACE_KEY_ATTR = 'data-source-space-key';
     const SOURCE_SPACE_NAME_ATTR = 'data-source-space-name';
     const SOURCE_MODIFICATION_INFO_ATTR = 'data-source-modification-info';
+    const SOURCE_LABELS_ATTR = 'data-source-labels';
     const DEST_PAGE_ID_ATTR = 'data-dest-page-id';
     const DEST_MODIFICATION_INFO_ATTR = 'data-dest-modification-info';
 
@@ -73,6 +74,8 @@ class ConversionMetadataHtmlTransformer extends AbstractHtmlTransformer {
             PageStatistics::SOURCE_SPACE_NAME_LABEL, $body, $stats);
         $this->setAttributeFromStat(self::SOURCE_MODIFICATION_INFO_ATTR,
             PageStatistics::SOURCE_MODIFICATION_INFO_LABEL, $body, $stats);
+        $this->setAttributeFromStat(self::SOURCE_LABELS_ATTR,
+            PageStatistics::SOURCE_LABELS_LABEL, $body, $stats);
     }
 
     protected function addDestLink(DOMQuery $qp, PageStatistics $stats) {

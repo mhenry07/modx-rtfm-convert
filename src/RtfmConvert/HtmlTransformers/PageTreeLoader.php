@@ -40,8 +40,15 @@ class PageTreeLoader {
 
         $treeId = 1;
         $pageTrees = $qp->find('div.plugin_pagetree');
+        $pageData->addQueryStat($this->statsPrefix . 'div.plugin_pagetree',
+            $pageTrees, array(PageStatistics::TRANSFORM_ALL => true,
+            PageStatistics::TRANSFORM_MESSAGES => 'loaded'));
         foreach ($pageTrees as $pageTree) {
             $this->loadTree($pageTree, $stats, $treeId);
+            $pageData->addQueryStat($this->statsPrefix . "{$treeId}: li",
+                $pageTree->find('li'),
+                array(PageStatistics::TRANSFORM_ALL => true,
+                    PageStatistics::TRANSFORM_MESSAGES => 'loaded'));
             $treeId++;
         }
 
@@ -91,9 +98,12 @@ class PageTreeLoader {
 
     protected function loadTree(DOMQuery $pageTree, PageStatistics $stats,
                                 $treeId) {
+        $requests = array();
+
         // build top level
         $requestUrl = $this->buildRequestUrl($pageTree, $stats, $treeId);
         $response = $this->pageLoader->get($requestUrl);
+        $requests[] = $requestUrl;
         $pageTree->find('.plugin_pagetree_children')->first()->html($response);
 
         // build descendants
@@ -101,13 +111,16 @@ class PageTreeLoader {
             $toggle = $pageTree->find('.plugin_pagetree_childtoggle.icon-plus')
                 ->first();
             if ($toggle->count() == 0)
-                return;
-            $this->loadChild($pageTree, $toggle, $stats);
+                break;
+            $this->loadChild($pageTree, $toggle, $stats, $requests);
         }
+
+        $stats->addValueStat($this->statsPrefix . "{$treeId}: requests",
+            count($requests), array(PageStatistics::DATA => $requests));
     }
 
     protected function loadChild(DOMQuery $pageTree, DOMQuery $toggle,
-                                 PageStatistics $stats) {
+                                 PageStatistics $stats, array &$requests) {
         $pageId = null;
         $treeId = null;
         $toggleId = $toggle->attr('id');
@@ -118,6 +131,7 @@ class PageTreeLoader {
         $requestUrl = $this->buildRequestUrl($pageTree, $stats, $treeId,
             $pageId);
         $response = $this->pageLoader->get($requestUrl);
+        $requests[] = $requestUrl;
         $toggle->parent('li')->find('div.plugin_pagetree_children_container')
             ->first()->html($response);
         $toggle->removeClass('icon-plus');

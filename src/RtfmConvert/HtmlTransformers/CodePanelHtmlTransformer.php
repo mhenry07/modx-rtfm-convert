@@ -77,7 +77,8 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
                                             PageData $pageData) {
         $transformFn = function (DOMQuery $query) {
             $query->each(function ($index, $item) {
-                qp($item)->wrapInner('<p></p>')->contents()->unwrap();
+                qp($item)->wrapInner('<p class="code-heading"></p>')
+                    ->contents()->unwrap();
             });
         };
 
@@ -85,7 +86,7 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             if ($query->count() > 0)
                 $pageData->addQueryStat($label, $query,
                     array(self::TRANSFORM_ALL => true,
-                        self::TRANSFORM_MESSAGES => 'extracted to p'));
+                        self::TRANSFORM_MESSAGES => 'extracted to p.code-heading'));
         };
 
         $this->executeTransformStep($label, $codeHeaders, $pageData,

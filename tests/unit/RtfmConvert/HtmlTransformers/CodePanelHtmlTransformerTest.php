@@ -223,7 +223,7 @@ EOT;
 EOT;
 
         $expectedHtml = <<<'EOT'
-<p><b>NGINX PHP Configuration Options</b><b>2</b></p>
+<p class="code-heading"><b>NGINX PHP Configuration Options</b><b>2</b></p>
 <pre class="brush: php">
 ./configure --with-mysql --with-pdo-mysql --prefix=/usr/local --with-pdo-mysql --with-zlib
 </pre>
@@ -250,10 +250,10 @@ EOT;
 EOT;
 
         $expectedHtml = <<<'EOT'
-<p><b>PHP Configuration Options</b></p>
+<p class="code-heading"><b>PHP Configuration Options</b></p>
 <pre class="brush: php">./configure --with-apxs2=/usr/local/bin/apxs --with-mysql --prefix=/usr/local --with-pdo-mysql --with-zlib</pre>
 <p>Here's some in-between content.</p>
-<p><b>NGINX PHP Configuration Options</b></p>
+<p class="code-heading"><b>NGINX PHP Configuration Options</b></p>
 <pre class="brush: php">./configure --with-mysql --with-pdo-mysql --prefix=/usr/local --with-pdo-mysql --with-zlib</pre>
 EOT;
 

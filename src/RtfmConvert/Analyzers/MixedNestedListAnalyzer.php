@@ -85,8 +85,11 @@ class MixedNestedListAnalyzer implements ProcessorOperationInterface {
             $isStartTag = !$this->isEndTag($tag);
             if ($isStartTag) {
                 $currentNode = $this->getCurrentNode($openElements);
+                // mixed nested lists not handled by NestedListHtmlTransformer
+                // esp. ul > ol and ol > ul
                 if (in_array($currentNode, array('ol', 'ul')) &&
-                    $tagName != 'li' && $tagName != $currentNode)
+                    !in_array($tagName, array('li', 'div')) &&
+                    $tagName != $currentNode)
                     $mixedNestedLists[] = "{$currentNode} > {$tagName}";
 
                 if ($this->isTrackedElement($openElements, $tagName)) {

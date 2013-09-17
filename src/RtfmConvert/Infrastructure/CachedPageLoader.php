@@ -93,8 +93,11 @@ class CachedPageLoader implements PageLoaderInterface {
         // include query string and .html extension in paths without a valid extension
         if (!$hasValidExtension) {
             $urlQuery = parse_url($url, PHP_URL_QUERY);
-            if ($urlQuery)
+            if ($urlQuery) {
+                if (strlen($urlQuery) > 150)
+                    $urlQuery = sha1($urlQuery);
                 $path .= '/' . $urlQuery;
+            }
             $path .= '.html';
         }
         return PathHelper::join($this->baseDirectory, $path);

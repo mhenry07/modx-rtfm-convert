@@ -26,7 +26,6 @@ use RtfmConvert\HtmlTransformers\NamedAnchorHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NestedListHtmlTransformer;
 use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\Infrastructure\FileIo;
-use RtfmConvert\Infrastructure\PageLoader;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
 use RtfmConvert\TextTransformers\CharsetDeclarationTextTransformer;
 use RtfmConvert\TextTransformers\ModxTagsToEntitiesTextTransformer;
@@ -78,7 +77,6 @@ class OldRtfmPageConverter {
         $processor->register(new ExternalLinkHtmlTransformer());
 
         // RtfmLinkHtmlTransformer (external lookup) // if using [[~id]] links, they would have to be ignored by ModxTagsToEntitiesTextTransformer or done as a text transformer after ModxTagsToEntitiesTextTransformer
-        // DestinationMetadataLoader (external lookup)
 
         $processor->register(new ConversionMetadataHtmlTransformer());
 
@@ -194,7 +192,7 @@ class OldRtfmPageConverter {
 
         $elapsedTimeString = $elapsedTime . ' seconds';
         if ($elapsedTime > 60)
-            $elapsedTimeString = $elapsedTime / 60 . ' minutes ' .
+            $elapsedTimeString = intval($elapsedTime / 60) . ' minutes ' .
                 $elapsedTime % 60 . ' seconds';
         echo 'Elapsed time: ', $elapsedTimeString;
         echo ' (avg. ' . $elapsedTime * 1.0 / $count . ' seconds/page)';

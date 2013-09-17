@@ -6,6 +6,8 @@
 namespace RtfmConvert\HtmlTransformers;
 
 
+use QueryPath\DOMQuery;
+use RtfmConvert\Analyzers\NewRtfmMetadataLoader;
 use RtfmConvert\HtmlTestCase;
 use RtfmConvert\PageData;
 use RtfmConvert\PageStatistics;
@@ -65,24 +67,22 @@ EOT;
             PageStatistics::SOURCE_MODIFICATION_INFO_LABEL,
             'Added by John Doe, last modified by Jane Doe on Sep 9, 2013');
         $pageData = new PageData($html, $this->stats);
+
         $transformer = new ConversionMetadataHtmlTransformer();
         $result = $transformer->transform($pageData);
 
         $body = $result->top('body');
-        $assertBodyAttr = function ($expected, $attributeName) use ($body) {
-            $this->assertTrue($body->hasAttr($attributeName));
-            $this->assertEquals($expected, $body->attr($attributeName));
-        };
-        $assertBodyAttr('12345',
+        $this->assertBodyAttr('12345', $body,
             ConversionMetadataHtmlTransformer::SOURCE_PAGE_ID_ATTR);
-        $assertBodyAttr('67890',
+        $this->assertBodyAttr('67890', $body,
             ConversionMetadataHtmlTransformer::SOURCE_PARENT_PAGE_ID_ATTR);
-        $assertBodyAttr('revolution20',
+        $this->assertBodyAttr('revolution20', $body,
             ConversionMetadataHtmlTransformer::SOURCE_SPACE_KEY_ATTR);
-        $assertBodyAttr('Revolution 2.0',
+        $this->assertBodyAttr('Revolution 2.0', $body,
             ConversionMetadataHtmlTransformer::SOURCE_SPACE_NAME_ATTR);
-        $assertBodyAttr(
+        $this->assertBodyAttr(
             'Added by John Doe, last modified by Jane Doe on Sep 9, 2013',
+            $body,
             ConversionMetadataHtmlTransformer::SOURCE_MODIFICATION_INFO_ATTR);
     }
 
@@ -102,5 +102,55 @@ EOT;
         $this->assertEquals('Page Title', trim($head->find('title')->text()));
         $this->assertEquals('<meta charset="utf-8">',
             RtfmQueryPath::getHtmlString($head->firstChild()));
+    }
+
+    public function testTransformShouldAddCanonicalDestLink() {
+        $destUrl = 'http://rtfm.modx.com/revolution/2.x/getting-started';
+        $expected = "<link rel=\"canonical\" title=\"dest\" href=\"{$destUrl}\">";
+        $html = <<<'EOT'
+<html>
+<head><title></title></head>
+<body></body>
+</html>
+EOT;
+        $this->stats->addValueStat(NewRtfmMetadataLoader::DEST_URL_LABEL, $destUrl);
+        $pageData = new PageData($html, $this->stats);
+
+        $transformer = new ConversionMetadataHtmlTransformer();
+        $result = $transformer->transform($pageData);
+
+        $lastLink = $result->top('head')->find('link')->last();
+        $this->assertEquals($expected,
+            RtfmQueryPath::getHtmlString($lastLink));
+    }
+
+    public function testTransformShouldAddDestMetadataToBodyAttributes() {
+        $html = <<<'EOT'
+<html>
+<head><title></title></head>
+<body></body>
+</html>
+EOT;
+        $this->stats->addValueStat(
+            NewRtfmMetadataLoader::DEST_PAGE_ID_LABEL, '777');
+        $this->stats->addValueStat(
+            NewRtfmMetadataLoader::DEST_MODIFICATION_INFO_LABEL,
+            'Last edited by JP DeVries on Aug  8, 2013.');
+
+        $pageData = new PageData($html, $this->stats);
+        $transformer = new ConversionMetadataHtmlTransformer();
+        $result = $transformer->transform($pageData);
+
+        $body = $result->top('body');
+        $this->assertBodyAttr('777', $body,
+            ConversionMetadataHtmlTransformer::DEST_PAGE_ID_ATTR);
+        $this->assertBodyAttr(
+            'Last edited by JP DeVries on Aug  8, 2013.', $body,
+            ConversionMetadataHtmlTransformer::DEST_MODIFICATION_INFO_ATTR);
+    }
+
+    protected function assertBodyAttr($expected, DOMQuery $body, $attributeName) {
+        $this->assertTrue($body->hasAttr($attributeName));
+        $this->assertEquals($expected, $body->attr($attributeName));
     }
 }

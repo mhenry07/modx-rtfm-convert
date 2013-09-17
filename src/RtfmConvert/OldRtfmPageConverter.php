@@ -9,6 +9,7 @@ namespace RtfmConvert;
 use RtfmConvert\Analyzers\DocumentOutliner;
 use RtfmConvert\Analyzers\ErrorClassAnalyzer;
 use RtfmConvert\Analyzers\MixedNestedListAnalyzer;
+use RtfmConvert\Analyzers\NewRtfmMetadataLoader;
 use RtfmConvert\Analyzers\PreElementAnalyzer;
 use RtfmConvert\Analyzers\TextConverter;
 use RtfmConvert\Analyzers\TextDiffAnalyzer;
@@ -25,6 +26,7 @@ use RtfmConvert\HtmlTransformers\NamedAnchorHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NestedListHtmlTransformer;
 use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\Infrastructure\FileIo;
+use RtfmConvert\Infrastructure\PageLoader;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
 use RtfmConvert\TextTransformers\CharsetDeclarationTextTransformer;
 use RtfmConvert\TextTransformers\ModxTagsToEntitiesTextTransformer;
@@ -54,6 +56,12 @@ class OldRtfmPageConverter {
         $processor->register(TextConverter::create('before', $textDir,
             $this->fileIo));
         $processor->register(new MixedNestedListAnalyzer());
+
+        // get new rtfm metadata
+        $newRtfmMetadataLoader =
+            $this->createNewRtfmMetadataLoader('http://rtfm.modx.com',
+                'dest: ', $cacheDir);
+        $processor->register($newRtfmMetadataLoader);
 
         // main pre-processing
         // PageTreeHtmlTransformer (external requests) // note: will require cleanup (nested lists, etc.)
@@ -191,5 +199,13 @@ class OldRtfmPageConverter {
         echo 'Elapsed time: ', $elapsedTimeString;
         echo ' (avg. ' . $elapsedTime * 1.0 / $count . ' seconds/page)';
         echo PHP_EOL;
+    }
+
+    protected function createNewRtfmMetadataLoader($baseUrl, $statsPrefix, $cacheDir) {
+        $metadataLoader = new NewRtfmMetadataLoader(new CachedPageLoader());
+        $metadataLoader->setBaseUrl($baseUrl);
+        $metadataLoader->setStatsPrefix($statsPrefix);
+        $metadataLoader->setCacheDirectory($cacheDir);
+        return $metadataLoader;
     }
 }

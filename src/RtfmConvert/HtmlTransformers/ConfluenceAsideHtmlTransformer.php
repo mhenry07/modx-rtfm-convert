@@ -36,7 +36,7 @@ class ConfluenceAsideHtmlTransformer extends AbstractHtmlTransformer {
                         "extracting content to div.{$type}");
                     $panel->removeClass('panelMacro')->addClass($type);
                     $table->remove();
-                    $table->find('td')->last()->contents()
+                    $table->find('tr > td:last-child')->first()->contents()
                         ->detach()->attach($panel);
                     break;
                 }

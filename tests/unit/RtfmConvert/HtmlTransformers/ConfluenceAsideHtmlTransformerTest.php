@@ -8,6 +8,7 @@ namespace RtfmConvert\HtmlTransformers;
 
 use RtfmConvert\HtmlTestCase;
 use RtfmConvert\PageData;
+use RtfmConvert\PageStatistics;
 
 class ConfluenceAsideHtmlTransformerTest extends HtmlTestCase {
     protected $panelMacroFormat = <<<EOT
@@ -136,5 +137,40 @@ EOT;
         $transformer = new ConfluenceAsideHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertSelectCount('img', 0, $result, '', true);
+    }
+
+    // see http://oldrtfm.modx.com/display/ADDON/renderResources
+    public function testTransformShouldPreserveTableInAsideContent() {
+        $content = <<<'EOT'
+<b>Available filter operators</b><br /><br class="atl-forced-newline" />
+There are a number of comparison operators for use when creating filter conditions. In addition, when using many of these operators, numeric comparison values are automatically CAST TV values to numeric before comparison. Here is a list of the valid operators: <br class="atl-forced-newline" />
+&#124;&#124; Filter Operator &#124;&#124; SQL Operator &#124;&#124; CASTs numerics &#124;&#124; Notes &#124;&#124;| &lt;=&gt; | &lt;=&gt; | Yes | <em>NULL safe equals</em> |
+<div class='table-wrap'>
+<table class='confluenceTable'><tbody>
+<tr>
+<td class='confluenceTd'> === </td>
+<td class='confluenceTd'> = </td>
+<td class='confluenceTd'> Yes </td>
+<td class='confluenceTd'>&nbsp;</td>
+</tr>
+</tbody></table>
+</div>
+EOT;
+
+        $expected = <<<EOT
+<div class="info">
+{$content}
+</div>
+EOT;
+
+        $input = sprintf($this->panelMacroFormat, 'info', 'information.gif', $content);
+
+        $pageData = new PageData($input, $this->stats);
+        $transformer = new ConfluenceAsideHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertTransformStat('asides', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0,
+                PageStatistics::ERROR => 0));
     }
 }

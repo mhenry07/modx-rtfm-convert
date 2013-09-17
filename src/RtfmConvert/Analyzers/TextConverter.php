@@ -11,6 +11,7 @@ use RtfmConvert\PageData;
 use RtfmConvert\PageStatistics;
 use RtfmConvert\PathHelper;
 use RtfmConvert\ProcessorOperationInterface;
+use RtfmConvert\RtfmQueryPath;
 use tidy;
 
 /**
@@ -77,10 +78,18 @@ class TextConverter implements ProcessorOperationInterface {
      */
     protected function convertToText(PageData $pageData) {
         $html = $pageData->getHtmlDocument();
+        $html = $this->removePagetree($html);
         $html = $this->tidyHtml($html);
         $text = htmlqp($html)->text();
         $text = $this->cleanUpWhitespace($text);
         return $text;
+    }
+
+    // pagetrees are common and make it hard to detect other issues if they are included in diffs
+    protected function removePagetree($html) {
+        $qp = RtfmQueryPath::htmlqp($html);
+        $qp->find('div.plugin_pagetree')->remove();
+        return RtfmQueryPath::getHtmlString($qp->document());
     }
 
     protected function tidyHtml($html) {

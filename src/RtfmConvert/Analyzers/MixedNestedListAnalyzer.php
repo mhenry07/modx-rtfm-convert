@@ -18,12 +18,10 @@ use RtfmConvert\ProcessorOperationInterface;
  * @package RtfmConvert\Analyzers
  */
 class MixedNestedListAnalyzer implements ProcessorOperationInterface {
-    protected $emptyElements = array('area', 'base', 'basefont', 'br',
-        'col', 'frame', 'hr', 'img', 'input', 'isindex', 'link', 'meta',
-        'param'); // HTML 4
     protected $specialElements = array(
         'address', 'applet', 'area', 'article', 'aside', 'base', 'basefont', 'bgsound', 'blockquote', 'body', 'br', 'button', 'caption', 'center', 'col', 'colgroup', 'dd', 'details', 'dir', 'div', 'dl', 'dt', 'embed', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'frame', 'frameset', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'iframe', 'img', 'input', 'isindex', 'li', 'link', 'listing', 'main', 'marquee', 'menu', 'menuitem', 'meta', 'nav', 'noembed', 'noframes', 'noscript', 'object', 'ol', 'p', 'param', 'plaintext', 'pre', 'script', 'section', 'select', 'source', 'style', 'summary', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'title', 'tr', 'track', 'ul', 'wbr', 'xmp');
-    protected $impliedEndTags = array('dd', 'dt', 'li', 'option', 'optgroup', 'p'); // rp, rt
+    protected $impliedEndTags = array(
+        'dd', 'dt', 'li', 'option', 'optgroup', 'p'); // rp, rt
     protected $closesP = array(
         'address', 'article', 'aside', 'blockquote', 'center', 'details', 'dialog', 'dir', 'div', 'dl', 'fieldset', 'figcaption', 'figure', 'footer', 'header', 'hgroup', 'main', 'menu', 'nav', 'ol', 'p', 'section', 'summary', 'ul',
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -41,163 +39,93 @@ class MixedNestedListAnalyzer implements ProcessorOperationInterface {
         'applet', 'caption', 'html', 'table', 'td', 'th', 'marquee', 'object', 'template');
     protected $listItemScopeElementTypes = array('ol', 'ul');
     protected $buttonScopeElementTypes = array('button');
-    protected $headings = array('h1', 'h2', 'h3', 'h4', 'h5', 'h6');
 
     /**
      * @param \RtfmConvert\PageData $pageData
      * @return \RtfmConvert\PageData
      */
     public function process($pageData) {
-        $mixedNestedLists = array();
-        $html = $pageData->getHtmlString();
-        $tags = $this->getTags($html);
-        $isInList = false;
+        $tags = $this->getTags($pageData->getHtmlString());
         $openElements = array();
+        $mixedNestedLists = array();
         foreach ($tags as $tag) {
             preg_match('#^</?([a-z][a-z0-9]*)\b[^>]*>$#i', $tag, $matches);
             $tagName = strtolower($matches[1]);
-            if (!$isInList && ($tagName == 'ul' || $tagName == 'ol'))
-                $isInList = true;
-            if ($isInList) {
-                if ($this->isEndTag($tag)) {
-                    if ($this->isMainEndTag($tagName)) {
-                        $this->parseMainEndTag($openElements, $tagName);
-                        if (count($openElements) == 0)
-                            $isInList = false;
-                        continue;
-                    }
-                    if ($tagName == 'form') {
-                        if (!$this->hasElementInScope($openElements, $tagName))
-                            continue; // parse error; ignore the token
-                        $this->generateImpliedEndTags($openElements);
-                        // if ($this->getCurrentNode($openElements) != $tagName) // parse error
-                        $this->removeNode($openElements, $tagName);
-                        continue;
-                    }
-                    if ($tagName == 'p') {
-                        if (!$this->hasElementInButtonScope($openElements, $tagName))
-                            array_push($openElements, $tagName); // parse error
-                        $this->closePElement($openElements);
-                    }
-                    if (in_array($tagName, array('li', 'dd', 'dt'))) {
-                        if (!$this->hasElementInListItemScope($openElements, $tagName))
-                            continue; // parse error; ignore the token
+            if ($this->isEndTag($tag)) {
+                if ($this->isMainEndTag($tagName)) {
+                    $this->parseMainEndTag($openElements, $tagName);
+                    continue;
+                }
+                if ($tagName == 'p') {
+                    if (!$this->hasElementInButtonScope($openElements, $tagName))
+                        array_push($openElements, $tagName); // parse error
+                    $this->closePElement($openElements);
+                }
+                if ($tagName == 'li') {
+                    if (!$this->hasElementInListItemScope($openElements, $tagName))
+                        continue; // parse error; ignore the token
+                    $this->generateImpliedEndTags($openElements, $tagName);
+                    // if ($this->getCurrentNode($openElements) != $tagName) // parse error
+                    $this->popElementsUntil($openElements, $tagName);
+                    continue;
+                }
+
+                // Any other end tag
+                for ($i = count($openElements) - 1; $i >= 0; $i--) {
+                    $node = $openElements[$i];
+                    if ($node == $tagName) {
                         $this->generateImpliedEndTags($openElements, $tagName);
-                        // if ($this->getCurrentNode($openElements) != $tagName) // parse error
                         $this->popElementsUntil($openElements, $tagName);
                         continue;
                     }
-                    if ($this->isHeading($tagName)) {
-                        if (!$this->hasElementInScope($tagName, $this->headings))
-                            continue; // parse error; ignore the token
-                        $this->generateImpliedEndTags($openElements);
-                        // if ($this->getCurrentNode($openElements) != $tagName) // parse error
-                        $this->popElementsUntil($openElements, $this->headings);
-                    }
-                    if (in_array($tagName, array("a", "b", "big", "code", "em", "font", "i", "nobr", "s", "small", "strike", "strong", "tt", "u")))
-                        $this->runAdoptionAgencyAlgorithm($openElements, $tagName);
-                    // "applet", "marquee", "object"
-                    if ($tagName = 'br')
-                        continue; // parse error
-
-//                    if ($tagName == $this->getCurrentNode($openElements)) {
-//                        array_pop($openElements);
-//                        continue;
-//                    }
-
-                    // Any other end tag
-                    for ($i = count($openElements) - 1; $i >= 0; $i--) {
-                        $node = $this->getCurrentNode($openElements);
-                        if ($node == $tagName) {
-                            $this->generateImpliedEndTags($openElements, $tagName);
-                            // if ($this->getCurrentNode($openElements) != $tagName) // parse error
-                            $this->popElementsUntil($openElements, $tagName);
-                            continue;
-                        }
-                        if ($this->isSpecialElement($node)) {
-                            continue; // parse error
-                        }
-                    }
-                    continue;
                 }
+                continue;
+            }
 
-                // start tag
+            $isStartTag = !$this->isEndTag($tag);
+            if ($isStartTag) {
+                $currentNode = $this->getCurrentNode($openElements);
+                if (in_array($currentNode, array('ol', 'ul')) &&
+                    $tagName != 'li' && $tagName != $currentNode)
+                    $mixedNestedLists[] = "{$currentNode} > {$tagName}";
 
-                // handle ol > ul
-                if ($tagName == 'ul' && $this->getCurrentNode($openElements) == 'ol')
-                    $mixedNestedLists[] = 'ol > ul';
-                if ($tagName == 'ol' && $this->getCurrentNode($openElements) == 'ul')
-                    $mixedNestedLists[] = 'ul > ol';
+                if ($this->isTrackedElement($openElements, $tagName)) {
+                    if ($tagName == 'li')
+                        $this->parseLiStartTag($openElements);
 
+                    if ($this->tagClosesPElement($openElements, $tagName) &&
+                        $this->hasElementInButtonScope($openElements, 'p'))
+                        $this->closePElement($openElements);
 
-                if ($tagName == 'li')
-                    $this->parseLiStartTag($openElements);
-                if ($tagName == 'dd' || $tagName == 'dt')
-                    $this->parseDdDtStartTag($openElements);
-
-                if ($this->tagClosesPElement($openElements, $tagName))
-                    $this->closePElement($openElements);
-
-                if ($this->isHeading($tagName) &&
-                    $this->isHeading($this->getCurrentNode($openElements))) {
-                    // parse error; pop the current node off the stack of open elements
-                    array_pop($openElements);
-                }
-                if ($tagName == 'form' && in_array('form', $openElements)) {
-                    // parse error; ignore the token
-                    continue;
-                }
-                if ($tagName == 'button') {
-                    $this->parseButtonStartTag($openElements);
-                }
-                // formatting
-                if ($tagName == 'a') {
-                    // ignoring complex rules
-                    $this->reconstructActiveFormattingElements($openElements);
-                    $this->pushOntoListOfActiveFormattingElements($openElements, $tagName);
-                }
-                if (in_array($tagName, array('b', 'big', 'code', 'em', 'font', 'i', 's', 'small', 'strike', 'strong', 'tt', 'u'))) {
-                    $this->reconstructActiveFormattingElements($openElements);
-                    $this->pushOntoListOfActiveFormattingElements($openElements, $tagName);
-                }
-                // "applet", "marquee", "object"
-                if ($tagName == 'nobr') {
-                    $this->reconstructActiveFormattingElements($openElements);
-                    if (!$this->hasElementInScope($openElements, $tagName)) {
-                        // parse error
-                        $this->runAdoptionAgencyAlgorithm($openElements, $tagName);
+                    // self-closing
+                    if (in_array($tagName, array("area", "br", "embed", "img", "keygen", "wbr"))) {
                         $this->reconstructActiveFormattingElements($openElements);
+                        continue;
                     }
-                    $this->pushOntoListOfActiveFormattingElements($openElements, $tagName);
-                }
-                // self-closing
-                if (in_array($tagName, array("area", "br", "embed", "img", "keygen", "wbr"))) {
-                    $this->reconstructActiveFormattingElements($openElements);
-                    continue;
-                }
-                if ($tagName == 'input') {
-                    $this->reconstructActiveFormattingElements($openElements);
-                    continue;
-                }
-                if (in_array($tagName, array("menuitem", "param", "source", "track")))
-                    continue;
-                if ($tagName == 'hr')
-                    continue;
-                // textarea, iframe, noscript, select, optgroup, option
-                // "caption", "col", "colgroup", "frame", "head", "tbody", "td", "tfoot", "th", "thead", "tr"
+                    if ($tagName == 'input') {
+                        $this->reconstructActiveFormattingElements($openElements);
+                        continue;
+                    }
+                    if (in_array($tagName, array("menuitem", "param", "source", "track")))
+                        continue;
+                    if ($tagName == 'hr')
+                        continue;
 
-                // Any other start tag
-                $this->reconstructActiveFormattingElements($openElements);
-                array_push($openElements, $tagName);
+                    // Any other start tag
+                    array_push($openElements, $tagName);
+                }
             }
         }
 
         if (count($mixedNestedLists) > 0) {
             $pageData->addTransformStat('lists: mixed nested',
                 count($mixedNestedLists));
-            foreach ($mixedNestedLists as $entry)
-                $pageData->incrementStat('lists: mixed nested',
-                    PageStatistics::ERROR, 1, $entry);
+            foreach ($mixedNestedLists as $entry) {
+                $statType = in_array($entry, array('ol > ul', 'ul > ol')) ?
+                    PageStatistics::ERROR : PageStatistics::WARNING;
+                $pageData->incrementStat('lists: mixed nested', $statType, 1,
+                    $entry);
+            }
         }
 
         return $pageData;
@@ -211,14 +139,6 @@ class MixedNestedListAnalyzer implements ProcessorOperationInterface {
 
     protected function isEndTag($tag) {
         return strpos($tag, '</') === 0;
-    }
-
-    protected function isEmptyElement($tagName) {
-        return in_array($tagName, $this->emptyElements);
-    }
-
-    protected function isSelfClosing($tag) {
-        return strrpos($tag, '/>', -2) !== false;
     }
 
     protected function getCurrentNode(array $openElements) {
@@ -246,26 +166,34 @@ class MixedNestedListAnalyzer implements ProcessorOperationInterface {
         return in_array($tagName, $this->impliedEndTags) && $tagName !== $omit;
     }
 
-    private function hasElementInButtonScope(array $openElements, $targetNode) {
+    protected function isTrackedElement($openElements, $tagName) {
+        $isList = in_array($tagName, array('ol', 'ul'));
+        $isChildOfList =
+            in_array($this->getCurrentNode($openElements), array('ol', 'ul'));
+        $isOpenElement = in_array($tagName, $openElements);
+        return $isList || $isChildOfList || $isOpenElement;
+    }
+
+    protected function hasElementInButtonScope(array $openElements, $targetNode) {
         $scopeElementTypes = array_merge($this->scopeElementTypes,
             $this->listItemScopeElementTypes, $this->buttonScopeElementTypes);
         return $this->hasElementInScopeCore($openElements, $targetNode,
             $scopeElementTypes);
     }
 
-    private function hasElementInListItemScope(array $openElements, $targetNode) {
+    protected function hasElementInListItemScope(array $openElements, $targetNode) {
         $scopeElementTypes = array_merge($this->scopeElementTypes,
             $this->listItemScopeElementTypes);
         return $this->hasElementInScopeCore($openElements, $targetNode,
             $scopeElementTypes);
     }
 
-    private function hasElementInScope(array $openElements, $targetNode) {
+    protected function hasElementInScope(array $openElements, $targetNode) {
         return $this->hasElementInScopeCore($openElements, $targetNode,
             $this->scopeElementTypes);
     }
 
-    private function hasElementInScopeCore(array $openElements, $targetNode,
+    protected function hasElementInScopeCore(array $openElements, $targetNode,
         $scopeElementTypes) {
         for ($i = count($openElements) - 1; $i >= 0; $i--) {
             $current = $openElements[$i];
@@ -277,10 +205,6 @@ class MixedNestedListAnalyzer implements ProcessorOperationInterface {
                 return false;
         }
         return false;
-    }
-
-    protected function isHeading($tagName) {
-        return in_array($tagName, $this->headings);
     }
 
     protected function isSpecialElement($tagName) {
@@ -300,65 +224,12 @@ class MixedNestedListAnalyzer implements ProcessorOperationInterface {
         }
     }
 
-    private function parseDdDtStartTag(array &$openElements) {
-        for ($i = count($openElements) - 1; $i >= 0; $i--) {
-            $node = $this->getCurrentNode($openElements);
-            if ($node == 'dd') {
-                $this->runListItemSubsteps($openElements, 'dd');
-                return;
-            }
-            if ($node == 'dt') {
-                $this->runListItemSubsteps($openElements, 'dt');
-                return;
-            }
-            if ($this->isSpecialElement($node) &&
-                !in_array($node, array('address', 'div', 'p')))
-                return;
-        }
-    }
-
     protected function runListItemSubsteps(array &$openElements, $elementName) {
         $this->generateImpliedEndTags($openElements, $elementName);
         // parse error
 //        if ($this->getCurrentNode($openElements) != $elementName)
 //            throw new RtfmException('HTML parse error in MixedNestedListAnalyzer');
         $this->popElementsUntil($openElements, $elementName);
-    }
-
-    protected function popElementsUntil(array &$openElements, $elementName) {
-        while (true) {
-            $popped = array_pop($openElements);
-            if (is_string($elementName) && $popped == $elementName)
-                return;
-            if (is_array($elementName) && in_array($popped, $elementName))
-                return;
-        }
-    }
-
-    protected function parseButtonStartTag(array &$openElements) {
-        if ($this->hasElementInButtonScope($openElements, 'button')) {
-            // parse error
-            $this->generateImpliedEndTags($openElements);
-            $this->popElementsUntil($openElements, 'button');
-        }
-        $this->reconstructActiveFormattingElements($openElements);
-    }
-
-    protected function reconstructActiveFormattingElements(array &$openElements) {
-        // TODO: implement
-    }
-
-    protected function pushOntoListOfActiveFormattingElements($openElements, $tagName) {
-        // TODO: implement
-    }
-
-    protected function runAdoptionAgencyAlgorithm(array &$openElements, $subject) {
-        if ($this->getCurrentNode($openElements) == $subject) {
-            $element = $this->getCurrentNode($openElements);
-            array_pop($openElements);
-            // If element is also in the list of active formatting elements, remove the element from the list.
-        }
-        // TODO: implement
     }
 
     protected function isMainEndTag($tagName) {
@@ -373,8 +244,13 @@ class MixedNestedListAnalyzer implements ProcessorOperationInterface {
         $this->popElementsUntil($openElements, $tagName);
     }
 
-    protected function removeNode(array &$openElements, $tagName) {
-        array_slice($openElements,
-            array_search($tagName, $openElements), 1);
+    protected function popElementsUntil(array &$openElements, $elementName) {
+        while (true) {
+            $popped = array_pop($openElements);
+            if (is_string($elementName) && $popped == $elementName)
+                return;
+            if (is_array($elementName) && in_array($popped, $elementName))
+                return;
+        }
     }
 }

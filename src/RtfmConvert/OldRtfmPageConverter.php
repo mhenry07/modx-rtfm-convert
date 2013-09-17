@@ -8,6 +8,7 @@ namespace RtfmConvert;
 
 use RtfmConvert\Analyzers\DocumentOutliner;
 use RtfmConvert\Analyzers\ErrorClassAnalyzer;
+use RtfmConvert\Analyzers\MixedNestedListAnalyzer;
 use RtfmConvert\Analyzers\PreElementAnalyzer;
 use RtfmConvert\Analyzers\TextConverter;
 use RtfmConvert\Analyzers\TextDiffAnalyzer;
@@ -52,6 +53,7 @@ class OldRtfmPageConverter {
         $processor->register(new PreElementAnalyzer('before: '));
         $processor->register(TextConverter::create('before', $textDir,
             $this->fileIo));
+        $processor->register(new MixedNestedListAnalyzer());
 
         // main pre-processing
         // PageTreeHtmlTransformer (external requests) // note: will require cleanup (nested lists, etc.)

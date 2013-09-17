@@ -16,7 +16,8 @@ $addHtmlExtension = true;
 $data = "{$root}/data";
 $tocDir = "{$root}/oldrtfm-toc";
 $outputDir = "{$data}/convert";
-$cacheDir = "{$data}/cache";
+// I was getting errors because some paths were too long when caching requests with long querystrings
+$cacheDir = 'C:\temp\cache';
 $textDir = "{$data}/text";
 
 $dateString = date('Ymd\THi');

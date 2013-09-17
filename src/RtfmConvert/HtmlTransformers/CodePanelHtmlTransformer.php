@@ -95,6 +95,13 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
     protected function transformCodePanels($label, DOMQuery $codePanels,
                                            PageData $pageData) {
         $transformFn = function (DOMQuery $query) use ($label, $pageData) {
+            $codeFormatterErrors = $query->find('pre.code-php')->siblings('div.error');
+            if ($codeFormatterErrors->count() > 0)
+                $pageData->incrementStat($label, self::TRANSFORM,
+                    $codeFormatterErrors->count(),
+                    'removed source-code formatter error(s)');
+            $codeFormatterErrors->remove();
+
             $pre = $query->find('pre');
             $pre->each(function ($index, $item) use ($label, $pageData) {
                 $hasMapping = false;
@@ -124,7 +131,8 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             $pageData->addQueryStat($label, $query);
         };
 
-        $expectedDiff = -$codePanels->count() * 2;
+        $expectedDiff = -2 * ($codePanels->count() +
+            $codePanels->find('pre.code-php')->count());
         $this->executeTransformStep($label, $codePanels, $pageData,
             $transformFn, $addStatFn, $expectedDiff);
     }

@@ -7,6 +7,7 @@ namespace RtfmConvert\HtmlTransformers;
 
 
 use RtfmConvert\PageData;
+use RtfmConvert\PageStatistics;
 use RtfmConvert\RtfmQueryPath;
 
 class CodePanelHtmlTransformerTest extends \RtfmConvert\HtmlTestCase {
@@ -497,5 +498,43 @@ EOT;
         $transformer = new CodePanelHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expectedHtml, $result);
+    }
+
+    // see http://oldrtfm.modx.com/display/ADDON/FileDownload+R.FileDownload
+    public function testTransformCodePhpShouldRemoveFormatterError() {
+        $preContent = <<<'EOT'
+&lt;?php
+/**
+ * FileDownload R's AJAX connector file
+ */
+// ...
+/* handle request */
+$path = $modx-&gt;getOption('core_path') . 'components/yourpackage/processors/';
+$modx-&gt;request-&gt;handleRequest(array(
+    'processors_path' =&gt; $path,
+    'location' =&gt; '',
+));
+EOT;
+
+        $sourceHtml = <<<EOT
+<div class="code panel" style="border-width: 1px;"><div class="codeContent panelContent">
+<div class="error"><span class="error">Unable to find source-code formatter for language: php.</span> Available languages are: actionscript, html, java, javascript, none, sql, xhtml, xml</div><pre class="code-php">
+{$preContent}
+</pre>
+</div></div>
+EOT;
+        $expectedHtml = <<<EOT
+<pre class="brush: php">
+{$preContent}
+</pre>
+EOT;
+
+        $pageData = new PageData($sourceHtml, $this->stats);
+        $transformer = new CodePanelHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expectedHtml, $result);
+        $this->assertTransformStat('.code.panel', 1,
+            array(self::TRANSFORM => 2, self::WARNING => 0,
+                PageStatistics::ERROR => 0));
     }
 }

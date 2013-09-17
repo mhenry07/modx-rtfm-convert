@@ -7,6 +7,7 @@ namespace RtfmConvert\HtmlTransformers;
 
 
 use RtfmConvert\PageData;
+use RtfmConvert\RtfmQueryPath;
 
 /**
  * Class PageTreeCleaner
@@ -15,11 +16,23 @@ use RtfmConvert\PageData;
  * @package RtfmConvert\HtmlTransformers
  */
 class PageTreeCleaner {
+    protected $statsPrefix = 'pagetree: ';
+
+    public function setStatsPrefix($prefix) {
+        $this->statsPrefix = $prefix;
+    }
+
     public function clean(PageData $pageData) {
         $qp = $pageData->getHtmlQuery();
+        $pageData->beginTransform($qp);
         $pageTrees = $qp->find('div.plugin_pagetree');
         if ($pageTrees->count() == 0)
             return $qp;
+
+        $allDescendants = RtfmQueryPath::countAll($pageTrees);
+        $uls = $pageTrees->find('ul > li')->parent()->count();
+        $lis = $pageTrees->find('li')->count();
+        $expectedDiff = 2 * $lis + $uls - $allDescendants;
 
         $fieldsets = $pageTrees->find('fieldset');
         if ($fieldsets->count() > 0)
@@ -56,6 +69,8 @@ class PageTreeCleaner {
         $pageTrees->find('ul.plugin_pagetree_children_list')
             ->removeAttr('class')->removeAttr('id');
 
+        $pageData->checkTransform($this->statsPrefix . 'cleanup',
+            $qp, $expectedDiff);
         return $qp;
     }
 }

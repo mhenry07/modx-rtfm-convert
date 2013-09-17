@@ -11,11 +11,21 @@ use RtfmConvert\PageData;
 
 class PageTreeCleanerTest extends HtmlTestCase {
 
+    public function testCleanNonPagetreeShouldPreserveContent() {
+        $input = '<div><ul><li>item</li></ul></div>';
+        $pageData = new PageData($input, $this->stats);
+        $cleaner = new PageTreeCleaner();
+        $result = $cleaner->clean($pageData);
+        $this->assertHtmlEquals($input, $result);
+    }
+
     public function testCleanShouldReturnExpectedList() {
         $pageData = new PageData($this->inputHtml, $this->stats);
         $cleaner = new PageTreeCleaner();
+        $cleaner->setStatsPrefix('pagetree: ');
         $result = $cleaner->clean($pageData);
         $this->assertHtmlEquals($this->expectedHtml, $result);
+        $this->assertStatsNotContain('pagetree: cleanup');
     }
 
     public function testCleanShouldCleanTwoTrees() {

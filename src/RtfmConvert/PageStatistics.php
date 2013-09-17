@@ -169,7 +169,7 @@ class PageStatistics {
         $endCount = RtfmQueryPath::countAll($query->top('body'));
         $actual = $endCount - $beginCount;
         if ($actual !== $expectedElementDiff)
-            $this->incrementStat($statLabel, self::WARNING, 1,
+            $this->incrementStat($statLabel, self::ERROR, 1,
                 "Changed element count does not match expected. Expected: {$expectedElementDiff} Actual: {$actual}");
     }
 

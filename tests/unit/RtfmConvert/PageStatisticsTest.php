@@ -131,12 +131,12 @@ class PageStatisticsTest extends \PHPUnit_Framework_TestCase {
     /**
      * @depends testAddQueryStatShouldAddExpectedStat
      */
-    public function testCheckTransformShouldWarnWhenCountNotExpected() {
+    public function testCheckTransformShouldErrorWhenCountNotExpected() {
         $expected = array(
             PageStatistics::FOUND => 1,
             PageStatistics::TRANSFORM => 1,
-            PageStatistics::WARNING => 1,
-            PageStatistics::WARNING_MESSAGES =>
+            PageStatistics::ERROR => 1,
+            PageStatistics::ERROR_MESSAGES =>
             'Changed element count does not match expected. Expected: -1 Actual: -2'
         );
 

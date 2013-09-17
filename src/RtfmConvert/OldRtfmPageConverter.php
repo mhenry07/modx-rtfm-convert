@@ -24,6 +24,7 @@ use RtfmConvert\HtmlTransformers\FormattingElementHtmlTransformer;
 use RtfmConvert\HtmlTransformers\ImageHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NamedAnchorHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NestedListHtmlTransformer;
+use RtfmConvert\HtmlTransformers\PageTreeHtmlTransformer;
 use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\Infrastructure\FileIo;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
@@ -63,7 +64,9 @@ class OldRtfmPageConverter {
         $processor->register($newRtfmMetadataLoader);
 
         // main pre-processing
-        // PageTreeHtmlTransformer (external requests) // note: will require cleanup (nested lists, etc.)
+        $pagetreeHtmlTransformer = $this->createPageTreeHtmlTransformer(
+            'pagetree: ', $cacheDir);
+        $processor->register($pagetreeHtmlTransformer); // TODO: cleanup (nested lists, etc.)
         $processor->register(new NestedListHtmlTransformer());
 
         // main processing
@@ -205,5 +208,13 @@ class OldRtfmPageConverter {
         $metadataLoader->setStatsPrefix($statsPrefix);
         $metadataLoader->setCacheDirectory($cacheDir);
         return $metadataLoader;
+    }
+
+    protected function createPageTreeHtmlTransformer($statsPrefix, $cacheDir) {
+        $pageLoader = new CachedPageLoader();
+        $pageLoader->setBaseDirectory($cacheDir);
+        $pagetreeTransformer = new PageTreeHtmlTransformer($pageLoader);
+        $pagetreeTransformer->setStatsPrefix($statsPrefix);
+        return $pagetreeTransformer;
     }
 }

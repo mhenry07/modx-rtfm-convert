@@ -31,6 +31,8 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             $codePanels->find('pre'), $pageData);
         $this->transformCodeHeaders('.code.panel .codeHeader',
             $codePanels->find('div.codeHeader'), $pageData);
+        $this->transformFormatterErrors('.code.panel div.error',
+            $codePanels->find('pre.code-php')->siblings('div.error'), $pageData);
         $this->transformCodePanels('.code.panel', $codePanels, $pageData);
 
         return $qp;
@@ -94,16 +96,29 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             $transformFn, $addStatFn, 0);
     }
 
+    protected function transformFormatterErrors($label,
+                                                DOMQuery $formatterErrors,
+                                                PageData $pageData) {
+        $transformFn = function (DOMQuery $query) {
+            $query->remove();
+        };
+
+        $addStatFn = function ($label, DOMQuery $query, PageData $pageData) {
+            if ($query->count() > 0)
+                $pageData->addQueryStat($label, $query,
+                    array(self::TRANSFORM_ALL => true,
+                        self::TRANSFORM_MESSAGES =>
+                        'removed source-code formatter error(s)'));
+        };
+
+        $expectedDiff = -2 * $formatterErrors->count();
+        $this->executeTransformStep($label, $formatterErrors, $pageData,
+            $transformFn, $addStatFn, $expectedDiff);
+    }
+
     protected function transformCodePanels($label, DOMQuery $codePanels,
                                            PageData $pageData) {
         $transformFn = function (DOMQuery $query) use ($label, $pageData) {
-            $codeFormatterErrors = $query->find('pre.code-php')->siblings('div.error');
-            if ($codeFormatterErrors->count() > 0)
-                $pageData->incrementStat($label, self::TRANSFORM,
-                    $codeFormatterErrors->count(),
-                    'removed source-code formatter error(s)');
-            $codeFormatterErrors->remove();
-
             $pre = $query->find('pre');
             $pre->each(function ($index, $item) use ($label, $pageData) {
                 $hasMapping = false;
@@ -133,8 +148,7 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             $pageData->addQueryStat($label, $query);
         };
 
-        $expectedDiff = -2 * ($codePanels->count() +
-            $codePanels->find('pre.code-php')->count());
+        $expectedDiff = -2 * $codePanels->count();
         $this->executeTransformStep($label, $codePanels, $pageData,
             $transformFn, $addStatFn, $expectedDiff);
     }

@@ -534,8 +534,11 @@ EOT;
         $transformer = new CodePanelHtmlTransformer();
         $result = $transformer->transform($pageData);
         $this->assertHtmlEquals($expectedHtml, $result);
+        $this->assertTransformStat('.code.panel div.error', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0,
+                PageStatistics::ERROR => 0));
         $this->assertTransformStat('.code.panel', 1,
-            array(self::TRANSFORM => 2, self::WARNING => 0,
+            array(self::TRANSFORM => 1, self::WARNING => 0,
                 PageStatistics::ERROR => 0));
     }
 }

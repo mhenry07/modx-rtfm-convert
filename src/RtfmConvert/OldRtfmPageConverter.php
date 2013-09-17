@@ -66,7 +66,7 @@ class OldRtfmPageConverter {
         // main pre-processing
         $pagetreeHtmlTransformer = $this->createPageTreeHtmlTransformer(
             'pagetree: ', $cacheDir);
-        $processor->register($pagetreeHtmlTransformer); // TODO: cleanup (nested lists, etc.)
+        $processor->register($pagetreeHtmlTransformer);
         $processor->register(new NestedListHtmlTransformer());
 
         // main processing

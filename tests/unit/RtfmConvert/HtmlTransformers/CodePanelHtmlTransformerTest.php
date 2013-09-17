@@ -86,7 +86,8 @@ EOT;
             array('java', 'php'),
             array('javascript', 'javascript'),
             array('php', 'php'),
-            array('sql', 'sql')
+            array('sql', 'sql'),
+            array('xml', 'xml')
         );
     }
 

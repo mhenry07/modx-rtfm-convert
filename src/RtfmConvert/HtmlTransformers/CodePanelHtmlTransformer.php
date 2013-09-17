@@ -15,7 +15,8 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
         'code-java' => 'php',
         'code-javascript' => 'javascript',
         'code-php' => 'php',
-        'code-sql' => 'sql'
+        'code-sql' => 'sql',
+        'code-xml' => 'xml'
     );
 
     // note: using wrapInner inside each since it seems to cause issues with multiple matches

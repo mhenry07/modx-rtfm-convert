@@ -88,7 +88,7 @@ class TextConverter implements ProcessorOperationInterface {
     // pagetrees are common and make it hard to detect other issues if they are included in diffs
     protected function removePagetree($html) {
         $qp = RtfmQueryPath::htmlqp($html);
-        $qp->find('.plugin_pagetree')->remove();
+        $qp->find('div.plugin_pagetree, ul.page-toc, ul.see-also')->remove();
         return RtfmQueryPath::getHtmlString($qp->document());
     }
 

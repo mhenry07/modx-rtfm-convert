@@ -19,19 +19,54 @@ class PageTreeCleanerTest extends HtmlTestCase {
         $this->assertHtmlEquals($input, $result);
     }
 
-    public function testCleanShouldReturnExpectedList() {
+    public function testCleanShouldReturnExpectedListAsPageToc() {
+        $expected = sprintf($this->expectedHtml, 'page-toc');
         $pageData = new PageData($this->inputHtml, $this->stats);
+
         $cleaner = new PageTreeCleaner();
         $cleaner->setStatsPrefix('pagetree: ');
         $result = $cleaner->clean($pageData);
-        $this->assertHtmlEquals($this->expectedHtml, $result);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertTransformStat('pagetree: cleanup', 1);
+    }
+
+    public function testCleanBeforeSeeAlsoShouldReturnExpectedListAsPageToc() {
+        $seeAlso = '<h3 id="PageName_SeeAlso">See Also</h3>';
+        $input = $this->inputHtml . $seeAlso;
+        $expected = sprintf($this->expectedHtml, 'page-toc') . $seeAlso;
+        $pageData = new PageData($input, $this->stats);
+
+        $cleaner = new PageTreeCleaner();
+        $cleaner->setStatsPrefix('pagetree: ');
+        $result = $cleaner->clean($pageData);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertTransformStat('pagetree: cleanup', 1);
+    }
+
+    public function testCleanAfterSeeAlsoShouldReturnExpectedListAsSeeAlso() {
+        $seeAlso = <<<'EOT'
+<h3 id="PageName_SeeAlso">See Also</h3>
+<ul><li><a href="/">Other see also item</a></li></ul>
+EOT;
+        $input = $seeAlso . $this->inputHtml;
+        $expected = $seeAlso . sprintf($this->expectedHtml, 'see-also');
+        $pageData = new PageData($input, $this->stats);
+
+        $cleaner = new PageTreeCleaner();
+        $cleaner->setStatsPrefix('pagetree: ');
+        $result = $cleaner->clean($pageData);
+        $this->assertHtmlEquals($expected, $result);
         $this->assertTransformStat('pagetree: cleanup', 1);
     }
 
     public function testCleanShouldCleanTwoTrees() {
-        $middleContent = '<div>other list <ul><li>list</li></ul></div>';
+        $middleContent = <<<'EOT'
+<div>other list <ul><li>list</li></ul></div>
+<h3 id="PageName_SeeAlso">See Also</h3>
+EOT;
         $input = $this->inputHtml . $middleContent . $this->inputHtml;
-        $expected = $this->expectedHtml . $middleContent . $this->expectedHtml;
+        $expected = sprintf($this->expectedHtml, 'page-toc') .
+            $middleContent . sprintf($this->expectedHtml, 'see-also');
         $pageData = new PageData($input, $this->stats);
 
         $cleaner = new PageTreeCleaner();
@@ -308,8 +343,8 @@ EOT;
 </div>
 EOT;
 
-    protected $expectedHtml = <<<'EOT'
-<ul class="plugin_pagetree">
+    protected $expectedHtml = <<<EOT
+<ul class="%s">
     <li>
         <a href="/display/revolution20/Basic+Installation">Basic Installation</a>
         <ul>

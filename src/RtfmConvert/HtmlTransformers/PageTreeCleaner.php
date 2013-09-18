@@ -35,15 +35,13 @@ class PageTreeCleaner {
             $uls = $pageTree->find('ul > li')->parent()->count();
             $lis = $pageTree->find('li')->count();
 
-            // remove empty tree
             if ($lis == 0) {
+                // remove empty tree (including trees with errors)
                 $pageData->incrementStat($this->statsPrefix . 'cleanup',
                     PageStatistics::TRANSFORM, 1, 'removed empty pagetree');
                 $expectedDiff -= $allDescendants;
                 $pageTree->remove();
             } else {
-                $pageData->incrementStat($this->statsPrefix . 'cleanup',
-                    PageStatistics::TRANSFORM, 1, 'cleaned up pagetree');
                 $expectedDiff -= $allDescendants - 2 * $lis - $uls;
             }
         }
@@ -90,7 +88,16 @@ class PageTreeCleaner {
         $pageTrees->find('ul.plugin_pagetree_children_list')
             ->removeAttr('class')->removeAttr('id');
 
-        $pageTrees->children()->addClass('plugin_pagetree');
+        foreach ($pageTrees as $pageTree) {
+            $treeClass = 'page-toc';
+            if ($pageTree->prev('h3')->filterPreg('/^\s*See Also\s*$/')
+                    ->count() > 0)
+                $treeClass = 'see-also';
+            $pageTree->children()->addClass($treeClass);
+            $pageData->incrementStat($this->statsPrefix . 'cleanup',
+                PageStatistics::TRANSFORM, 1,
+                "cleaned up pagetree and set class to: {$treeClass}");
+        }
         $pageTrees->contents()->unwrap();
 
         $pageData->checkTransform($this->statsPrefix . 'cleanup',

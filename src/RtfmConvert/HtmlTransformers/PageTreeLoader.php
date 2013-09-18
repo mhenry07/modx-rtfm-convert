@@ -41,10 +41,18 @@ class PageTreeLoader {
         $treeId = 1;
         $pageTrees = $qp->find('div.plugin_pagetree');
         $pageData->addQueryStat($this->statsPrefix . 'div.plugin_pagetree',
-            $pageTrees, array(PageStatistics::TRANSFORM_ALL => true,
-            PageStatistics::TRANSFORM_MESSAGES => 'loaded'));
+            $pageTrees);
         foreach ($pageTrees as $pageTree) {
+            if ($pageTree->find('#pagetree-error')->count() > 0) {
+                $pageData->incrementStat(
+                    $this->statsPrefix . 'div.plugin_pagetree',
+                    PageStatistics::WARNING, 1, 'pagetree error');
+                $treeId++;
+                continue;
+            }
             $this->loadTree($pageTree, $stats, $treeId);
+            $pageData->incrementStat($this->statsPrefix . 'div.plugin_pagetree',
+                PageStatistics::TRANSFORM, 1, 'loaded');
             $pageData->addQueryStat($this->statsPrefix . "{$treeId}: li",
                 $pageTree->find('li'),
                 array(PageStatistics::TRANSFORM_ALL => true,

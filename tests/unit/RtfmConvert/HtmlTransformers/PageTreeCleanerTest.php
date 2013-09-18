@@ -39,6 +39,29 @@ class PageTreeCleanerTest extends HtmlTestCase {
         $this->assertHtmlEquals($expected, $result);
     }
 
+    // see http://oldrtfm.modx.com/display/ADDON/Advsearch.AdvSearchForm.tpl
+    public function testCleanShouldPreserveOnError() {
+        $html = <<<'EOT'
+<div class="plugin_pagetree">
+    <div id="pagetree-error" class="error">
+        <span class="errorMessage">
+            The root page AdvSearchForm could not be found in space MODx Add-Ons. <br>
+        <span>
+    </div>
+</div>
+EOT;
+
+        $pageData = new PageData($html, $this->stats);
+
+        $cleaner = new PageTreeCleaner();
+        $cleaner->setStatsPrefix('pagetree: ');
+        $result = $cleaner->clean($pageData);
+
+        $this->assertHtmlEquals($html, $result);
+        $this->assertStatsNotContain('pagetree: cleanup');
+    }
+
+
     protected $inputHtml = <<<'EOT'
 <div class="plugin_pagetree">
     <ul class="plugin_pagetree_children_list plugin_pagetree_children_list_noleftspace">

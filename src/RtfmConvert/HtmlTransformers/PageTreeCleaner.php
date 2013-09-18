@@ -25,7 +25,7 @@ class PageTreeCleaner {
     public function clean(PageData $pageData) {
         $qp = $pageData->getHtmlQuery();
         $pageData->beginTransform($qp);
-        $pageTrees = $qp->find('div.plugin_pagetree');
+        $pageTrees = $qp->find('div.plugin_pagetree')->not('#pagetree-error');
         if ($pageTrees->count() == 0)
             return $qp;
 

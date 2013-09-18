@@ -9,6 +9,7 @@ namespace RtfmConvert\HtmlTransformers;
 use RtfmConvert\HtmlTestCase;
 use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\PageData;
+use RtfmConvert\PageStatistics;
 
 class PageTreeLoaderTest extends HtmlTestCase {
 
@@ -121,6 +122,34 @@ class PageTreeLoaderTest extends HtmlTestCase {
             ->find('#child_ul18678053-2')->count());
         $this->assertEquals(1, $result->find('#child_ul18678541-2')
             ->find('#child_ul36110340-2')->count());
+    }
+
+    // see http://oldrtfm.modx.com/display/ADDON/Advsearch.AdvSearchForm.tpl
+    public function testLoadShouldHandleError() {
+        $html = <<<'EOT'
+<div class="plugin_pagetree">
+    <div id="pagetree-error" class="error">
+        <span class="errorMessage">
+            The root page AdvSearchForm could not be found in space MODx Add-Ons. <br>
+        <span>
+    </div>
+</div>
+EOT;
+
+        $pageData = new PageData($html, $this->stats);
+
+        $pageLoader = $this
+            ->getMock('\RtfmConvert\Infrastructure\CachedPageLoader');
+        $pageLoader->expects($this->never())->method('get');
+
+        $loader = new PageTreeLoader($pageLoader);
+        $loader->setStatsPrefix('pagetree: ');
+        $result = $loader->load($pageData);
+
+        $this->assertHtmlEquals($html, $result);
+        $this->assertTransformStat('pagetree: div.plugin_pagetree', 1,
+            array(PageStatistics::TRANSFORM => 0,
+                PageStatistics::WARNING => 1));
     }
 
     // see http://oldrtfm.modx.com/display/revolution20/Advanced+Installation

@@ -41,6 +41,7 @@ class PageTreeHtmlTransformer extends AbstractHtmlTransformer {
 
         $pageData = new $pageData($qp, $pageData->getStats());
         $cleaner = new PageTreeCleaner();
+        $cleaner->setStatsPrefix($this->statsPrefix);
         $qp = $cleaner->clean($pageData);
 
         return $qp;

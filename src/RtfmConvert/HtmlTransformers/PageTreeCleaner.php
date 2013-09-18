@@ -31,7 +31,7 @@ class PageTreeCleaner {
         foreach ($qp->find('div.plugin_pagetree') as $pageTree) {
             $pageData->incrementStat($this->statsPrefix . 'cleanup',
                 PageStatistics::FOUND, 1);
-            $allDescendants = RtfmQueryPath::countAll($pageTree);
+            $allDescendants = RtfmQueryPath::countAll($pageTree, true);
             $uls = $pageTree->find('ul > li')->parent()->count();
             $lis = $pageTree->find('li')->count();
 
@@ -39,7 +39,7 @@ class PageTreeCleaner {
             if ($lis == 0) {
                 $pageData->incrementStat($this->statsPrefix . 'cleanup',
                     PageStatistics::TRANSFORM, 1, 'removed empty pagetree');
-                $expectedDiff -= $allDescendants + 1;
+                $expectedDiff -= $allDescendants;
                 $pageTree->remove();
             } else {
                 $pageData->incrementStat($this->statsPrefix . 'cleanup',
@@ -89,6 +89,9 @@ class PageTreeCleaner {
 
         $pageTrees->find('ul.plugin_pagetree_children_list')
             ->removeAttr('class')->removeAttr('id');
+
+        $pageTrees->children()->addClass('plugin_pagetree');
+        $pageTrees->contents()->unwrap();
 
         $pageData->checkTransform($this->statsPrefix . 'cleanup',
             $qp, $expectedDiff);

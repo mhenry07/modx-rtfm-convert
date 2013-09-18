@@ -309,67 +309,65 @@ EOT;
 EOT;
 
     protected $expectedHtml = <<<'EOT'
-<div class="plugin_pagetree">
-    <ul>
-        <li>
-            <a href="/display/revolution20/Basic+Installation">Basic Installation</a>
-            <ul>
-                <li>
-                    <a href="/display/revolution20/MODx+Revolution+on+Debian">MODx Revolution on Debian</a>
-                </li>
+<ul class="plugin_pagetree">
+    <li>
+        <a href="/display/revolution20/Basic+Installation">Basic Installation</a>
+        <ul>
+            <li>
+                <a href="/display/revolution20/MODx+Revolution+on+Debian">MODx Revolution on Debian</a>
+            </li>
 
-                <li>
-                    <a href="/display/revolution20/Lighttpd+Guide">Lighttpd Guide</a>
-                </li>
+            <li>
+                <a href="/display/revolution20/Lighttpd+Guide">Lighttpd Guide</a>
+            </li>
 
-                <li>
-                    <a href="/display/revolution20/Problems+with+WAMPServer+2.0i">Problems with WAMPServer 2.0i</a>
-                </li>
+            <li>
+                <a href="/display/revolution20/Problems+with+WAMPServer+2.0i">Problems with WAMPServer 2.0i</a>
+            </li>
 
-                <li>
-                    <a href="/display/revolution20/Installation+on+a+server+running+ModSecurity">Installation on a server running ModSecurity</a>
-                </li>
+            <li>
+                <a href="/display/revolution20/Installation+on+a+server+running+ModSecurity">Installation on a server running ModSecurity</a>
+            </li>
 
-                <li>
-                        <a href="/display/revolution20/MODX+and+Suhosin">MODX and Suhosin</a>
-                </li>
+            <li>
+                    <a href="/display/revolution20/MODX+and+Suhosin">MODX and Suhosin</a>
+            </li>
 
-                <li>
-                    <a href="/display/revolution20/Nginx+Server+Config">Nginx Server Config</a>
-                </li>
-            </ul>
-        </li>
+            <li>
+                <a href="/display/revolution20/Nginx+Server+Config">Nginx Server Config</a>
+            </li>
+        </ul>
+    </li>
 
-        <li>
-            <a href="/display/revolution20/Advanced+Installation">Advanced Installation</a>
-        </li>
+    <li>
+        <a href="/display/revolution20/Advanced+Installation">Advanced Installation</a>
+    </li>
 
-        <li>
-            <a href="/display/revolution20/Git+Installation">Git Installation</a>
-        </li>
+    <li>
+        <a href="/display/revolution20/Git+Installation">Git Installation</a>
+    </li>
 
-        <li>
-            <a href="/display/revolution20/Command+Line+Installation">Command Line Installation</a>
-            <ul>
-                <li>
-                    <a href="/display/revolution20/The+Setup+Config+Xml+File">The Setup Config Xml File</a>
-                </li>
-            </ul>
-        </li>
+    <li>
+        <a href="/display/revolution20/Command+Line+Installation">Command Line Installation</a>
+        <ul>
+            <li>
+                <a href="/display/revolution20/The+Setup+Config+Xml+File">The Setup Config Xml File</a>
+            </li>
+        </ul>
+    </li>
 
-        <li>
-                <a href="/display/revolution20/Troubleshooting+Installation">Troubleshooting Installation</a>
-        </li>
+    <li>
+            <a href="/display/revolution20/Troubleshooting+Installation">Troubleshooting Installation</a>
+    </li>
 
-        <li>
-            <a href="/pages/viewpage.action?pageId=18678051">Successful Installation, Now What Do I Do?</a>
-        </li>
+    <li>
+        <a href="/pages/viewpage.action?pageId=18678051">Successful Installation, Now What Do I Do?</a>
+    </li>
 
-        <li>
-            <a href="/display/revolution20/Using+MODx+Revolution+from+SVN">Using MODx Revolution from SVN</a>
-        </li>
-    </ul>
-</div>
+    <li>
+        <a href="/display/revolution20/Using+MODx+Revolution+from+SVN">Using MODx Revolution from SVN</a>
+    </li>
+</ul>
 EOT;
 
 }

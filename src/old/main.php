@@ -1,5 +1,5 @@
 <?php
-require '../vendor/autoload.php';
+require '../../vendor/autoload.php';
 
 // FIXED: strip &Acirc; (injected before &nbsp;)
 //  * passing qp->html() to create a second qp object seemed to contribute to this
@@ -15,17 +15,24 @@ require '../vendor/autoload.php';
 // DONE: get contents of div.wiki-content
 //  * handled by tidy option show-body-only
 // TODO: warn about certain cases
+//  * empty see also
+//  * unrecognized cases
 
 //$src = 'http://oldrtfm.modx.com/display/revolution20/Tag+Syntax';
-$src = '../data/tag-syntax.html';
+$src = '../../data/tag-syntax.html';
 //$src = 'http://oldrtfm.modx.com/display/revolution20/Server+Requirements';
-$dest = '../data/dest.html';
+$dest = '../../data/dest.html';
 
 $options = array(
     'encoding' => 'utf-8',
     'convert_to_encoding' => 'utf-8');
 
-function isComment($index, $item) {
+/**
+ * @param int $index
+ * @param DOMNode $item
+ * @return bool
+ */
+function isComment($index, DOMNode $item) {
     return $item->nodeType === XML_COMMENT_NODE;
 }
 
@@ -82,6 +89,7 @@ foreach ($replaceTags as $oldTag => $contentTag) {
 }
 
 // fix improperly nested lists
+/** @var  \QueryPath\DOMQuery $list */
 $nestedLists = $content->find('ol > ol, ol > ul, ul > ol, ul > ul');
 foreach ($nestedLists as $list) {
     $prevLi = $list->prev('li')->branch();

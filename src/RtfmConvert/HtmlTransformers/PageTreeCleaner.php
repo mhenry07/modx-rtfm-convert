@@ -7,6 +7,7 @@ namespace RtfmConvert\HtmlTransformers;
 
 
 use RtfmConvert\PageData;
+use RtfmConvert\PageStatistics;
 use RtfmConvert\RtfmQueryPath;
 
 /**
@@ -25,19 +26,30 @@ class PageTreeCleaner {
     public function clean(PageData $pageData) {
         $qp = $pageData->getHtmlQuery();
         $pageData->beginTransform($qp);
+
+        $expectedDiff = 0;
+        foreach ($qp->find('div.plugin_pagetree') as $pageTree) {
+            $pageData->incrementStat($this->statsPrefix . 'cleanup',
+                PageStatistics::FOUND, 1);
+            $allDescendants = RtfmQueryPath::countAll($pageTree);
+            $uls = $pageTree->find('ul > li')->parent()->count();
+            $lis = $pageTree->find('li')->count();
+
+            // remove empty tree
+            if ($lis == 0) {
+                $pageData->incrementStat($this->statsPrefix . 'cleanup',
+                    PageStatistics::TRANSFORM, 1, 'removed empty pagetree');
+                $expectedDiff -= $allDescendants + 1;
+                $pageTree->remove();
+            } else {
+                $pageData->incrementStat($this->statsPrefix . 'cleanup',
+                    PageStatistics::TRANSFORM, 1, 'cleaned up pagetree');
+                $expectedDiff -= $allDescendants - 2 * $lis - $uls;
+            }
+        }
+
         $pageTrees = $qp->find('div.plugin_pagetree')->not('#pagetree-error');
-        if ($pageTrees->count() == 0)
-            return $qp;
-
-        $allDescendants = RtfmQueryPath::countAll($pageTrees);
-        $uls = $pageTrees->find('ul > li')->parent()->count();
-        $lis = $pageTrees->find('li')->count();
-        $expectedDiff = 2 * $lis + $uls - $allDescendants;
-
-        // remove empty trees
-        if ($lis == 0) {
-            $expectedDiff = -$allDescendants - $pageTrees->count();
-            $pageTrees->remove();
+        if ($pageTrees->count() == 0) {
             $pageData->checkTransform($this->statsPrefix . 'cleanup',
                 $qp, $expectedDiff);
             return $qp;

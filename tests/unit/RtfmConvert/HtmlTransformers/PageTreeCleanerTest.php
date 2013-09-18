@@ -25,7 +25,7 @@ class PageTreeCleanerTest extends HtmlTestCase {
         $cleaner->setStatsPrefix('pagetree: ');
         $result = $cleaner->clean($pageData);
         $this->assertHtmlEquals($this->expectedHtml, $result);
-        $this->assertStatsNotContain('pagetree: cleanup');
+        $this->assertTransformStat('pagetree: cleanup', 1);
     }
 
     public function testCleanShouldCleanTwoTrees() {
@@ -40,8 +40,9 @@ class PageTreeCleanerTest extends HtmlTestCase {
     }
 
     // see http://oldrtfm.modx.com/display/ADDON/Advsearch.AdvSearchForm.tpl
-    public function testCleanShouldPreserveOnError() {
+    public function testCleanShouldRemovePagetreeWithError() {
         $html = <<<'EOT'
+<h3>See Also</h3>
 <div class="plugin_pagetree">
     <div id="pagetree-error" class="error">
         <span class="errorMessage">
@@ -50,6 +51,7 @@ class PageTreeCleanerTest extends HtmlTestCase {
     </div>
 </div>
 EOT;
+        $expected = '<h3>See Also</h3>';
 
         $pageData = new PageData($html, $this->stats);
 
@@ -57,8 +59,8 @@ EOT;
         $cleaner->setStatsPrefix('pagetree: ');
         $result = $cleaner->clean($pageData);
 
-        $this->assertHtmlEquals($html, $result);
-        $this->assertStatsNotContain('pagetree: cleanup');
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertTransformStat('pagetree: cleanup', 1);
     }
 
     // see http://oldrtfm.modx.com/display/ADDON/modActiveDirectory
@@ -89,7 +91,8 @@ EOT;
         $result = $cleaner->clean($pageData);
 
         $this->assertHtmlEquals($expected, $result);
-        $this->assertStatsNotContain('pagetree: cleanup');
+        $this->assertTransformStat('pagetree: cleanup', 1,
+            array(self::TRANSFORM => 1));
     }
 
     protected $inputHtml = <<<'EOT'

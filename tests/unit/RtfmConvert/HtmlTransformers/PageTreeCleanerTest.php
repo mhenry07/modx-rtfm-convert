@@ -61,6 +61,36 @@ EOT;
         $this->assertStatsNotContain('pagetree: cleanup');
     }
 
+    // see http://oldrtfm.modx.com/display/ADDON/modActiveDirectory
+    public function testCleanShouldRemoveEmptyTree() {
+        $html = <<<'EOT'
+<h3>See Also</h3>
+<div class="plugin_pagetree">
+    <ul class="plugin_pagetree_children_list plugin_pagetree_children_list_noleftspace">
+        <div class="plugin_pagetree_children">
+<ul class="plugin_pagetree_children_list" id="child_ul20119574-1">
+    </ul>
+        </div>
+
+    <fieldset class="hidden">
+        <input type="hidden" name="treeId" value="" /><input type="hidden" name="treeRequestId" value="/plugins/pagetree/naturalchildren.action?decorator=none&amp;excerpt=false&amp;sort=position&amp;reverse=false&amp;disableLinks=false" /><input type="hidden" name="treePageId" value="18678479" /><input type="hidden" name="noRoot" value="false" /><input type="hidden" name="rootPageId" value="18678541" /><input type="hidden" name="rootPage" value="" /><input type="hidden" name="startDepth" value="0" /><input type="hidden" name="spaceKey" value="revolution20" /><input type="hidden" name="i18n-pagetree.loading" value="Loading..." /><input type="hidden" name="i18n-pagetree.error.permission" value="Unable to load page tree. It seems that you do not have permission to view the root page." /><input type="hidden" name="i18n-pagetree.eeror.general" value="There was a problem retrieving the page tree. Please check the server log file for more information." /><input type="hidden" name="loginUrl" value="/login.action?os_destination=%2Fdisplay%2Frevolution20%2FAdvanced%2BInstallation" />
+        <fieldset class="hidden">
+            <input type="hidden" name="ancestorId" value="18678541" />
+        </fieldset>
+    </fieldset>
+</div>
+EOT;
+        $expected = '<h3>See Also</h3>';
+
+        $pageData = new PageData($html, $this->stats);
+
+        $cleaner = new PageTreeCleaner();
+        $cleaner->setStatsPrefix('pagetree: ');
+        $result = $cleaner->clean($pageData);
+
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertStatsNotContain('pagetree: cleanup');
+    }
 
     protected $inputHtml = <<<'EOT'
 <div class="plugin_pagetree">

@@ -34,6 +34,15 @@ class PageTreeCleaner {
         $lis = $pageTrees->find('li')->count();
         $expectedDiff = 2 * $lis + $uls - $allDescendants;
 
+        // remove empty trees
+        if ($lis == 0) {
+            $expectedDiff = -$allDescendants - $pageTrees->count();
+            $pageTrees->remove();
+            $pageData->checkTransform($this->statsPrefix . 'cleanup',
+                $qp, $expectedDiff);
+            return $qp;
+        }
+
         $fieldsets = $pageTrees->find('fieldset');
         if ($fieldsets->count() > 0)
             $fieldsets->remove();

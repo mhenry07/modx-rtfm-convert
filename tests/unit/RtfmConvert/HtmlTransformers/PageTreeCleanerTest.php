@@ -31,7 +31,7 @@ class PageTreeCleanerTest extends HtmlTestCase {
     }
 
     public function testCleanBeforeSeeAlsoShouldReturnExpectedListAsPageToc() {
-        $seeAlso = '<h3 id="PageName_SeeAlso">See Also</h3>';
+        $seeAlso = '<h2 id="PageName_SeeAlso">See Also</h2>';
         $input = $this->inputHtml . $seeAlso;
         $expected = sprintf($this->expectedHtml, 'page-toc') . $seeAlso;
         $pageData = new PageData($input, $this->stats);
@@ -43,8 +43,26 @@ class PageTreeCleanerTest extends HtmlTestCase {
         $this->assertTransformStat('pagetree: cleanup', 1);
     }
 
-    public function testCleanAfterSeeAlsoShouldReturnExpectedListAsSeeAlso() {
+    public function testCleanAfterH2SeeAlsoShouldReturnExpectedListAsSeeAlso() {
         $seeAlso = <<<'EOT'
+<h3>Other</h3>
+<h2 id="PageName_SeeAlso">See Also</h2>
+<ul><li><a href="/">Other see also item</a></li></ul>
+EOT;
+        $input = $seeAlso . $this->inputHtml;
+        $expected = $seeAlso . sprintf($this->expectedHtml, 'see-also');
+        $pageData = new PageData($input, $this->stats);
+
+        $cleaner = new PageTreeCleaner();
+        $cleaner->setStatsPrefix('pagetree: ');
+        $result = $cleaner->clean($pageData);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertTransformStat('pagetree: cleanup', 1);
+    }
+
+    public function testCleanAfterH3SeeAlsoShouldReturnExpectedListAsSeeAlso() {
+        $seeAlso = <<<'EOT'
+<h2>Other</h2>
 <h3 id="PageName_SeeAlso">See Also</h3>
 <ul><li><a href="/">Other see also item</a></li></ul>
 EOT;

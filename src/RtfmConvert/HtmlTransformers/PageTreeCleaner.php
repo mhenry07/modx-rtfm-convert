@@ -90,7 +90,7 @@ class PageTreeCleaner {
 
         foreach ($pageTrees as $pageTree) {
             $treeClass = 'page-toc';
-            if ($pageTree->prev('h3')->filterPreg('/^\s*See Also\s*$/')
+            if ($pageTree->prev('h2, h3')->filterPreg('/^\s*See Also\s*$/')
                     ->count() > 0)
                 $treeClass = 'see-also';
             $pageTree->children()->addClass($treeClass);

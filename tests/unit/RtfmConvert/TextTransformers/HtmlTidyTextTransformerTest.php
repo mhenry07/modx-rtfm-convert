@@ -27,16 +27,12 @@ EOT;
         $expected = <<<EOT
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>
-            Title
-        </title>
-    </head>
-    <body>
-        <p>
-            text
-        </p>
-    </body>
+<head>
+<title>Title</title>
+</head>
+<body>
+<p>text</p>
+</body>
 </html>
 EOT;
 

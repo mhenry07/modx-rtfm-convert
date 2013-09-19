@@ -26,8 +26,6 @@ class HtmlTidyTextTransformer extends AbstractTextTransformer {
             'doctype' => 'omit',
             'output-xhtml' => true,
             'break-before-br' => true,
-            'indent' => true,
-            'indent-spaces' => 4,
             'vertical-space' => true,
             'wrap' => 0,
             'char-encoding' => 'utf8',

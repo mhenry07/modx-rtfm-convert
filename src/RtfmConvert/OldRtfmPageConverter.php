@@ -140,15 +140,8 @@ class OldRtfmPageConverter {
     }
 
     protected function getDestinationFilename($url, $baseDir, $addHtmlExtension) {
-        $urlPath = parse_url($url, PHP_URL_PATH);
-        $urlQuery = parse_url($url, PHP_URL_QUERY);
-        $relativeUrl = preg_replace('#/$#', '', $urlPath);
-        if ($urlQuery)
-            $relativeUrl .= '?' . $urlQuery;
-        $filePath = PathHelper::convertRelativeUrlToFilePath($relativeUrl);
-        if ($addHtmlExtension)
-            $filePath .= '.html';
-        return PathHelper::join($baseDir, $filePath);
+        return PathHelper::getConversionFilename($url, $baseDir,
+            $addHtmlExtension);
     }
 
     /**

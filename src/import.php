@@ -29,11 +29,11 @@ $nomatches = array();
 $pageIdTV = $modx->getValue($modx->newQuery('modTemplateVar', array('name' => 'pageId'))->prepare());
 
 $tocParser = new OldRtfmTocParser();
-$hrefs = $tocParser->parseTocDirectory($tocDir);
-echo "*** Importing {$space['source']} into MODX ***\n";
+$hrefs = $tocParser->parseTocDirectory($config['toc_dir']);
+echo "*** Importing {$config['source_dir']} into MODX ***\n";
 foreach ($hrefs as $href) {
     $filename = PathHelper::getConversionFilename($href,
-        $config['conversion_dir'], $config['conversion_html_extensions']);
+        $config['source_dir'], $config['source_has_html_extensions']);
     $pageName = basename($filename);
     $fileContent = file_get_contents($filename);
 
@@ -43,11 +43,11 @@ foreach ($hrefs as $href) {
     $contextKey = getContextKey($config['spaces'], $space);
 
     if (!$modx->switchContext($contextKey)) {
-        echo "ERROR switching to context {$contextKey} to import {$space['source']}\n";
+        echo "ERROR switching to context {$contextKey} to import {$space}\n";
         continue;
     }
 
-//    echo "\n\n*** Importing {$space['source']} into context {$contextKey} ***\n";
+//    echo "\n\n*** Importing {$space} into context {$contextKey} ***\n";
 
 //    if (
 //        in_array(basename($filename), array('.', '..', /*'Home', */'index.html'))
@@ -72,7 +72,7 @@ foreach ($hrefs as $href) {
 
     $matches = array();
     // note: using regex instead of QueryPath to preserve certain text transfomations
-    if (preg_match('#<body>(.*)</body>#sm', $fileContent, $matches)) {
+    if (preg_match('#<body[^>]*>(.*)</body>#sm', $fileContent, $matches)) {
         $pageContent = trim($matches[1], " \n\r\t");
 
         /** @var modDocument $document */
@@ -94,7 +94,7 @@ foreach ($hrefs as $href) {
             $document = $modx->newObject(
                 'modDocument',
                 array(
-                    'parent' => $space['importParent'],
+                    'parent' => $config[$contextKey]['importParent'],
                     'context_key' => $modx->context->get('key'),
                     'pagetitle' => $pageTitle,
                     'alias' => $pageTitle,

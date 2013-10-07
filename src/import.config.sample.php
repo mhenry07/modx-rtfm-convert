@@ -1,10 +1,9 @@
 <?php
 return array(
-    'modx_core_config' => 'C:/tools/xampp/htdocs/modx/config.core.php',
-    'source_path' => '/Users/opengeek/www/rtfm.modx.com/display/',
+    'modx_core_config' => '/path/to/modx/config.core.php',
+    'source_path' => dirname(__DIR__) . '/data/convert',
+    'source_has_html_extensions' => false,
     'toc_dir' => dirname(__DIR__) . '/oldrtfm-toc',
-    'conversion_dir' => dirname(__DIR__) . '/data/convert',
-    'conversion_html_extensions' => false,
     'spaces' => array(
         'revolution' => array(
             'source' => 'revolution20',

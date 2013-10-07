@@ -1,3 +1,4 @@
 .idea/
 data/*
 vendor/*
+src/import.config.php

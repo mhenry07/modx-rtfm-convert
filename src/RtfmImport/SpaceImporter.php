@@ -1,19 +1,23 @@
 <?php
+/**
+ * Import converted docs into MODX
+ * Based on ImportSpaceContent.php by Jason Coward (opengeek)
+ */
+
 namespace RtfmImport;
 
+use \modX;
 use RtfmConvert\OldRtfmTocParser;
 use RtfmConvert\PathHelper;
 use RtfmConvert\RtfmQueryPath;
 
-$config = include dirname(__DIR__) . '/import.config.php';
-include $config['modx_core_config'];
-include MODX_CORE_PATH . 'model/modx/modx.class.php';
-
 class SpaceImporter {
     protected $config;
+    protected $modx;
 
-    public function __construct($config) {
+    public function __construct(array $config, modX $modx) {
         $this->config = $config;
+        $this->modx = $modx;
     }
 
     protected function getContextKey($spaceNeedle) {
@@ -26,12 +30,7 @@ class SpaceImporter {
     }
 
     public function import() {
-        $modx = modX::getInstance();
-
-        $modx->initialize('mgr');
-
-        $modx->setLogLevel(modX::LOG_LEVEL_INFO);
-        $modx->setLogTarget('ECHO');
+        $modx = $this->modx;
 
         $nomatches = array();
 
@@ -57,16 +56,16 @@ class SpaceImporter {
                 continue;
             }
 
-        //    echo "\n\n*** Importing {$space} into context {$contextKey} ***\n";
-
-        //    if (
-        //        in_array(basename($filename), array('.', '..', /*'Home', */'index.html'))
-        //        || strpos(basename($filename), '.') === 0
-        //        || strpos(basename($filename), '?') !== false
-        //        || is_dir($filename)
-        //    ) {
-        //        continue;
-        //    }
+//            echo "\n\n*** Importing {$space} into context {$contextKey} ***\n";
+//
+//            if (
+//                in_array(basename($filename), array('.', '..', /*'Home', */'index.html'))
+//                || strpos(basename($filename), '.') === 0
+//                || strpos(basename($filename), '?') !== false
+//                || is_dir($filename)
+//            ) {
+//                continue;
+//            }
 
             $pageTitle = str_replace('+', ' ', $pageName);
             if ($qp->top('title')->count() > 0)
@@ -85,7 +84,7 @@ class SpaceImporter {
             if (preg_match('#<body[^>]*>(.*)</body>#sm', $fileContent, $matches)) {
                 $pageContent = trim($matches[1], " \n\r\t");
 
-                /** @var modDocument $document */
+                /** @var \modDocument $document */
                 $query = $modx->newQuery('modResource', array('context_key' => $modx->context->get('key')));
                 $query->innerJoin('modTemplateVarResource', 'tv', array('tv.tmplvarid' => $pageIdTV, 'tv.value' => $sourcePageId, 'tv.contentid = modResource.id'));
                 $document = $modx->getObject('modResource', $query);
@@ -132,7 +131,7 @@ class SpaceImporter {
                     }
                 }
             } else {
-        //        $nomatches[$pageName] = $fileContent;
+//                $nomatches[$pageName] = $fileContent;
                 $nomatches[] = "[{$contextKey}] {$pageName}";
             }
         }

@@ -10,5 +10,5 @@ $output = &$resource->_output;
 $output = preg_replace('#(<\w+\b[^>]+\b(?:href|src)=[\'"]?)/(?!>)#i', '$1',
     $output);
 // prepend anchor with page url
-$output = preg_replace('/(<(?:a|area)\b[^>]+\bhref=[\'"]?)#/i',
+$output = preg_replace('/(<(?:a|area|link)\b[^>]+\bhref=[\'"]?)#/i',
     "$1{$resource->get('context_key')}/{$resource->get('uri')}#", $output);

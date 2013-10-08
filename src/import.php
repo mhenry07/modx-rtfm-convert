@@ -13,4 +13,7 @@ $modx->setLogLevel(modX::LOG_LEVEL_INFO);
 $modx->setLogTarget('ECHO');
 
 $importer = new DocImporter($config, $modx);
+$organizer = new \RtfmImport\DocOrganizer($modx);
+
 $imported = $importer->import();
+$imported = $organizer->organize($imported);

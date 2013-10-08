@@ -4,25 +4,35 @@ return array(
     'source_path' => dirname(__DIR__) . '/data/convert',
     'source_has_html_extensions' => false,
     'toc_dir' => dirname(__DIR__) . '/oldrtfm-toc',
-    'spaces' => array(
-        'revolution' => array(
-            'source' => 'revolution20',
+    // note: key is the confluence space key and destContext is the context key
+    // this is different from the original
+    'spaces_config' => array(
+        'revolution20' => array(
+            'destContext' => 'revolution',
             'importParent' => 1384
         ),
-        'evolution' => array(
-            'source' => 'MODx096', // ?? not Evo1?
+        'MODx096' => array(
+            'destContext' => 'evolution',
             'importParent' => 1385
         ),
-        'xpdo' => array(
-            'source' => 'XPDO10', // ?? not XPDO20?
+        'Evo1' => array(
+            'destContext' => 'evolution',
+            'importParent' => 1385 // ?
+        ),
+        'XPDO10' => array(
+            'destContext' => 'xpdo',
             'importParent' => 1380
         ),
-        'extras' => array(
-            'source' => 'ADDON',
+        'xPDO20' => array(
+            'destContext' => 'xpdo',
+            'importParent' => 1380 // ?
+        ),
+        'ADDON' => array(
+            'destContext' => 'extras',
             'importParent' => 4
         ),
         'community' => array(
-            'source' => 'community',
+            'destContext' => 'community',
             'importParent' => 1379
         ),
     )

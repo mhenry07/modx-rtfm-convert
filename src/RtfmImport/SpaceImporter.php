@@ -20,15 +20,6 @@ class SpaceImporter {
         $this->modx = $modx;
     }
 
-    protected function getContextKey($spaceNeedle) {
-        foreach ($this->config['spaces'] as $contextKey => $space) {
-            if ($space == $spaceNeedle)
-                return $contextKey;
-        }
-        echo "ERROR looking up context key for space {$spaceNeedle}\n";
-        return false;
-    }
-
     public function import() {
         $modx = $this->modx;
 
@@ -49,7 +40,13 @@ class SpaceImporter {
             $qp = RtfmQueryPath::htmlqp($fileContent);
             $body = $qp->top('body');
             $space = $body->attr('data-source-space-key');
-            $contextKey = $this->getContextKey($space);
+
+            if (!array_key_exists($space, $this->config['spaces_config'])) {
+                echo "ERROR looking up config for space {$space}\n";
+                continue;
+            }
+            $spaceConfig = $this->config['spaces_config'][$space];
+            $contextKey = $spaceConfig['destContext'];
 
             if (!$modx->switchContext($contextKey)) {
                 echo "ERROR switching to context {$contextKey} to import {$space}\n";
@@ -76,64 +73,65 @@ class SpaceImporter {
             if ($body->hasAttr('data-source-page-id'))
                 $sourcePageId = $body->attr('data-source-page-id');
 
+            /** @var string $sourceParentPageId */
             $sourceParentPageId = '';
             if ($body->hasAttr('data-source-parent-page-id'))
                 $sourceParentPageId = $body->attr('data-source-parent-page-id');
 
             $matches = array();
             // note: using regex instead of QueryPath to preserve certain text transfomations
-            if (preg_match('#<body[^>]*>(.*)</body>#sm', $fileContent, $matches)) {
-                $pageContent = trim($matches[1], " \n\r\t");
-
-                /** @var \modDocument $document */
-                $query = $modx->newQuery('modResource', array('context_key' => $modx->context->get('key')));
-                $query->innerJoin('modTemplateVarResource', 'tv', array('tv.tmplvarid' => $pageIdTV, 'tv.value' => $sourcePageId, 'tv.contentid = modResource.id'));
-                $document = $modx->getObject('modResource', $query);
-                if ($document) {
-                    if ('modDocument' !== $document->get('class_key')) {
-                        echo "Skipping import of content for pageId {$sourcePageId}; Resource converted to {$document->get('class_key')}\n";
-                        continue;
-                    }
-                    if ('Home' === $document->get('pagetitle')) {
-                        echo "Skipping import of existing Home page with pageId {$sourcePageId}\n";
-                        continue;
-                    }
-                    echo "Re-importing {$pageName} with title {$pageTitle} and pageId {$sourcePageId}\n";
-                }
-                if (!$document) {
-                    $document = $modx->newObject(
-                        'modDocument',
-                        array(
-                            'parent' => $this->config[$contextKey]['importParent'],
-                            'context_key' => $modx->context->get('key'),
-                            'pagetitle' => $pageTitle,
-                            'alias' => $pageTitle,
-                            'published' => true,
-                            'template' => 1,
-                        )
-                    );
-                    echo "Importing {$pageName} with title {$pageTitle} and pageId {$sourcePageId}\n";
-                }
-                if (empty($pageContent)) {
-                    echo "Skipping import of pageId {$sourcePageId} -- Empty content\n";
-                    $nomatches[] = "[{$contextKey}] {$pageName}";
-                    continue;
-                }
-
-                $document->setContent($pageContent);
-                if (!$document->save()) {
-                    echo "An error occurred importing {$pageName}\n";
-                } else {
-                    if (!$document->setTVValue('pageId', $sourcePageId)) {
-                        echo "An error occurred saving pageId {$sourcePageId} for {$pageName}\n";
-                    }
-                    if (!$document->setTVValue('parentPageId', $sourceParentPageId)) {
-                        echo "An error occurred saving parentPageId {$sourceParentPageId} for {$pageName}\n";
-                    }
-                }
-            } else {
+            if (preg_match('#<body[^>]*>(.*)</body>#sm', $fileContent, $matches) !== 1) {
 //                $nomatches[$pageName] = $fileContent;
                 $nomatches[] = "[{$contextKey}] {$pageName}";
+                continue;
+            }
+            $pageContent = trim($matches[1], " \n\r\t");
+
+            /** @var \modDocument $document */
+            $query = $modx->newQuery('modResource', array('context_key' => $modx->context->get('key')));
+            $query->innerJoin('modTemplateVarResource', 'tv', array('tv.tmplvarid' => $pageIdTV, 'tv.value' => $sourcePageId, 'tv.contentid = modResource.id'));
+            $document = $modx->getObject('modResource', $query);
+            if ($document) {
+                if ('modDocument' !== $document->get('class_key')) {
+                    echo "Skipping import of content for pageId {$sourcePageId}; Resource converted to {$document->get('class_key')}\n";
+                    continue;
+                }
+                if ('Home' === $document->get('pagetitle')) {
+                    echo "Skipping import of existing Home page with pageId {$sourcePageId}\n";
+                    continue;
+                }
+                echo "Re-importing {$pageName} with title {$pageTitle} and pageId {$sourcePageId}\n";
+            }
+            if (!$document) {
+                $document = $modx->newObject(
+                    'modDocument',
+                    array(
+                        'parent' => $spaceConfig['importParent'],
+                        'context_key' => $modx->context->get('key'),
+                        'pagetitle' => $pageTitle,
+                        'alias' => $pageTitle,
+                        'published' => true,
+                        'template' => 1,
+                    )
+                );
+                echo "Importing {$pageName} with title {$pageTitle} and pageId {$sourcePageId}\n";
+            }
+            if (empty($pageContent)) {
+                echo "Skipping import of pageId {$sourcePageId} -- Empty content\n";
+                $nomatches[] = "[{$contextKey}] {$pageName}";
+                continue;
+            }
+
+            $document->setContent($pageContent);
+            if (!$document->save()) {
+                echo "An error occurred importing {$pageName}\n";
+                continue;
+            }
+            if (!$document->setTVValue('pageId', $sourcePageId)) {
+                echo "An error occurred saving pageId {$sourcePageId} for {$pageName}\n";
+            }
+            if (!$document->setTVValue('parentPageId', $sourceParentPageId)) {
+                echo "An error occurred saving parentPageId {$sourceParentPageId} for {$pageName}\n";
             }
         }
         if (!empty($nomatches)) echo "Could not import:\n" . print_r($nomatches, true);

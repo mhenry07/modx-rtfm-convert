@@ -224,10 +224,12 @@ EOT;
 EOT;
 
         $expectedHtml = <<<'EOT'
-<p class="code-heading"><b>NGINX PHP Configuration Options</b><b>2</b></p>
+<figure class="code">
+<figcaption><b>NGINX PHP Configuration Options</b><b>2</b></figcaption>
 <pre class="brush: php">
 ./configure --with-mysql --with-pdo-mysql --prefix=/usr/local --with-pdo-mysql --with-zlib
 </pre>
+</figure>
 EOT;
 
         $pageData = new PageData($sourceHtml);
@@ -251,11 +253,15 @@ EOT;
 EOT;
 
         $expectedHtml = <<<'EOT'
-<p class="code-heading"><b>PHP Configuration Options</b></p>
+<figure class="code">
+<figcaption><b>PHP Configuration Options</b></figcaption>
 <pre class="brush: php">./configure --with-apxs2=/usr/local/bin/apxs --with-mysql --prefix=/usr/local --with-pdo-mysql --with-zlib</pre>
+</figure>
 <p>Here's some in-between content.</p>
-<p class="code-heading"><b>NGINX PHP Configuration Options</b></p>
+<figure class="code">
+<figcaption><b>NGINX PHP Configuration Options</b></figcaption>
 <pre class="brush: php">./configure --with-mysql --with-pdo-mysql --prefix=/usr/local --with-pdo-mysql --with-zlib</pre>
+</figure>
 EOT;
 
         $pageData = new PageData($sourceHtml);
@@ -354,9 +360,9 @@ EOT;
         $transformer->transform($pageData);
 
         $this->assertTransformStat('.code.panel', 1,
-            array(self::TRANSFORM => 1, self::WARNING => 0));
+            array(self::TRANSFORM => 1, self::WARNING => 0, self::ERROR => 0));
         $this->assertTransformStat('.code.panel .codeHeader', 1,
-            array(self::TRANSFORM => 1, self::WARNING => 0));
+            array(self::TRANSFORM => 1, self::WARNING => 0, self::ERROR => 0));
         $this->assertStatsNotContain('.code.panel pre:has(span[class^="code-"])');
     }
 

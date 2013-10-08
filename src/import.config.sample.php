@@ -1,9 +1,12 @@
 <?php
 return array(
     'modx_core_config' => '/path/to/modx/config.core.php',
+    'fix_links_for_base_href' => false, // if false, assume it will be handled by a plugin
+
     'source_path' => dirname(__DIR__) . '/data/convert',
     'source_has_html_extensions' => false,
     'toc_dir' => dirname(__DIR__) . '/oldrtfm-toc',
+
     // note: key is the confluence space key and destContext is the context key
     // this is different from the original
     'spaces_config' => array(

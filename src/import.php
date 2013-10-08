@@ -17,7 +17,9 @@ $modx->setLogTarget('ECHO');
 $importer = new DocImporter($config, $modx);
 $organizer = new DocOrganizer($modx);
 $fixer = new ContentFixer($config, $modx);
+$groupSetter = new \RtfmImport\ResourceGroupSetter($modx);
 
 $imported = $importer->import();
 $imported = $organizer->organize($imported);
 $imported = $fixer->fix($imported);
+$imported = $groupSetter->set($imported);

@@ -25,6 +25,7 @@ use RtfmConvert\HtmlTransformers\ImageHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NamedAnchorHtmlTransformer;
 use RtfmConvert\HtmlTransformers\NestedListHtmlTransformer;
 use RtfmConvert\HtmlTransformers\PageTreeHtmlTransformer;
+use RtfmConvert\HtmlTransformers\PreformattedPanelHtmlTransformer;
 use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\Infrastructure\FileIo;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
@@ -73,6 +74,7 @@ class OldRtfmPageConverter {
         $processor->register(new BrAtlForcedNewlineHtmlTransformer());
         $processor->register(new FormattingElementHtmlTransformer());
         $processor->register(new CodePanelHtmlTransformer());
+        $processor->register(new PreformattedPanelHtmlTransformer());
         $processor->register(new ConfluenceTableHtmlTransformer());
         $processor->register(new ConfluenceAsideHtmlTransformer());
         $processor->register(new NamedAnchorHtmlTransformer());

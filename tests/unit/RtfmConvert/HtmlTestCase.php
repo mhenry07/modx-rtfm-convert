@@ -12,6 +12,7 @@ use tidy;
 class HtmlTestCase extends \PHPUnit_Framework_TestCase {
     const TRANSFORM = PageStatistics::TRANSFORM;
     const WARNING = PageStatistics::WARNING;
+    const ERROR = PageStatistics::ERROR;
 
     /** @var PageStatistics */
     protected $stats;

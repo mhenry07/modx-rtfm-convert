@@ -71,6 +71,7 @@ class SpaceImporter {
             if ($qp->top('title')->count() > 0)
                 $pageTitle = trim($qp->top('title')->text(), " \n\r\t");
 
+            /** @var string $sourcePageId */
             $sourcePageId = '';
             if ($body->hasAttr('data-source-page-id'))
                 $sourcePageId = $body->attr('data-source-page-id');

@@ -11,7 +11,7 @@ use RtfmConvert\OldRtfmTocParser;
 use RtfmConvert\PathHelper;
 use RtfmConvert\RtfmQueryPath;
 
-class SpaceImporter {
+class DocImporter {
     protected $config;
     protected $modx;
 

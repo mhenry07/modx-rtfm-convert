@@ -1,7 +1,7 @@
 <?php
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-use RtfmImport\SpaceImporter;
+use RtfmImport\DocImporter;
 
 $config = include dirname(__FILE__) . '/import.config.php';
 include $config['modx_core_config'];
@@ -12,5 +12,5 @@ $modx->initialize('mgr');
 $modx->setLogLevel(modX::LOG_LEVEL_INFO);
 $modx->setLogTarget('ECHO');
 
-$importer = new SpaceImporter($config, $modx);
+$importer = new DocImporter($config, $modx);
 $imported = $importer->import();

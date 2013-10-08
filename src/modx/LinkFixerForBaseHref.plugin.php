@@ -1,6 +1,8 @@
 <?php
 /**
  * fix relative links and anchors for base href
+ *
+ * OnWebPagePrerender event
  */
 
 $resource = $modx->resource;

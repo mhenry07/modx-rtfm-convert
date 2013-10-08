@@ -6,7 +6,7 @@
 
 namespace RtfmImport;
 
-use \modX;
+use modX;
 use RtfmConvert\OldRtfmTocParser;
 use RtfmConvert\PathHelper;
 use RtfmConvert\RtfmQueryPath;
@@ -21,6 +21,8 @@ class DocImporter {
     }
 
     public function import() {
+        echo "*** Importing {$this->config['source_path']} into MODX ***\n";
+
         $modx = $this->modx;
 
         $nomatches = array();
@@ -30,7 +32,6 @@ class DocImporter {
 
         $tocParser = new OldRtfmTocParser();
         $hrefs = $tocParser->parseTocDirectory($this->config['toc_dir']);
-        echo "*** Importing {$this->config['source_path']} into MODX ***\n";
         foreach ($hrefs as $href) {
             $import = array(
                 'source_href' => $href,
@@ -44,6 +45,7 @@ class DocImporter {
 
             $qp = RtfmQueryPath::htmlqp($fileContent);
             $body = $qp->top('body');
+            /** @var string $space */
             $space = $body->attr('data-source-space-key');
 
             if (!array_key_exists($space, $this->config['spaces_config'])) {

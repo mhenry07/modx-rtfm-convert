@@ -35,7 +35,7 @@ class ContentFixer {
             }
 
             /** @var modDocument $document */
-            $document = $modx->getObject('modResource', array('id' => $import['dest_id']));
+            $document = $modx->getObject('modDocument', array('id' => $import['dest_id']));
             $pageContent = $document->getContent();
 
             $count = 0;

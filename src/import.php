@@ -13,4 +13,4 @@ $modx->setLogLevel(modX::LOG_LEVEL_INFO);
 $modx->setLogTarget('ECHO');
 
 $importer = new SpaceImporter($config, $modx);
-$importer->import();
+$imported = $importer->import();

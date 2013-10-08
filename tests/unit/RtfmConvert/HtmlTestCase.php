@@ -110,6 +110,7 @@ class HtmlTestCase extends \PHPUnit_Framework_TestCase {
     protected function normalizeHtml(DOMQuery $qp) {
         $html = RtfmQueryPath::getHtmlString($qp);
         $config = array(
+            'new-blocklevel-tags' => 'figcaption figure',
             'output-html' => true,
             'show-body-only' => true,
             'break-before-br' => true,

@@ -71,6 +71,9 @@ class NewRtfmMetadataLoader implements ProcessorOperationInterface {
 
         $canonicalUrl = $head->find('link[rel="canonical"]')
             ->attr('href');
+        // fix canonical URL when using dev site
+        $canonicalUrl = str_replace('http://rtfm.modx/', "{$this->baseUrl}/",
+            $canonicalUrl);
         $stats->addValueStat(self::DEST_URL_LABEL, $canonicalUrl);
 
         $pageId = $body->attr('data-page-id');

@@ -67,8 +67,10 @@ class DocOrganizer {
                                             modResource $resource) {
         $id = $resource->get('id');
         foreach ($imports as $source_href => $import) {
-            if ($import['dest_id'] == $id)
+            if ($import['dest_id'] == $id) {
                 $imports[$source_href]['dest_href'] = "/{$contextKey}/{$resource->get('uri')}";
+                return;
+            }
         }
     }
 }

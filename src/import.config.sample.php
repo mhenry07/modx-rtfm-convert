@@ -20,7 +20,7 @@ return array(
         ),
         'Evo1' => array(
             'destContext' => 'evolution',
-            'importParent' => 1385 // ?
+            'importParent' => 1385
         ),
         'XPDO10' => array(
             'destContext' => 'xpdo',
@@ -28,7 +28,7 @@ return array(
         ),
         'xPDO20' => array(
             'destContext' => 'xpdo',
-            'importParent' => 1380 // ?
+            'importParent' => 1380
         ),
         'ADDON' => array(
             'destContext' => 'extras',

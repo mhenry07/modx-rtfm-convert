@@ -39,10 +39,12 @@ class ContentFixer {
             $pageContent = $document->getContent();
 
             $count = 0;
-            $pageContent = $this->fixRelativeLinks($imports, $pageContent, $count);
+            $pageContent = $this->fixRelativeLinks($imports, $contextKey,
+                $document, $pageContent, $count);
 
             if ($this->config['fix_links_for_base_href'])
-                $pageContent = $this->fixLinksForBaseHref($contextKey, $document, $pageContent, $count);
+                $pageContent = $this->fixLinksForBaseHref($contextKey,
+                    $document, $pageContent, $count);
 
             /* trim it */
             $pageContent = trim($pageContent, " \r\n\t");
@@ -62,10 +64,11 @@ class ContentFixer {
     }
 
     /* fix relative links and anchor links */
-    // TODO: fix links to non-imported pages (e.g. Home)
-    protected function fixRelativeLinks(array $linkMap, $pageContent, &$count) {
+    protected function fixRelativeLinks(array $linkMap, $contextKey,
+                                        modDocument $document, $pageContent,
+                                        &$count) {
+        $pageTitle = str_replace(' ', '+', $document->get('pagetitle'));
         $matches = array();
-        $replacedCount = 0;
         if (preg_match_all('/(<a\b[^>]+\bhref=")([^#"]+)((?:#[^"]+)?)"/i', $pageContent, $matches)) {
             // $this->modx->log(modX::LOG_LEVEL_INFO, "Relative Links & Anchors:\n" . print_r($matches, true));
             foreach ($matches[0] as $key => $match) {
@@ -74,9 +77,26 @@ class ContentFixer {
                 $anchor = $matches[3][$key];
                 if (strpos($link, '://') !== false)
                     continue;
-                if (array_key_exists($link, $linkMap)) {
-                    $link = $linkMap['dest_href'];
+                if (array_key_exists($link, $linkMap) &&
+                    array_key_exists('dest_href', $linkMap[$link]) &&
+                    $linkMap[$link]['dest_href']) {
+                    $link = $linkMap[$link]['dest_href'];
+                } elseif ($link === $pageTitle) {
+                    $link = "/{$contextKey}/{$document->get('uri')}";
+                } elseif (strpos($link, '[') === false) {
+                    $targetDoc = $this->modx->getObject('modDocument',
+                        array('context_key' => $this->modx->context->get('key'),
+                            array('pagetitle' => str_replace('+', ' ', $link))));
+                    if (!$targetDoc)
+                        $targetDoc = $this->modx->getObject('modDocument',
+                            array('pagetitle' => str_replace('+', ' ', $link)));
+                    if ($targetDoc)
+                        $link = "/{$contextKey}/{$targetDoc->get('uri')}";
+                    unset($targetDoc);
+                }
+                if ($link !== $matches[2][$key]) {
                     $replaceWith = "{$tagPrefix}{$link}{$anchor}\"";
+                    $replacedCount = 0;
                     $pageContent = str_replace($match, $replaceWith, $pageContent, $replacedCount);
                     $count += $replacedCount;
                 }

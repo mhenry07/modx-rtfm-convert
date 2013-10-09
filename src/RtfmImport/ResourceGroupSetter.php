@@ -22,7 +22,7 @@ class ResourceGroupSetter {
         $modx = $this->modx;
 
         foreach ($imports as $source_href => $import) {
-            if ($import['status'] !== 'imported' && $import['status'] !== 'updated')
+            if ($import['status'] !== 'imported')
                 continue;
 
             $contextKey = $import['dest_context'];

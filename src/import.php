@@ -1,5 +1,5 @@
 <?php
-require dirname(__DIR__) . '/vendor/autoload.php';
+require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use RtfmImport\ContentFixer;
 use RtfmImport\DocImporter;
@@ -7,8 +7,8 @@ use RtfmImport\DocOrganizer;
 use RtfmImport\ResourceGroupSetter;
 
 $config = include dirname(__FILE__) . '/import.config.php';
-include $config['modx_core_config'];
-include MODX_CORE_PATH . 'model/modx/modx.class.php';
+require_once $config['modx_core_config'];
+require_once MODX_CORE_PATH . 'model/modx/modx.class.php';
 
 $modx = modX::getInstance();
 $modx->initialize('mgr');

@@ -125,7 +125,7 @@ class DocImporter {
                 if ($destLink->count() > 0) {
                     $destHref = $destLink->attr('href');
                     $matches = array();
-                    if (preg_match('#^http://rtfm\.modx\.com(/.+)$#', $destHref, $matches) === 1) {
+                    if (preg_match('#^http://rtfm\.modx(?:\.com)?(/.+)$#', $destHref, $matches) === 1) {
                         $import['dest_href'] = $matches[1];
                     }
                 }

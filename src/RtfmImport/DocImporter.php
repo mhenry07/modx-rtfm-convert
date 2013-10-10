@@ -41,6 +41,8 @@ class DocImporter {
                 $this->config['source_path'],
                 $this->config['source_has_html_extensions']);
             $pageName = basename($filename);
+            if ($this->config['source_has_html_extensions'])
+                $pageName = basename($filename, '.html');
             $fileContent = file_get_contents($filename);
 
             $qp = RtfmQueryPath::htmlqp($fileContent);

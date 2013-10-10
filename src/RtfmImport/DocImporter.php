@@ -46,7 +46,12 @@ class DocImporter {
                 $pageName = basename($filename, '.html');
             $fileContent = file_get_contents($filename);
 
-            $qp = RtfmQueryPath::htmlqp($fileContent);
+            // inject html4-style meta charset for QueryPath to handle utf-8
+            $qpContent = str_replace('<meta charset="utf-8" />',
+                '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">',
+                $fileContent);
+            $qp = RtfmQueryPath::htmlqp($qpContent);
+            unset($qpContent);
             $body = $qp->top('body');
             /** @var string $space */
             $space = $body->attr('data-source-space-key');

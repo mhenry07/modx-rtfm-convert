@@ -29,7 +29,8 @@ class ContentFixer {
                 continue;
 
             $contextKey = $import['dest_context'];
-            if (!$modx->switchContext($contextKey)) {
+            if ($contextKey != $modx->context->key &&
+                !$modx->switchContext($contextKey)) {
                 echo "ERROR switching to context {$contextKey} to organize imported resource\n";
                 continue;
             }

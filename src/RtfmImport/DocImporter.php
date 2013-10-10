@@ -61,7 +61,8 @@ class DocImporter {
             $contextKey = $spaceConfig['destContext'];
             $import['dest_context'] = $contextKey;
 
-            if (!$modx->switchContext($contextKey)) {
+            if ($contextKey != $modx->context->key &&
+                !$modx->switchContext($contextKey)) {
                 echo "ERROR switching to context {$contextKey} to import {$space}\n";
                 $import['status'] = 'error';
                 $imports[] = $import;

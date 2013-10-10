@@ -32,7 +32,8 @@ class DocImporter {
 
         $tocParser = new OldRtfmTocParser();
         $hrefs = $tocParser->parseTocDirectory($this->config['toc_dir']);
-        foreach ($hrefs as $href) {
+        foreach ($hrefs as $hrefData) {
+            $href = $hrefData['href'];
             $import = array(
                 'source_href' => $href,
                 'status' => 'unknown'
@@ -45,7 +46,12 @@ class DocImporter {
                 $pageName = basename($filename, '.html');
             $fileContent = file_get_contents($filename);
 
-            $qp = RtfmQueryPath::htmlqp($fileContent);
+            // inject html4-style meta charset for QueryPath to handle utf-8
+            $qpContent = str_replace('<meta charset="utf-8" />',
+                '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">',
+                $fileContent);
+            $qp = RtfmQueryPath::htmlqp($qpContent);
+            unset($qpContent);
             $body = $qp->top('body');
             /** @var string $space */
             $space = $body->attr('data-source-space-key');
@@ -60,7 +66,8 @@ class DocImporter {
             $contextKey = $spaceConfig['destContext'];
             $import['dest_context'] = $contextKey;
 
-            if (!$modx->switchContext($contextKey)) {
+            if ($contextKey != $modx->context->key &&
+                !$modx->switchContext($contextKey)) {
                 echo "ERROR switching to context {$contextKey} to import {$space}\n";
                 $import['status'] = 'error';
                 $imports[] = $import;

@@ -32,7 +32,8 @@ class DocImporter {
 
         $tocParser = new OldRtfmTocParser();
         $hrefs = $tocParser->parseTocDirectory($this->config['toc_dir']);
-        foreach ($hrefs as $href) {
+        foreach ($hrefs as $hrefData) {
+            $href = $hrefData['href'];
             $import = array(
                 'source_href' => $href,
                 'status' => 'unknown'

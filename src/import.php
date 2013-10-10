@@ -4,6 +4,7 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
 use RtfmImport\ContentFixer;
 use RtfmImport\DocImporter;
 use RtfmImport\DocOrganizer;
+use RtfmImport\ExtrasFixer;
 use RtfmImport\ResourceGroupSetter;
 
 $config = include dirname(__FILE__) . '/import.config.php';
@@ -17,10 +18,12 @@ $modx->setLogTarget('ECHO');
 
 $importer = new DocImporter($config, $modx);
 $organizer = new DocOrganizer($config, $modx);
-$fixer = new ContentFixer($config, $modx);
+$extrasFixer = new ExtrasFixer($config, $modx);
+$contentFixer = new ContentFixer($config, $modx);
 $groupSetter = new ResourceGroupSetter($modx);
 
 $imported = $importer->import();
 $imported = $organizer->organize($imported);
-$imported = $fixer->fix($imported);
+$imported = $extrasFixer->fix($imported);
+$imported = $contentFixer->fix($imported);
 $imported = $groupSetter->set($imported);

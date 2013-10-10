@@ -58,14 +58,14 @@ class DocOrganizer {
                         echo "Could not find parent for {$resource->get('pagetitle')} using parentPageId {$parentPageId}\n";
                     }
                 }
-                $this->updateImportDestHref($imports, $contextKey, $resource);
+                self::updateImportDestHref($imports, $contextKey, $resource);
             }
         }
         return $imports;
     }
 
-    protected function updateImportDestHref(array &$imports, $contextKey,
-                                            modResource $resource) {
+    public static function updateImportDestHref(array &$imports, $contextKey,
+                                                modResource $resource) {
         $id = $resource->get('id');
         foreach ($imports as $source_href => $import) {
             if ($import['dest_id'] == $id) {

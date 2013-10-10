@@ -8,6 +8,7 @@ namespace RtfmConvert\HtmlTransformers;
 
 use RtfmConvert\HtmlTestCase;
 use RtfmConvert\PageData;
+use RtfmConvert\RtfmQueryPath;
 
 class NamedAnchorHtmlTransformerTest extends HtmlTestCase {
 
@@ -103,12 +104,39 @@ EOT;
             array(self::TRANSFORM => 0, self::WARNING => 1));
     }
 
-    public function testTransformShouldPreservePercentAndDot() {
-        $input = '<h2><a name="YAMSSetup%28de%29-Erstellungeinerneuenbzw.ErweiterungeinereinsprachigenWebsite"></a>Heading</h2>';
-        $expected = '<h2 id="YAMSSetup%28de%29-Erstellungeinerneuenbzw.ErweiterungeinereinsprachigenWebsite">Heading</h2>';
+    public function testTransformShouldPreserveDot() {
+        $input = '<h2><a name="YAMSSetup(de)-Erstellungeinerneuenbzw.ErweiterungeinereinsprachigenWebsite"></a>Heading</h2>';
+        $expected = '<h2 id="YAMSSetup(de)-Erstellungeinerneuenbzw.ErweiterungeinereinsprachigenWebsite">Heading</h2>';
         $pageData = new PageData($input, $this->stats);
         $transformer = new NamedAnchorHtmlTransformer();
         $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertTransformStat('named anchors: headings', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
+    }
+
+    // HTML5 seems to decode links like #Image%2B-WhatisImage%3F before navigating
+    public function testTransformShouldDecodePercentEncodedCharacters() {
+        $input = '<h2><a name="Image%2B-WhatisImage%3F"></a>Heading</h2>';
+        $expected = '<h2 id="Image+-WhatisImage?">Heading</h2>';
+        $pageData = new PageData($input, $this->stats);
+        $transformer = new NamedAnchorHtmlTransformer();
+        $result = $transformer->transform($pageData);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertTransformStat('named anchors: headings', 1,
+            array(self::TRANSFORM => 1, self::WARNING => 0));
+    }
+
+    // note that the resulting id is wrapped in single quotes
+    public function testTransformShouldHandleEncodedQuotes() {
+        $input = '<h2><a name="double%22quote"></a>Heading</h2>';
+        $expected = '<h2 id="double&quot;quote">Heading</h2>';
+        $pageData = new PageData($input, $this->stats);
+        $transformer = new NamedAnchorHtmlTransformer();
+        $result = $transformer->transform($pageData);
+
+        $this->assertContains('<h2 id=\'double"quote\'>',
+            RtfmQueryPath::getHtmlString($result));
         $this->assertHtmlEquals($expected, $result);
         $this->assertTransformStat('named anchors: headings', 1,
             array(self::TRANSFORM => 1, self::WARNING => 0));

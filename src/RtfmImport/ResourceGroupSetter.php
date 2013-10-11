@@ -21,7 +21,7 @@ class ResourceGroupSetter {
 
         $modx = $this->modx;
 
-        foreach ($imports as $source_href => $import) {
+        foreach ($imports as $import) {
             if ($import['status'] !== 'imported')
                 continue;
 

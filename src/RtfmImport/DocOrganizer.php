@@ -103,9 +103,9 @@ class DocOrganizer {
     public static function updateImportDestHref(array &$imports,
                                                 modResource $resource) {
         $id = $resource->get('id');
-        foreach ($imports as $source_href => $import) {
+        foreach ($imports as $index => $import) {
             if ($import['dest_id'] == $id) {
-                $imports[$source_href]['dest_href'] =
+                $imports[$index]['dest_href'] =
                     "/{$resource->get('context_key')}/{$resource->get('uri')}";
                 return;
             }

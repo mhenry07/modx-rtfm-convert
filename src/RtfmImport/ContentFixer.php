@@ -24,7 +24,7 @@ class ContentFixer {
 
         $modx = $this->modx;
 
-        foreach ($imports as $source_href => $import) {
+        foreach ($imports as $import) {
             if ($import['status'] !== 'imported' && $import['status'] !== 'updated')
                 continue;
 

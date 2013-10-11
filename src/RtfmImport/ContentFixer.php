@@ -68,49 +68,66 @@ class ContentFixer {
     /* fix relative links and anchor links */
     protected function fixRelativeLinks(array $pages, modDocument $document,
                                         $pageContent, &$count) {
-        $pageTitle = str_replace(' ', '+', $document->get('pagetitle'));
-        $matches = array();
-        if (preg_match_all('/(<a\b[^>]+\bhref=")([^#"]+)((?:#[^"]+)?)"/i', $pageContent, $matches)) {
-            // $this->modx->log(modX::LOG_LEVEL_INFO, "Relative Links & Anchors:\n" . print_r($matches, true));
-            foreach ($matches[0] as $key => $match) {
-                $tagPrefix = $matches[1][$key];
-                $link = $matches[2][$key];
-                $anchor = $matches[3][$key];
-                if (strpos($link, '://') !== false)
-                    continue;
-                $targetData = $this->getPageData($pages, $link);
-                if (!$this->config['use_modx_link_tags'] &&
-                    $targetData &&
-                    array_key_exists('dest_href', $targetData) &&
-                    $targetData['dest_href']) {
-                    $link = $targetData['dest_href'];
-                } elseif ($this->config['use_modx_link_tags'] &&
-                    $targetData &&
-                    array_key_exists('dest_id', $targetData) &&
-                    $targetData['dest_id']) {
-                    $destId = $targetData['dest_id'];
-                    $link = $this->formatModxLinkTag($destId, $document);
-                } elseif ($link === $pageTitle) {
-                    $link = $this->formatLink($document, $document);
-                } elseif (strpos($link, '[') === false) {
-                    /** @var modDocument $targetDoc */
-                    $targetDoc = $this->modx->getObject('modDocument',
-                        array('context_key' => $this->modx->context->get('key'),
-                            array('pagetitle' => str_replace('+', ' ', $link))));
-                    if (!$targetDoc)
-                        $targetDoc = $this->modx->getObject('modDocument',
-                            array('pagetitle' => str_replace('+', ' ', $link)));
-                    if ($targetDoc)
-                        $link = $this->formatLink($targetDoc, $document);
-                    unset($targetDoc);
-                }
-                if ($link !== $matches[2][$key]) {
-                    $replaceWith = "{$tagPrefix}{$link}{$anchor}\"";
-                    $replacedCount = 0;
-                    $pageContent = str_replace($match, $replaceWith, $pageContent, $replacedCount);
-                    $count += $replacedCount;
+        $patterns = array(
+            '/(<a\b[^>]+\bhref=")([^#"]+)((?:#[^"]+)?)(")/i',
+            "/(<a\b[^>]+\bhref=')([^#']+)((?:#[^']+)?)(')/i");
+        foreach ($patterns as $pattern) {
+            $matches = array();
+            if (preg_match_all($pattern, $pageContent, $matches)) {
+                // $this->modx->log(modX::LOG_LEVEL_INFO, "Relative Links & Anchors:\n" . print_r($matches, true));
+                foreach ($matches[0] as $key => $match) {
+                    $matchData = array(
+                        'match' => $match,
+                        'tagPrefix' => $matches[1][$key],
+                        'link' => $matches[2][$key],
+                        'anchor' => $matches[3][$key],
+                        'endQuote' => $matches[4][$key]
+                    );
+                    $pageContent = $this->fixRelativeLink($pages, $document,
+                        $pageContent, $matchData, $count);
                 }
             }
+        }
+        return $pageContent;
+    }
+
+    protected function fixRelativeLink(array $pages, modDocument $document,
+                                       $pageContent, array $matchData, &$count) {
+        $link = $matchData['link'];
+        if (strpos($link, '://') !== false)
+            return $pageContent;
+        $pageTitle = str_replace(' ', '+', $document->get('pagetitle'));
+        $targetData = $this->getPageData($pages, $link);
+        if (!$this->config['use_modx_link_tags'] &&
+            $targetData &&
+            array_key_exists('dest_href', $targetData) &&
+            $targetData['dest_href']) {
+            $link = $targetData['dest_href'];
+        } elseif ($this->config['use_modx_link_tags'] &&
+            $targetData &&
+            array_key_exists('dest_id', $targetData) &&
+            $targetData['dest_id']) {
+            $destId = $targetData['dest_id'];
+            $link = $this->formatModxLinkTag($destId, $document);
+        } elseif ($link === $pageTitle) {
+            $link = $this->formatLink($document, $document);
+        } elseif (strpos($link, '[') === false) {
+            /** @var modDocument $targetDoc */
+            $targetDoc = $this->modx->getObject('modDocument',
+                array('context_key' => $this->modx->context->get('key'),
+                    array('pagetitle' => str_replace('+', ' ', $link))));
+            if (!$targetDoc)
+                $targetDoc = $this->modx->getObject('modDocument',
+                    array('pagetitle' => str_replace('+', ' ', $link)));
+            if ($targetDoc)
+                $link = $this->formatLink($targetDoc, $document);
+            unset($targetDoc);
+        }
+        if ($link !== $matchData['link']) {
+            $replaceWith = "{$matchData['tagPrefix']}{$link}{$matchData['anchor']}{$matchData['endQuote']}";
+            $replacedCount = 0;
+            $pageContent = str_replace($matchData['match'], $replaceWith, $pageContent, $replacedCount);
+            $count += $replacedCount;
         }
         return $pageContent;
     }

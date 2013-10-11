@@ -21,7 +21,7 @@ class DocImporter {
     }
 
     public function import() {
-        echo "*** Importing {$this->config['source_path']} into MODX ***\n";
+        echo "\n\n*** Importing {$this->config['source_path']} into MODX ***\n";
 
         $modx = $this->modx;
 

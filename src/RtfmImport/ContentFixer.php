@@ -41,12 +41,12 @@ class ContentFixer {
 
             $count = 0;
             if ($this->config['update_confluence_hrefs'])
-                $pageContent = $this->fixRelativeLinks($imports, $contextKey,
-                    $document, $pageContent, $count);
+                $pageContent = $this->fixRelativeLinks($imports, $document,
+                    $pageContent, $count);
 
             if ($this->config['fix_links_for_base_href'])
-                $pageContent = $this->fixLinksForBaseHref($contextKey,
-                    $document, $pageContent, $count);
+                $pageContent = $this->fixLinksForBaseHref($document,
+                    $pageContent, $count);
 
             /* trim it */
             $pageContent = trim($pageContent, " \r\n\t");
@@ -66,9 +66,8 @@ class ContentFixer {
     }
 
     /* fix relative links and anchor links */
-    protected function fixRelativeLinks(array $linkMap, $contextKey,
-                                        modDocument $document, $pageContent,
-                                        &$count) {
+    protected function fixRelativeLinks(array $linkMap, modDocument $document,
+                                        $pageContent, &$count) {
         $pageTitle = str_replace(' ', '+', $document->get('pagetitle'));
         $matches = array();
         if (preg_match_all('/(<a\b[^>]+\bhref=")([^#"]+)((?:#[^"]+)?)"/i', $pageContent, $matches)) {
@@ -79,13 +78,21 @@ class ContentFixer {
                 $anchor = $matches[3][$key];
                 if (strpos($link, '://') !== false)
                     continue;
-                if (array_key_exists($link, $linkMap) &&
+                if (!$this->config['use_modx_link_tags'] &&
+                    array_key_exists($link, $linkMap) &&
                     array_key_exists('dest_href', $linkMap[$link]) &&
                     $linkMap[$link]['dest_href']) {
                     $link = $linkMap[$link]['dest_href'];
+                } elseif ($this->config['use_modx_link_tags'] &&
+                    array_key_exists($link, $linkMap) &&
+                    array_key_exists('dest_id', $linkMap[$link]) &&
+                    $linkMap[$link]['dest_id']) {
+                    $destId = $linkMap[$link]['dest_id'];
+                    $link = $this->formatModxLinkTag($destId, $document);
                 } elseif ($link === $pageTitle) {
-                    $link = "/{$contextKey}/{$document->get('uri')}";
+                    $link = $this->formatLink($document, $document);
                 } elseif (strpos($link, '[') === false) {
+                    /** @var modDocument $targetDoc */
                     $targetDoc = $this->modx->getObject('modDocument',
                         array('context_key' => $this->modx->context->get('key'),
                             array('pagetitle' => str_replace('+', ' ', $link))));
@@ -93,7 +100,7 @@ class ContentFixer {
                         $targetDoc = $this->modx->getObject('modDocument',
                             array('pagetitle' => str_replace('+', ' ', $link)));
                     if ($targetDoc)
-                        $link = "/{$contextKey}/{$targetDoc->get('uri')}";
+                        $link = $this->formatLink($targetDoc, $document);
                     unset($targetDoc);
                 }
                 if ($link !== $matches[2][$key]) {
@@ -107,9 +114,33 @@ class ContentFixer {
         return $pageContent;
     }
 
+    protected function formatLink(modDocument $targetDocument,
+                                  modDocument $currentDocument,
+                                  $rootSlash = true) {
+        if ($this->config['use_modx_link_tags'])
+            return $this->formatModxLinkTag($targetDocument->get('id'),
+                $currentDocument);
+        return $this->formatFriendlyUrl($targetDocument, $rootSlash);
+    }
+
+    protected function formatModxLinkTag($targetId, modDocument $currentDocument) {
+        if ($currentDocument->get('id') == $targetId)
+            return '[[~[[*id]]]]';
+        return "[[~{$targetId}]]";
+    }
+
+    protected function formatFriendlyUrl(modDocument $targetDocument,
+                                         $rootSlash = true) {
+        $contextKey = $targetDocument->get('context_key');
+        $uri = $targetDocument->get('uri');
+        $prefix = $rootSlash ? '/' : '';
+        return "{$prefix}{$contextKey}/{$uri}";
+    }
+
     /* ideally this should be handled by a plugin */
-    protected function fixLinksForBaseHref($contextKey, modDocument $document, $pageContent, &$count) {
+    protected function fixLinksForBaseHref(modDocument $document, $pageContent, &$count) {
         $replaceCount = 0;
+        $selfLink = $this->formatLink($document, $document, false);
         $pageContent = str_replace(
             array(
                 'href="/',
@@ -119,7 +150,7 @@ class ContentFixer {
             array(
                 'href="',
                 'src="',
-                "href=\"{$contextKey}/{$document->get('uri')}#",
+                "href=\"{$selfLink}#",
             ),
             $pageContent,
             $replaceCount

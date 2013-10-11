@@ -66,7 +66,7 @@ class ContentFixer {
     }
 
     /* fix relative links and anchor links */
-    protected function fixRelativeLinks(array $linkMap, modDocument $document,
+    protected function fixRelativeLinks(array $pages, modDocument $document,
                                         $pageContent, &$count) {
         $pageTitle = str_replace(' ', '+', $document->get('pagetitle'));
         $matches = array();
@@ -78,16 +78,17 @@ class ContentFixer {
                 $anchor = $matches[3][$key];
                 if (strpos($link, '://') !== false)
                     continue;
+                $targetData = $this->getPageData($pages, $link);
                 if (!$this->config['use_modx_link_tags'] &&
-                    array_key_exists($link, $linkMap) &&
-                    array_key_exists('dest_href', $linkMap[$link]) &&
-                    $linkMap[$link]['dest_href']) {
-                    $link = $linkMap[$link]['dest_href'];
+                    $targetData &&
+                    array_key_exists('dest_href', $targetData) &&
+                    $targetData['dest_href']) {
+                    $link = $targetData['dest_href'];
                 } elseif ($this->config['use_modx_link_tags'] &&
-                    array_key_exists($link, $linkMap) &&
-                    array_key_exists('dest_id', $linkMap[$link]) &&
-                    $linkMap[$link]['dest_id']) {
-                    $destId = $linkMap[$link]['dest_id'];
+                    $targetData &&
+                    array_key_exists('dest_id', $targetData) &&
+                    $targetData['dest_id']) {
+                    $destId = $targetData['dest_id'];
                     $link = $this->formatModxLinkTag($destId, $document);
                 } elseif ($link === $pageTitle) {
                     $link = $this->formatLink($document, $document);
@@ -112,6 +113,14 @@ class ContentFixer {
             }
         }
         return $pageContent;
+    }
+
+    protected function getPageData(array $pages, $sourceHref) {
+        foreach ($pages as $data) {
+            if ($data['source_href'] === $sourceHref)
+                return $data;
+        }
+        return null;
     }
 
     protected function formatLink(modDocument $targetDocument,

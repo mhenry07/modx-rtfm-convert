@@ -88,15 +88,18 @@ class PageTreeCleaner {
         $pageTrees->find('ul.plugin_pagetree_children_list')
             ->removeAttr('class')->removeAttr('id');
 
+        /** @var \QueryPath\DOMQuery $pageTree */
         foreach ($pageTrees as $pageTree) {
             $treeClass = 'page-toc';
             if ($pageTree->prev('h2, h3')->filterPreg('/^\s*See Also\s*$/')
                     ->count() > 0)
                 $treeClass = 'see-also';
+            $pageTree->find('ul')->wrap('<ol class="ug-toc"></ol>')
+                ->contents()->unwrap();
             $pageTree->children()->addClass($treeClass);
             $pageData->incrementStat($this->statsPrefix . 'cleanup',
                 PageStatistics::TRANSFORM, 1,
-                "cleaned up pagetree and set class to: {$treeClass}");
+                "cleaned up pagetree and converted to ol.ug-toc.{$treeClass}");
         }
         $pageTrees->contents()->unwrap();
 

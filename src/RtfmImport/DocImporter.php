@@ -122,8 +122,8 @@ class DocImporter {
                 } elseif ('Home' === $document->get('pagetitle')) {
                     echo "Skipping import of existing Home page with pageId {$sourcePageId}\n";
                     $skip = true;
-                } elseif (in_array($document->get('parent'), array(3, 1183, 1547))) {
-                    // 3: MODX Revolution 2.x, 1183: xPDO 2.x, 1547: xPDO 1.x
+                } elseif (in_array($document->get('parent'), array(3, 1183, 1653))) {
+                    // 3: MODX Revolution 2.x, 1183: xPDO 2.x, 1653: xPDO 1.x
                     echo "Skipping import of existing section TOC page with pageId {$sourcePageId}\n";
                     $skip = true;
                 }

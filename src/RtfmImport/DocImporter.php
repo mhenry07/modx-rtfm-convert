@@ -128,6 +128,12 @@ class DocImporter {
                     continue;
                 }
                 echo "Re-importing {$pageName} with title {$pageTitle} and pageId {$sourcePageId}\n";
+                $oldContent = $document->getContent();
+                if (strpos($oldContent, '[[') !== false)
+                    echo "WARNING one or more MODX tags will be overwritten in {$document->get('pagetitle')} ({$document->get('id')})\n";
+                if (strpos($oldContent, 'class="ug-toc"') !== false)
+                    echo "WARNING one or more .ug-toc sections will be overwritten in {$document->get('pagetitle')} ({$document->get('id')})\n";
+                unset($oldContent);
 
                 $import['status'] = 'updated';
                 $destLink = $qp->top('link[title="dest"]');

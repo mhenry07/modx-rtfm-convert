@@ -31,14 +31,14 @@ $modx->setLogTarget('ECHO');
 
 $modx09xFixer = new Modx09xAliasFixer($config, $modx);
 $importer = new DocImporter($config, $modx);
+$groupSetter = new ResourceGroupSetter($modx);
 $organizer = new DocOrganizer($config, $modx);
 $extrasFixer = new ExtrasFixer($config, $modx);
 $contentFixer = new ContentFixer($config, $modx);
-$groupSetter = new ResourceGroupSetter($modx);
 
 $modx09xFixer->fix();
 $imported = $importer->import();
+$imported = $groupSetter->set($imported);
 $imported = $organizer->organize($imported);
 $imported = $extrasFixer->fix($imported);
 $imported = $contentFixer->fix($imported);
-$imported = $groupSetter->set($imported);

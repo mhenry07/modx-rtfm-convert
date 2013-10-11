@@ -152,18 +152,10 @@ class DocImporter {
                 }
             }
             if (!$document) {
-                $parentId = $spaceConfig['importParent'];
-                $query = $modx->newQuery('modResource');
-                $query->innerJoin('modTemplateVarResource', 'tv',
-                    array('tv.tmplvarid' => $pageIdTV, 'tv.value' => $sourceParentPageId, 'tv.contentid = modResource.id'));
-                $parentDoc = $modx->getObject('modResource', $query);
-                if ($parentDoc)
-                    $parentId = $parentDoc->get('id');
-
                 $document = $modx->newObject(
                     'modDocument',
                     array(
-                        'parent' => $parentId,
+                        'parent' => $spaceConfig['importParent'],
                         'context_key' => $modx->context->get('key'),
                         'pagetitle' => $pageTitle,
                         'alias' => $pageTitle,

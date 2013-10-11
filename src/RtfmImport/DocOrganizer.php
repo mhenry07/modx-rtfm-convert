@@ -51,6 +51,7 @@ class DocOrganizer {
                         continue;
                     }
                     echo "Updated parent for {$resource->get('pagetitle')} [{$parentId}:{$parentPageId}]\n";
+                    self::updateImportDestHref($imports, $resource);
                 } else {
                     if ((integer)$parentId != $resource->get('id')) {
                         echo "Attempt to set parent to self for {$resource->get('pagetitle')} using parentPageId {$parentPageId}\n";
@@ -58,18 +59,18 @@ class DocOrganizer {
                         echo "Could not find parent for {$resource->get('pagetitle')} using parentPageId {$parentPageId}\n";
                     }
                 }
-                self::updateImportDestHref($imports, $contextKey, $resource);
             }
         }
         return $imports;
     }
 
-    public static function updateImportDestHref(array &$imports, $contextKey,
+    public static function updateImportDestHref(array &$imports,
                                                 modResource $resource) {
         $id = $resource->get('id');
         foreach ($imports as $source_href => $import) {
             if ($import['dest_id'] == $id) {
-                $imports[$source_href]['dest_href'] = "/{$contextKey}/{$resource->get('uri')}";
+                $imports[$source_href]['dest_href'] =
+                    "/{$resource->get('context_key')}/{$resource->get('uri')}";
                 return;
             }
         }

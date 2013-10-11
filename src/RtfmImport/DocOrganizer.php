@@ -51,25 +51,62 @@ class DocOrganizer {
                         continue;
                     }
                     echo "Updated parent for {$resource->get('pagetitle')} [{$parentId}:{$parentPageId}]\n";
+                    self::updateImportDestHref($imports, $resource);
+                    $this->reorganizeChildren($imports, $spaceConfig, $resource);
                 } else {
-                    if ((integer)$parentId != $resource->get('id')) {
+                    if ((integer)$parentId == $resource->get('id')) {
                         echo "Attempt to set parent to self for {$resource->get('pagetitle')} using parentPageId {$parentPageId}\n";
                     } else {
                         echo "Could not find parent for {$resource->get('pagetitle')} using parentPageId {$parentPageId}\n";
                     }
                 }
-                self::updateImportDestHref($imports, $contextKey, $resource);
             }
         }
         return $imports;
     }
 
-    public static function updateImportDestHref(array &$imports, $contextKey,
+    // update parent for pages whose parentPageId tv value equals confluence pageId
+    protected function reorganizeChildren(array &$imports, array $spaceConfig,
+                                          modResource $parentResource) {
+        $modx = $this->modx;
+        $parentPageIdTV = $modx->getObject('modTemplateVar',
+            array('name' => 'parentPageId'));
+        $parentId = $parentResource->get('id');
+        $parentPageId = $parentResource->getTVValue('pageId');
+
+        $query = $modx->newQuery('modResource',
+            array('context_key' => $parentResource->get('context_key')));
+        $query->innerJoin('modTemplateVarResource', 'tv',
+            array(
+                'tv.tmplvarid' => $parentPageIdTV->get('id'),
+                'tv.value' => $parentPageId,
+                'tv.contentid = modResource.id'));
+        /** @var modResource $childResource */
+        foreach ($modx->getIterator('modResource', $query) as $childResource) {
+            if ($childResource->get('parent') == $spaceConfig['importParent'] ||
+                $childResource->get('parent') == $parentId)
+                continue;
+            if ($childResource->get('id') == $parentId) {
+                echo "Attempt to set parent to self for {$childResource->get('pagetitle')} for parentPageId {$parentPageId}\n";
+                continue;
+            }
+            $childResource->set('parent', $parentId);
+            if (!$childResource->save()) {
+                echo "An error occurred updating parent for {$childResource->get('pagetitle')}\n";
+                continue;
+            }
+            echo "Updated parent for {$childResource->get('pagetitle')} [{$parentId}:{$parentPageId}]\n";
+            self::updateImportDestHref($imports, $childResource);
+        }
+    }
+
+    public static function updateImportDestHref(array &$imports,
                                                 modResource $resource) {
         $id = $resource->get('id');
         foreach ($imports as $source_href => $import) {
             if ($import['dest_id'] == $id) {
-                $imports[$source_href]['dest_href'] = "/{$contextKey}/{$resource->get('uri')}";
+                $imports[$source_href]['dest_href'] =
+                    "/{$resource->get('context_key')}/{$resource->get('uri')}";
                 return;
             }
         }

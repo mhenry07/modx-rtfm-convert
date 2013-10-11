@@ -39,7 +39,7 @@ class ExtrasFixer {
             }
             echo "Updated parent for {$resource->get('pagetitle')} [{$toParentId}]\n";
 
-            DocOrganizer::updateImportDestHref($imports, $contextKey, $resource);
+            DocOrganizer::updateImportDestHref($imports, $resource);
         }
 
         return $imports;

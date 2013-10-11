@@ -98,17 +98,20 @@ class ContentFixer {
             return $pageContent;
         $pageTitle = str_replace(' ', '+', $document->get('pagetitle'));
         $targetData = $this->getPageData($pages, $link);
-        if (!$this->config['use_modx_link_tags'] &&
-            $targetData &&
-            array_key_exists('dest_href', $targetData) &&
-            $targetData['dest_href']) {
-            $link = $targetData['dest_href'];
-        } elseif ($this->config['use_modx_link_tags'] &&
-            $targetData &&
-            array_key_exists('dest_id', $targetData) &&
+        if ($targetData && array_key_exists('dest_id', $targetData) &&
             $targetData['dest_id']) {
             $destId = $targetData['dest_id'];
-            $link = $this->formatModxLinkTag($destId, $document);
+            if ($this->config['use_modx_link_tags']) {
+                $link = $this->formatModxLinkTag($destId, $document);
+            } elseif (isset($targetData['dest_href'])) {
+                $link = $targetData['dest_href'];
+            } else {
+                /** @var modDocument $targetDoc */
+                $targetDoc = $this->modx->getObject('modDocument', $destId);
+                if ($targetDoc)
+                    $link = $this->formatFriendlyUrl($targetDoc);
+                unset($targetDoc);
+            }
         } elseif ($link === $pageTitle) {
             $link = $this->formatLink($document, $document);
         } elseif (strpos($link, '[') === false) {

@@ -40,8 +40,9 @@ class ContentFixer {
             $pageContent = $document->getContent();
 
             $count = 0;
-            $pageContent = $this->fixRelativeLinks($imports, $contextKey,
-                $document, $pageContent, $count);
+            if ($this->config['update_confluence_hrefs'])
+                $pageContent = $this->fixRelativeLinks($imports, $contextKey,
+                    $document, $pageContent, $count);
 
             if ($this->config['fix_links_for_base_href'])
                 $pageContent = $this->fixLinksForBaseHref($contextKey,

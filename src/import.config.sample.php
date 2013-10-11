@@ -2,6 +2,7 @@
 return array(
     'modx_core_config' => '/path/to/modx/config.core.php',
     'fix_links_for_base_href' => false, // if false, assume it will be handled by a plugin
+    'update_confluence_hrefs' => true,
 
     'source_path' => dirname(__DIR__) . '/data/convert',
     'source_has_html_extensions' => false,

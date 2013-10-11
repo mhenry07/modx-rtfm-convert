@@ -53,7 +53,7 @@ class DocOrganizer {
                     echo "Updated parent for {$resource->get('pagetitle')} [{$parentId}:{$parentPageId}]\n";
                     self::updateImportDestHref($imports, $resource);
                 } else {
-                    if ((integer)$parentId != $resource->get('id')) {
+                    if ((integer)$parentId == $resource->get('id')) {
                         echo "Attempt to set parent to self for {$resource->get('pagetitle')} using parentPageId {$parentPageId}\n";
                     } else {
                         echo "Could not find parent for {$resource->get('pagetitle')} using parentPageId {$parentPageId}\n";

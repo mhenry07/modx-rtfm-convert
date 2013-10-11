@@ -115,18 +115,24 @@ class DocImporter {
             $query->innerJoin('modTemplateVarResource', 'tv', array('tv.tmplvarid' => $pageIdTV, 'tv.value' => $sourcePageId, 'tv.contentid = modResource.id'));
             $document = $modx->getObject('modResource', $query);
             if ($document) {
+                $skip = false;
                 if ('modDocument' !== $document->get('class_key')) {
                     echo "Skipping import of content for pageId {$sourcePageId}; Resource converted to {$document->get('class_key')}\n";
-                    $import['status'] = 'skipped';
-                    $imports[] = $import;
-                    continue;
-                }
-                if ('Home' === $document->get('pagetitle')) {
+                    $skip = true;
+                } elseif ('Home' === $document->get('pagetitle')) {
                     echo "Skipping import of existing Home page with pageId {$sourcePageId}\n";
+                    $skip = true;
+                } elseif (in_array($document->get('parent'), array(3, 1183, 1547))) {
+                    // 3: MODX Revolution 2.x, 1183: xPDO 2.x, 1547: xPDO 1.x
+                    echo "Skipping import of existing section TOC page with pageId {$sourcePageId}\n";
+                    $skip = true;
+                }
+                if ($skip) {
                     $import['status'] = 'skipped';
                     $imports[] = $import;
                     continue;
                 }
+
                 echo "Re-importing {$pageName} with title {$pageTitle} and pageId {$sourcePageId}\n";
                 $oldContent = $document->getContent();
                 if (strpos($oldContent, '[[') !== false)

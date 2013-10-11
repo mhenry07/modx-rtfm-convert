@@ -12,6 +12,18 @@ $config = include dirname(__FILE__) . '/import.config.php';
 require_once $config['modx_core_config'];
 require_once MODX_CORE_PATH . 'model/modx/modx.class.php';
 
+function setOptionsFromUrl(array &$config, array $options) {
+    foreach ($options as $option)
+        if (isset($_GET[$option]))
+            $config[$option] = (boolean)$_GET[$option];
+}
+
+setOptionsFromUrl($config, array(
+    'fix_links_for_base_href',
+    'update_confluence_hrefs',
+    'use_modx_link_tags'
+));
+
 $modx = modX::getInstance();
 $modx->initialize('mgr');
 $modx->setLogLevel(modX::LOG_LEVEL_INFO);

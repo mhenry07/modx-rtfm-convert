@@ -44,4 +44,17 @@ class PathHelper {
         $replacements = array('/', '%22', '%2A');
         return str_replace($specialChars, $replacements, $relativeUrl);
     }
+
+    public static function getConversionFilename($url, $baseDir,
+                                                 $addHtmlExtension) {
+        $urlPath = parse_url($url, PHP_URL_PATH);
+        $urlQuery = parse_url($url, PHP_URL_QUERY);
+        $relativeUrl = preg_replace('#/$#', '', $urlPath);
+        if ($urlQuery)
+            $relativeUrl .= '?' . $urlQuery;
+        $filePath = self::convertRelativeUrlToFilePath($relativeUrl);
+        if ($addHtmlExtension)
+            $filePath .= '.html';
+        return self::join($baseDir, $filePath);
+    }
 }

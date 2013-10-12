@@ -24,10 +24,9 @@ class HtmlTidyTextTransformer extends AbstractTextTransformer {
             $html = $input->getHtmlDocument();
         $config = array(
             'doctype' => 'omit',
+            'new-blocklevel-tags' => 'figcaption figure',
             'output-xhtml' => true,
             'break-before-br' => true,
-            'indent' => true,
-            'indent-spaces' => 4,
             'vertical-space' => true,
             'wrap' => 0,
             'char-encoding' => 'utf8',

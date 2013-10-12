@@ -59,7 +59,7 @@ class NamedAnchorHtmlTransformer extends AbstractHtmlTransformer {
                 }
                 if ($anchor->attr('id') === $name)
                     $anchor->removeAttr('id');
-                $target->attr('id', $name);
+                $target->attr('id', $this->decodeAnchor($name));
                 $anchor->removeAttr('name');
                 if (!$anchorNode->hasAttributes() && !$anchorNode->hasChildNodes()) {
                     $pageData->incrementStat('named anchors: headings',
@@ -103,11 +103,22 @@ class NamedAnchorHtmlTransformer extends AbstractHtmlTransformer {
                         'anchor name does not match existing id of anchor');
                     return;
                 }
-                $anchor->attr('id', $name)->removeAttr('name');
+                $anchor->attr('id', $this->decodeAnchor($name))
+                    ->removeAttr('name');
                 $pageData->incrementStat('named anchors: others',
                     self::TRANSFORM, 1, 'converted name to id');
             }
         );
         $pageData->checkTransform('named anchors: others', $qp, 0);
+    }
+
+    /**
+     * HTML5 seems to decode links like #Image%2B-WhatisImage%3F before
+     * navigating so we need our ids to be decoded like Image+-WhatisImage?
+     * Note: attr() is smart enough to handle quotes, though it may result in a
+     * single quoted attribute (which is legal).
+     */
+    protected function decodeAnchor($anchor) {
+        return rawurldecode($anchor);
     }
 }

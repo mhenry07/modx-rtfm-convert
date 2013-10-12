@@ -27,16 +27,49 @@ EOT;
         $expected = <<<EOT
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>
-            Title
-        </title>
-    </head>
-    <body>
-        <p>
-            text
-        </p>
-    </body>
+<head>
+<title>Title</title>
+</head>
+<body>
+<p>text</p>
+</body>
+</html>
+EOT;
+
+        $transformer = new HtmlTidyTextTransformer();
+        $result = $transformer->transform($source);
+        $this->assertEquals($expected, $result);
+    }
+
+    public function testHtmlTidyShouldPreserveFigureFigcaption() {
+        $source = <<<EOT
+<!DOCTYPE html>
+<html>
+<head>
+<title>Title</title>
+</head>
+<body>
+<figure><figcaption>Heading</figcaption>
+<pre>code</pre></figure>
+</body>
+</html>
+EOT;
+
+        $expected = <<<EOT
+<!DOCTYPE html>
+<html>
+<head>
+<title>Title</title>
+</head>
+<body>
+<figure>
+<figcaption>Heading</figcaption>
+
+<pre>
+code
+</pre>
+</figure>
+</body>
 </html>
 EOT;
 

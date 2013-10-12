@@ -80,7 +80,7 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
                                             PageData $pageData) {
         $transformFn = function (DOMQuery $query) {
             $query->each(function ($index, $item) {
-                qp($item)->wrapInner('<p class="code-heading"></p>')
+                qp($item)->wrapInner('<figcaption></figcaption>')
                     ->contents()->unwrap();
             });
         };
@@ -89,7 +89,7 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             if ($query->count() > 0)
                 $pageData->addQueryStat($label, $query,
                     array(self::TRANSFORM_ALL => true,
-                        self::TRANSFORM_MESSAGES => 'extracted to p.code-heading'));
+                        self::TRANSFORM_MESSAGES => 'extracted to figcaption'));
         };
 
         $this->executeTransformStep($label, $codeHeaders, $pageData,
@@ -119,28 +119,31 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
     protected function transformCodePanels($label, DOMQuery $codePanels,
                                            PageData $pageData) {
         $transformFn = function (DOMQuery $query) use ($label, $pageData) {
-            $pre = $query->find('pre');
-            $pre->each(function ($index, $item) use ($label, $pageData) {
+            $query->each(function ($index, $item) use ($label, $pageData) {
+                $codePanel = qp($item);
+                $pre = $codePanel->find('pre');
                 $hasMapping = false;
-                $pre = qp($item);
+                $msg = 'stripped divs';
                 foreach ($this->brushMappings as $from => $to) {
                     if ($pre->hasClass($from)) {
                         $pre->removeClass($from)
                             ->addClass('brush:')->addClass($to);
                         $hasMapping = true;
-                        $pageData->incrementStat($label, self::TRANSFORM, 1,
-                            "stripped divs & changed pre class from {$from} to 'brush: {$to}'");
+                        $msg .= " & changed pre class from {$from} to 'brush: {$to}'";
                     }
                 }
                 if (!$hasMapping) {
                     $class = $pre->attr('class');
-                    $pageData->incrementStat($label, self::TRANSFORM, 1,
-                        "stripped divs");
                     $pageData->incrementStat($label, self::WARNING, 1,
                         "pre has unhandled class: {$class}");
                 }
+                if ($codePanel->find('figcaption')->count() > 0) {
+                    $codePanel->wrapInner('<figure class="code"></figure>');
+                    $msg = "wrapped in figure.code & {$msg}";
+                }
+                $pageData->incrementStat($label, self::TRANSFORM, 1, $msg);
             });
-            $pre->unwrap();
+            $query->find('pre')->unwrap();
             $query->contents()->unwrap();
         };
 
@@ -148,7 +151,8 @@ class CodePanelHtmlTransformer extends AbstractHtmlTransformer {
             $pageData->addQueryStat($label, $query);
         };
 
-        $expectedDiff = -2 * $codePanels->count();
+        $expectedDiff = -2 * $codePanels->count() +
+            $codePanels->find('figcaption')->count();
         $this->executeTransformStep($label, $codePanels, $pageData,
             $transformFn, $addStatFn, $expectedDiff);
     }

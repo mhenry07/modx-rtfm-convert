@@ -6,7 +6,8 @@
   },
   "autoload": {
     "psr-0": {
-      "RtfmConvert": "src/"
+      "RtfmConvert": "src/",
+      "RtfmImport": "src/"
     }
   }
 }

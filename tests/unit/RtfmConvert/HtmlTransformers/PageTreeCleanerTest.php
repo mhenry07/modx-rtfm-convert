@@ -19,7 +19,7 @@ class PageTreeCleanerTest extends HtmlTestCase {
         $this->assertHtmlEquals($input, $result);
     }
 
-    public function testCleanShouldReturnExpectedListAsPageToc() {
+    public function testCleanShouldReturnExpectedListAsOlUgTocPageToc() {
         $expected = sprintf($this->expectedHtml, 'page-toc');
         $pageData = new PageData($this->inputHtml, $this->stats);
 
@@ -30,8 +30,8 @@ class PageTreeCleanerTest extends HtmlTestCase {
         $this->assertTransformStat('pagetree: cleanup', 1);
     }
 
-    public function testCleanBeforeSeeAlsoShouldReturnExpectedListAsPageToc() {
-        $seeAlso = '<h3 id="PageName_SeeAlso">See Also</h3>';
+    public function testCleanBeforeSeeAlsoShouldReturnExpectedListAsOlUgTocPageToc() {
+        $seeAlso = '<h2 id="PageName_SeeAlso">See Also</h2>';
         $input = $this->inputHtml . $seeAlso;
         $expected = sprintf($this->expectedHtml, 'page-toc') . $seeAlso;
         $pageData = new PageData($input, $this->stats);
@@ -43,8 +43,26 @@ class PageTreeCleanerTest extends HtmlTestCase {
         $this->assertTransformStat('pagetree: cleanup', 1);
     }
 
-    public function testCleanAfterSeeAlsoShouldReturnExpectedListAsSeeAlso() {
+    public function testCleanAfterH2SeeAlsoShouldReturnExpectedListAsOlUgTocSeeAlso() {
         $seeAlso = <<<'EOT'
+<h3>Other</h3>
+<h2 id="PageName_SeeAlso">See Also</h2>
+<ul><li><a href="/">Other see also item</a></li></ul>
+EOT;
+        $input = $seeAlso . $this->inputHtml;
+        $expected = $seeAlso . sprintf($this->expectedHtml, 'see-also');
+        $pageData = new PageData($input, $this->stats);
+
+        $cleaner = new PageTreeCleaner();
+        $cleaner->setStatsPrefix('pagetree: ');
+        $result = $cleaner->clean($pageData);
+        $this->assertHtmlEquals($expected, $result);
+        $this->assertTransformStat('pagetree: cleanup', 1);
+    }
+
+    public function testCleanAfterH3SeeAlsoShouldReturnExpectedListAsOlUgTocSeeAlso() {
+        $seeAlso = <<<'EOT'
+<h2>Other</h2>
 <h3 id="PageName_SeeAlso">See Also</h3>
 <ul><li><a href="/">Other see also item</a></li></ul>
 EOT;
@@ -344,10 +362,10 @@ EOT;
 EOT;
 
     protected $expectedHtml = <<<EOT
-<ul class="%s">
+<ol class="ug-toc %s">
     <li>
         <a href="/display/revolution20/Basic+Installation">Basic Installation</a>
-        <ul>
+        <ol class="ug-toc">
             <li>
                 <a href="/display/revolution20/MODx+Revolution+on+Debian">MODx Revolution on Debian</a>
             </li>
@@ -365,13 +383,13 @@ EOT;
             </li>
 
             <li>
-                    <a href="/display/revolution20/MODX+and+Suhosin">MODX and Suhosin</a>
+                <a href="/display/revolution20/MODX+and+Suhosin">MODX and Suhosin</a>
             </li>
 
             <li>
                 <a href="/display/revolution20/Nginx+Server+Config">Nginx Server Config</a>
             </li>
-        </ul>
+        </ol>
     </li>
 
     <li>
@@ -384,15 +402,15 @@ EOT;
 
     <li>
         <a href="/display/revolution20/Command+Line+Installation">Command Line Installation</a>
-        <ul>
+        <ol class="ug-toc">
             <li>
                 <a href="/display/revolution20/The+Setup+Config+Xml+File">The Setup Config Xml File</a>
             </li>
-        </ul>
+        </ol>
     </li>
 
     <li>
-            <a href="/display/revolution20/Troubleshooting+Installation">Troubleshooting Installation</a>
+        <a href="/display/revolution20/Troubleshooting+Installation">Troubleshooting Installation</a>
     </li>
 
     <li>
@@ -402,7 +420,7 @@ EOT;
     <li>
         <a href="/display/revolution20/Using+MODx+Revolution+from+SVN">Using MODx Revolution from SVN</a>
     </li>
-</ul>
+</ol>
 EOT;
 
 }

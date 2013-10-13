@@ -13,6 +13,11 @@ use RtfmConvert\RtfmQueryPath;
 
 
 class OldRtfmContentExtractor extends AbstractContentExtractor {
+    protected $statPrefix;
+
+    public function __construct($statPrefix = '') {
+        $this->statPrefix = $statPrefix;
+    }
 
     /**
      * @param string $html
@@ -46,11 +51,12 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
 
     protected function removeSelector($selector, DOMQuery $query,
                                       PageStatistics $stats = null) {
+        $statLabel = $this->statPrefix . $selector;
         $matches = $query->find($selector);
         $expectedDiff = -RtfmQueryPath::countAll($matches, true);
         if (!is_null($stats)) {
             $stats->beginTransform($query);
-            $stats->addQueryStat($selector, $matches,
+            $stats->addQueryStat($statLabel, $matches,
                 array(PageStatistics::TRANSFORM_ALL => true,
                     PageStatistics::TRANSFORM_MESSAGES => 'removed'));
         }
@@ -58,7 +64,7 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         $matches->remove();
 
         if (!is_null($stats))
-            $stats->checkTransform($selector, $query, $expectedDiff);
+            $stats->checkTransform($statLabel, $query, $expectedDiff);
     }
 
     /**
@@ -73,13 +79,15 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         if (is_null($stats))
             return $content;
 
-        $stats->addTransformStat('comments: wiki content', $count,
+        $stats->addTransformStat($this->statPrefix . 'comments: wiki content',
+            $count,
             array(PageStatistics::TRANSFORM_ALL => true,
                 PageStatistics::TRANSFORM_MESSAGES =>
                 'removed <!-- wiki content -->'));
         $otherCommentsCount = substr_count($content, '<!--');
         if ($otherCommentsCount > 0)
-            $stats->addTransformStat('comments: others', $otherCommentsCount,
+            $stats->addTransformStat($this->statPrefix . 'comments: others',
+                $otherCommentsCount,
                 array(PageStatistics::WARN_IF_FOUND => true,
                     PageStatistics::WARNING_MESSAGES => 'unhandled comments'));
 
@@ -101,7 +109,8 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
 
         $content = $qp->top('#content');
         if ($qp->top('#content #pageId')->count() == 0) {
-            $stats->addTransformStat('#content #pageId', 0,
+            $stats->addTransformStat($this->statPrefix . '#content #pageId',
+                0,
                 array(PageStatistics::WARN_IF_MISSING => true,
                     PageStatistics::WARNING_MESSAGES =>
                     '#pageId not found in #content. Attempting to search from body.'));
@@ -114,29 +123,37 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         if ($pageId->count() == 0)
             $pageIdOptions = array(PageStatistics::WARNING => 1,
                 PageStatistics::WARNING_MESSAGES => 'Unable to locate pageId');
-        $stats->addValueStat(PageStatistics::SOURCE_PAGE_ID_LABEL,
+        $stats->addValueStat(
+            $this->formatLabel(PageStatistics::SOURCE_PAGE_ID_LABEL),
             $pageId->attr('value'), $pageIdOptions);
-        $stats->addValueStat(PageStatistics::SOURCE_PARENT_PAGE_ID_LABEL,
+        $stats->addValueStat(
+            $this->formatLabel(PageStatistics::SOURCE_PARENT_PAGE_ID_LABEL),
             $content->find('input[title="parentPageId"]')->first()->attr('value'));
-        $stats->addValueStat(PageStatistics::SOURCE_PAGE_TITLE_LABEL,
+        $stats->addValueStat(
+            $this->formatLabel(PageStatistics::SOURCE_PAGE_TITLE_LABEL),
             $content->find('input[title="pageTitle"]')->first()->attr('value'));
-        $stats->addValueStat(PageStatistics::SOURCE_SPACE_KEY_LABEL,
+        $stats->addValueStat(
+            $this->formatLabel(PageStatistics::SOURCE_SPACE_KEY_LABEL),
             $content->find('#spaceKey')->attr('value'));
-        $stats->addValueStat(PageStatistics::SOURCE_SPACE_NAME_LABEL,
+        $stats->addValueStat(
+            $this->formatLabel(PageStatistics::SOURCE_SPACE_NAME_LABEL),
             $content->find('input[title="spaceName"]')->first()->attr('value'));
         $modificationInfo = $content
             ->find('.page-metadata .page-metadata-modification-info')
             ->first();
         $modificationInfo->remove('.noprint');
-        $stats->addValueStat(PageStatistics::SOURCE_MODIFICATION_INFO_LABEL,
+        $stats->addValueStat(
+            $this->formatLabel(PageStatistics::SOURCE_MODIFICATION_INFO_LABEL),
             trim($modificationInfo->text()));
         $labels = $content->find('#labelsList a.label')->textImplode(', ');
-        $stats->addValueStat(PageStatistics::SOURCE_LABELS_LABEL, $labels);
+        $stats->addValueStat(
+            $this->formatLabel(PageStatistics::SOURCE_LABELS_LABEL), $labels);
 
         // stats
         $wikiContent = $content->find('div.wiki-content');
 
-        $stats->addQueryStat('div.wiki-content', $wikiContent,
+        $stats->addQueryStat($this->statPrefix . 'div.wiki-content',
+            $wikiContent,
             array(PageStatistics::TRANSFORM_ALL => true,
                 PageStatistics::TRANSFORM_MESSAGES => 'extracted',
                 PageStatistics::ERROR_IF_MISSING => true,
@@ -154,7 +171,8 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         $divCloseTags = preg_match_all('#</div>#', $html);
         $diff = $divOpenTags - $divCloseTags;
         if ($divOpenTags !== $divCloseTags && !is_null($stats))
-            $stats->addTransformStat('warning: unmatched div(s)', abs($diff),
+            $stats->addTransformStat(
+                $this->statPrefix . 'warning: unmatched div(s)', abs($diff),
                 array(PageStatistics::WARN_IF_FOUND => true,
                     PageStatistics::WARNING_MESSAGES => 'unmatched div(s)'));
 
@@ -162,7 +180,8 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
         // CharsetDeclarationTextTransformer
         $charsetFound = preg_match('/<meta\b[^>]*\bcharset="?([-\w]+)"?/i', $html);
         if ($charsetFound !== 1 && isset($stats))
-            $stats->addTransformStat('charset declaration', 0,
+            $stats->addTransformStat(
+                $this->statPrefix . 'charset declaration', 0,
                 array(PageStatistics::ERROR_IF_MISSING => true,
                     PageStatistics::ERROR_MESSAGES => 'charset is not declared'));
     }
@@ -191,5 +210,11 @@ class OldRtfmContentExtractor extends AbstractContentExtractor {
             return "<script{$scriptAttributes}>{$scriptCdata}</script>";
         };
         return preg_replace_callback($pattern, $callback, $html);
+    }
+
+    protected function formatLabel($label) {
+        if ($this->statPrefix == '' || $this->statPrefix == 'source: ')
+            return $label;
+        return str_replace('source: ', $this->statPrefix, $label);
     }
 }

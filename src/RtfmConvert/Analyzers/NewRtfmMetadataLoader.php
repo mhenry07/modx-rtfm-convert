@@ -74,22 +74,33 @@ class NewRtfmMetadataLoader implements ProcessorOperationInterface {
         // fix canonical URL when using dev site
         $canonicalUrl = str_replace('http://rtfm.modx/', "{$this->baseUrl}/",
             $canonicalUrl);
-        $stats->addValueStat(self::DEST_URL_LABEL, $canonicalUrl);
+        $stats->addValueStat($this->formatLabel(self::DEST_URL_LABEL),
+            $canonicalUrl);
 
         $pageId = $body->attr('data-page-id');
-        $stats->addValueStat(self::DEST_PAGE_ID_LABEL, $pageId);
+        $stats->addValueStat($this->formatLabel(self::DEST_PAGE_ID_LABEL),
+            $pageId);
 
         $author = $head->find('meta[name="author"]')->attr('content');
-        $stats->addValueStat(self::DEST_AUTHOR_LABEL, $author);
+        $stats->addValueStat($this->formatLabel(self::DEST_AUTHOR_LABEL),
+            $author);
 
         $header = $body->find('.content header');
         $title = trim($header->find('h1')->text());
-        $stats->addValueStat(self::DEST_TITLE_LABEL, $title);
+        $stats->addValueStat($this->formatLabel(self::DEST_TITLE_LABEL),
+            $title);
 
         $modificationInfo = trim($header->find('h5')->text());
-        $stats->addValueStat(self::DEST_MODIFICATION_INFO_LABEL,
+        $stats->addValueStat(
+            $this->formatLabel(self::DEST_MODIFICATION_INFO_LABEL),
             $modificationInfo);
 
         return $pageData;
+    }
+
+    protected function formatLabel($label) {
+        if ($this->statsPrefix == 'dest: ')
+            return $label;
+        return str_replace('dest: ', $this->statsPrefix, $label);
     }
 }

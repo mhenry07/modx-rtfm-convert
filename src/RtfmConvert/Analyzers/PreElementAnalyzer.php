@@ -26,8 +26,7 @@ class PreElementAnalyzer implements ProcessorOperationInterface {
     public function process($pageData) {
         $qp = $pageData->getHtmlQuery();
         $pres = $qp->find('pre');
-        if ($pres->count() > 0 || isset($this->compareToPrefix))
-            $pageData->addQueryStat($this->getLabel($this->prefix), $pres);
+        $pageData->addQueryStat($this->getLabel($this->prefix), $pres);
         if (isset($this->compareToPrefix))
             $this->compare($pageData, $pres->count());
         return $pageData;

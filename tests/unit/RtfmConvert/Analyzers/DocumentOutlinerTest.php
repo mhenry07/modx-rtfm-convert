@@ -13,14 +13,14 @@ use RtfmConvert\PageStatistics;
 
 class DocumentOutlinerTest extends HtmlTestCase {
 
-    public function testProcessGivenNoHeadingsShouldNotAddOutline() {
+    public function testProcessGivenNoHeadingsShouldAddEmptyOutline() {
         $html = '<html><head><title>Title</title></head><body><p>content</p></body></html>';
         $pageData = new PageData($html, $this->stats);
 
         $outliner = new DocumentOutliner();
         $result = $outliner->process($pageData);
 
-        $this->assertStatsNotContain('outline');
+        $this->assertValueStat('outline', array());
     }
 
     public function testProcessGivenH1ShouldAddExpectedOutline() {

@@ -11,9 +11,11 @@ use RtfmConvert\RtfmException;
 
 class ModxRtfmContentExtractor extends AbstractContentExtractor {
     protected $statPrefix;
+    protected $excludeChildPagesSection;
 
-    public function __construct($statPrefix) {
+    public function __construct($statPrefix, $excludeChildPagesSection = true) {
         $this->statPrefix = $statPrefix;
+        $this->excludeChildPagesSection = $excludeChildPagesSection;
     }
 
     /**
@@ -23,13 +25,24 @@ class ModxRtfmContentExtractor extends AbstractContentExtractor {
      * @return string
      */
     public function extract($html, PageStatistics $stats = null) {
-        $contentStart = '<!-- start content -->';
-        $contentEnd = '<!-- end content -->';
-
         $this->checkForErrors($html, $stats);
-        $content = $this->getSubstringBetween($html, $contentStart, $contentEnd);
-        if ($content === false)
+        $pattern = '/<!-- start content -->(.*)<!-- end content -->/is';
+        $matches = array();
+        if (!preg_match($pattern, $html, $matches) === 1)
             throw new RtfmException('Error extracting content');
+        $content = $matches[1];
+        if ($this->excludeChildPagesSection) {
+            $pattern = '#<div class="section-header">\s*<h[23] id="children-section-title".*?</div>#is';
+            $count = 0;
+            $content = preg_replace($pattern, '', $content, 1, $count);
+            if ($count > 0)
+                $stats->addTransformStat(
+                    $this->statPrefix . 'content extraction',
+                    1,
+                    array(
+                        PageStatistics::TRANSFORM_ALL => true,
+                        PageStatistics::TRANSFORM_MESSAGES => 'excluded Child Pages section'));
+        }
 
         return trim($content);
     }
@@ -45,7 +58,7 @@ class ModxRtfmContentExtractor extends AbstractContentExtractor {
         $diff = $divOpenTags - $divCloseTags;
         if ($divOpenTags !== $divCloseTags && !is_null($stats))
             $stats->addTransformStat(
-                $this->statPrefix . ' warning: unmatched div(s)',
+                $this->statPrefix . 'warning: unmatched div(s)',
                 abs($diff),
                 array(PageStatistics::WARN_IF_FOUND => true,
                     PageStatistics::WARNING_MESSAGES => 'unmatched div(s)'));

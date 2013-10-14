@@ -49,6 +49,7 @@ class SiteComparer {
     }
 
     // should I try to strip converted plugin_pagetrees (.page-toc, .see-also) before diffing?
+    // should I ignore h3. child pages item when comparing outlines?
     protected function createProcessor($site, $otherSite = null) {
         $statPrefix = $this->formatStatPrefix($site);
         $otherStatPrefix = $this->formatStatPrefix($otherSite);
@@ -110,6 +111,7 @@ class SiteComparer {
         $hrefs = $tocParser->parseTocDirectory($this->config['toc_dir']);
         foreach ($hrefs as $href) {
             $path = $href['href'];
+            if (strpos($path, '/pages/viewpage.action') === false) continue;
             $url1 = $href['url'];
             $url2 = $this->getSiteConfig($this->site2, 'url') . $path;
             $pageStats = new PageStatistics();
@@ -199,7 +201,8 @@ class SiteComparer {
         $statPrefix = $this->formatStatPrefix($site);
         if ($this->getSiteConfig($site, 'type') == 'confluence')
             return new OldRtfmContentExtractor($statPrefix);
-        return new ModxRtfmContentExtractor($statPrefix);
+        return new ModxRtfmContentExtractor($statPrefix,
+            $this->getSiteConfig($site, 'exclude_child_pages_section'));
     }
 
     protected function formatStatPrefix($site) {

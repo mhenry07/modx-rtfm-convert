@@ -7,8 +7,13 @@ return array(
     'sites' => array(
         'oldrtfm.modx.com' =>
             array('type' => 'confluence', 'url' => 'http://oldrtfm.modx.com'),
-        'rtfm.modx.com' =>
-            array('type' => 'modx', 'url' => 'http://rtfm.modx.com'),
-        'rtfm.modx' => array('type' => 'modx', 'url' => 'http://rtfm.modx')
+        'rtfm.modx.com' => array(
+            'type' => 'modx',
+            'url' => 'http://rtfm.modx.com',
+            'exclude_child_pages_section' => true),
+        'rtfm.modx' => array(
+            'type' => 'modx',
+            'url' => 'http://rtfm.modx',
+            'exclude_child_pages_section' => true)
     )
 );

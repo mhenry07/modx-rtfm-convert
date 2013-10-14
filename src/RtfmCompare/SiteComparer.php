@@ -16,6 +16,7 @@ use RtfmConvert\Analyzers\TextConverter;
 use RtfmConvert\Analyzers\TextDiffAnalyzer;
 use RtfmConvert\ContentExtractors\ModxRtfmContentExtractor;
 use RtfmConvert\ContentExtractors\OldRtfmContentExtractor;
+use RtfmConvert\HtmlTransformers\PageTreeHtmlTransformer;
 use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\Infrastructure\FileIo;
 use RtfmConvert\OldRtfmTocParser;
@@ -67,6 +68,9 @@ class SiteComparer {
             $processor->register($metadataLoader);
 
         $processor->register($this->createContentExtractor($site));
+
+        if ($this->getSiteConfig($site, 'build_pagetrees'))
+            $processor->register($this->createPageTreeHtmlTransformer($site));
 
         $processor->register(
             new DocumentOutliner($statPrefix, $otherStatPrefix));
@@ -213,8 +217,20 @@ class SiteComparer {
 
     protected function getSiteConfig($site, $configKey = null) {
         $siteConfig = $this->config['sites'][$site];
-        if (isset($configKey))
+        if (isset($configKey)) {
+            if (!array_key_exists($configKey, $siteConfig))
+                return null;
             return $siteConfig[$configKey];
+        }
         return $siteConfig;
+    }
+
+    protected function createPageTreeHtmlTransformer($site) {
+        $pageLoader = new CachedPageLoader();
+        $pageLoader->setBaseDirectory($this->config['cache_dir']);
+        $pagetreeTransformer = new PageTreeHtmlTransformer($pageLoader);
+        $pagetreeTransformer->setStatsPrefix(
+            $this->formatStatPrefix($site) . ' pagetree: ');
+        return $pagetreeTransformer;
     }
 }

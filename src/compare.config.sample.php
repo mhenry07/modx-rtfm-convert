@@ -5,8 +5,10 @@ return array(
     'text_dir' => dirname(__DIR__) . '/data/text',
     'toc_dir' => dirname(__DIR__) . '/oldrtfm-toc',
     'sites' => array(
-        'oldrtfm.modx.com' =>
-            array('type' => 'confluence', 'url' => 'http://oldrtfm.modx.com'),
+        'oldrtfm.modx.com' => array(
+            'type' => 'confluence',
+            'url' => 'http://oldrtfm.modx.com',
+            'build_pagetrees' => true),
         'rtfm.modx.com' => array(
             'type' => 'modx',
             'url' => 'http://rtfm.modx.com',

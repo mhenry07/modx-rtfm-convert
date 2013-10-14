@@ -7,5 +7,7 @@ src/convert.php is the main entry point, which calls
 
 src/import.php imports converted data into MODX. See rtfmimport-readme.md.
 
-src/text-diff.php was used to generate the text diffs between oldrtfm and the
-new rtfm pages.
+src/compare.php compares two RTFM sites page-by-page, including a text diff,
+pre element comparison and page outline comparison. Example usage:
+
+    php src/compare.php oldrtfm.modx.com rtfm.modx.com

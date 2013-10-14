@@ -1,4 +1,5 @@
 .idea/
 data/*
 vendor/*
+src/compare.config.php
 src/import.config.php

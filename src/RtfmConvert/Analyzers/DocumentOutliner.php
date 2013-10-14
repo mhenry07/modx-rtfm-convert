@@ -26,8 +26,7 @@ class DocumentOutliner  implements ProcessorOperationInterface {
      */
     public function process($pageData) {
         $outline = $this->getOutline($pageData);
-        if (count($outline) > 0 || isset($this->compareToPrefix))
-            $pageData->addValueStat($this->getLabel($this->prefix), $outline);
+        $pageData->addValueStat($this->getLabel($this->prefix), $outline);
         if (isset($this->compareToPrefix))
             $this->compare($pageData, $outline);
         return $pageData;

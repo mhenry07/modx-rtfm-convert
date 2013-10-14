@@ -115,7 +115,6 @@ class SiteComparer {
         $hrefs = $tocParser->parseTocDirectory($this->config['toc_dir']);
         foreach ($hrefs as $href) {
             $path = $href['href'];
-            if (strpos($path, '/pages/viewpage.action') === false) continue;
             $url1 = $href['url'];
             $url2 = $this->getSiteConfig($this->site2, 'url') . $path;
             $pageStats = new PageStatistics();

@@ -57,4 +57,14 @@ class PathHelper {
             $filePath .= '.html';
         return self::join($baseDir, $filePath);
     }
+
+    public static function formatUrl($baseUrl, $path, $useHtmlExtensions) {
+        if (!PathHelper::isLocalFile($baseUrl))
+            return $baseUrl . $path;
+
+        $url = $baseUrl . PathHelper::convertRelativeUrlToFilePath($path);
+        if ($useHtmlExtensions)
+            $url .= '.html';
+        return $url;
+    }
 }

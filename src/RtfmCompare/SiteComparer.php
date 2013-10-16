@@ -115,8 +115,8 @@ class SiteComparer {
         $hrefs = $tocParser->parseTocDirectory($this->config['toc_dir']);
         foreach ($hrefs as $href) {
             $path = $href['href'];
-            $url1 = $href['url'];
-            $url2 = $this->getSiteConfig($this->site2, 'url') . $path;
+            $url1 = $this->formatUrl($this->site1, $path);
+            $url2 = $this->formatUrl($this->site2, $path);
             $pageStats = new PageStatistics();
             $pageStats->addValueStat(PageStatistics::PATH_LABEL, $path);
             $pageData1 = $this->processor1->processPage($url1, null,
@@ -197,6 +197,8 @@ class SiteComparer {
         $metadataLoader->setBaseUrl($this->getSiteConfig($site, 'url'));
         $metadataLoader->setStatsPrefix($this->formatStatPrefix($site));
         $metadataLoader->setCacheDirectory($this->config['cache_dir']);
+        $metadataLoader->setUseHtmlExtensions(
+            $this->getSiteConfig($site, 'use_html_extensions'));
         return $metadataLoader;
     }
 
@@ -231,5 +233,11 @@ class SiteComparer {
         $pagetreeTransformer->setStatsPrefix(
             $this->formatStatPrefix($site) . ' pagetree: ');
         return $pagetreeTransformer;
+    }
+
+    protected function formatUrl($site, $path) {
+        $baseUrl = $this->getSiteConfig($site, 'url');
+        $useHtmlExtensions = $this->getSiteConfig($site, 'use_html_extensions');
+        return PathHelper::formatUrl($baseUrl, $path, $useHtmlExtensions);
     }
 }

@@ -16,6 +16,16 @@ return array(
         'rtfm.modx' => array(
             'type' => 'modx',
             'url' => 'http://rtfm.modx',
+            'exclude_child_pages_section' => true),
+        'rtfm20130822' => array(
+            'type' => 'modx',
+            'url' => '/path/to/rtfm20130822/rtfm.modx.com',
+            'use_html_extensions' => true,
+            'exclude_child_pages_section' => true),
+        'rtfm20131014' => array(
+            'type' => 'modx',
+            'url' => '/path/to/rtfm20131014/rtfm.modx.com',
+            'use_html_extensions' => true,
             'exclude_child_pages_section' => true)
     )
 );

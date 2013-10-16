@@ -10,6 +10,7 @@ use Exception;
 use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\Infrastructure\PageLoaderInterface;
 use RtfmConvert\PageStatistics;
+use RtfmConvert\PathHelper;
 use RtfmConvert\ProcessorOperationInterface;
 use RtfmConvert\RtfmQueryPath;
 
@@ -23,6 +24,7 @@ class NewRtfmMetadataLoader implements ProcessorOperationInterface {
     protected $baseUrl = 'http://rtfm.modx.com';
     protected $statsPrefix = 'dest: ';
     protected $pageLoader;
+    protected $useHtmlExtensions = false;
 
 
     public function __construct(PageLoaderInterface $pageLoader) {
@@ -43,6 +45,10 @@ class NewRtfmMetadataLoader implements ProcessorOperationInterface {
         $this->statsPrefix = $prefix;
     }
 
+    public function setUseHtmlExtensions($value) {
+        $this->useHtmlExtensions = $value ? true : false;
+    }
+
     /**
      * @param \RtfmConvert\PageData $pageData
      * @return \RtfmConvert\PageData
@@ -51,7 +57,8 @@ class NewRtfmMetadataLoader implements ProcessorOperationInterface {
         $stats = $pageData->getStats();
         $path = $pageData->getStats()
             ->getStat(PageStatistics::PATH_LABEL, PageStatistics::VALUE);
-        $url = $this->baseUrl . $path;
+        $url = PathHelper::formatUrl($this->baseUrl, $path,
+            $this->useHtmlExtensions);
 
         $html = '';
         try {

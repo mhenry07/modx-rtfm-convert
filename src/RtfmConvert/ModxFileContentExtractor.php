@@ -14,7 +14,7 @@ use RtfmConvert\Infrastructure\PageLoader;
 use RtfmConvert\TextTransformers\CharsetDeclarationTextTransformer;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
 
-class ModxContentExtractor {
+class ModxFileContentExtractor {
     protected $config;
 
     /** @var PageProcessor */

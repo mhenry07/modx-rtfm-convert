@@ -1,26 +1,27 @@
 <?php
 /**
  * @author: Mike Henry
- * Note: this covers steps 2 and 3
  */
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
-use RtfmConvert\ModxFileContentExtractor;
+use RtfmConvert\ModxWebContentExtractor;
 
-function extract2($config) {
+function extract5($config) {
     $dateString = date('Ymd\THi');
     $config['stats_file'] = sprintf($config['stats_file_format'], $dateString);
     unset($config['stats_file_format']);
 
-    $extractor = new ModxFileContentExtractor($config);
+    $extractor = new ModxWebContentExtractor($config);
     $extractor->extractSiteContent();
 }
 
 $config = array(
-    'base_dir' => 'C:/temp/modx/rtfm',
     'cache_dir' => 'C:/temp/cache',
-    'stats_file_format' => 'C:/temp/modx/extract2-%s.json'
+    'output_dir' => 'C:/temp/modx/rtfm',
+    'stats_file_format' => 'C:/temp/modx/extract5-%s.json',
+    'toc_dir' => dirname(__DIR__) . '/oldrtfm-toc',
+    'url' => 'http://rtfm.modx.com'
 );
 
-extract2($config);
+extract5($config);

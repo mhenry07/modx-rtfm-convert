@@ -20,7 +20,7 @@ class DocImporter {
         $this->modx = $modx;
     }
 
-    public function import() {
+    public function import($pages = null) {
         echo "\n\n*** Importing {$this->config['source_path']} into MODX ***\n";
 
         $modx = $this->modx;
@@ -30,17 +30,14 @@ class DocImporter {
 
         $pageIdTV = $modx->getValue($modx->newQuery('modTemplateVar', array('name' => 'pageId'))->prepare());
 
-        $tocParser = new OldRtfmTocParser();
-        $hrefs = $tocParser->parseTocDirectory($this->config['toc_dir']);
-        foreach ($hrefs as $hrefData) {
-            $href = $hrefData['href'];
+        if (!$pages)
+            $pages = $this->getPagesFromToc();
+        foreach ($pages as $page) {
             $import = array(
-                'source_href' => $href,
+                'source_href' => $page['href'],
                 'status' => 'unknown'
             );
-            $filename = PathHelper::getConversionFilename($href,
-                $this->config['source_path'],
-                $this->config['source_has_html_extensions']);
+            $filename = $page['filename'];
             $pageName = basename($filename);
             if ($this->config['source_has_html_extensions'])
                 $pageName = basename($filename, '.html');
@@ -194,5 +191,22 @@ class DocImporter {
         }
         if (!empty($nomatches)) echo "Could not import:\n" . print_r($nomatches, true);
         return $imports;
+    }
+
+    protected function getPagesFromToc() {
+        $pages = array();
+        $tocParser = new OldRtfmTocParser();
+        $hrefs = $tocParser->parseTocDirectory($this->config['toc_dir']);
+        foreach ($hrefs as $hrefData) {
+            $href = $hrefData['href'];
+            $filename = PathHelper::getConversionFilename($href,
+                $this->config['source_path'],
+                $this->config['source_has_html_extensions']);
+            $pages[] = array(
+                'filename' => $filename,
+                'href' => $href
+            );
+        }
+        return $pages;
     }
 }

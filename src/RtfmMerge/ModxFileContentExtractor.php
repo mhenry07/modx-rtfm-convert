@@ -5,15 +5,19 @@
  * Replace confluence html files with extracted content.
  */
 
-namespace RtfmConvert;
+namespace RtfmMerge;
 
 
 use RtfmConvert\ContentExtractors\ModxRtfmContentExtractor;
-use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\Infrastructure\FileIo;
+use RtfmConvert\Infrastructure\PageLoader;
+use RtfmConvert\PageProcessor;
+use RtfmConvert\PageStatistics;
+use RtfmConvert\PathHelper;
+use RtfmConvert\TextTransformers\CharsetDeclarationTextTransformer;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
 
-class ModxWebContentExtractor {
+class ModxFileContentExtractor {
     protected $config;
 
     /** @var PageProcessor */
@@ -26,9 +30,9 @@ class ModxWebContentExtractor {
         $this->config = $config;
         $this->fileIo = new FileIo();
 
-        $pageLoader = new CachedPageLoader();
-        $pageLoader->setBaseDirectory($this->config['cache_dir']);
+        $pageLoader = new PageLoader();
         $processor = new PageProcessor($pageLoader);
+//        $processor->register(new CharsetDeclarationTextTransformer());
         $processor->register(new ModxRtfmContentExtractor('', true));
 
         $tidyConfig = array(
@@ -50,23 +54,16 @@ class ModxWebContentExtractor {
         $stats = array();
         $statsBytes = false;
 
-        $outputDir = $this->config['output_dir'];
-        $tocParser = new OldRtfmTocParser();
-        $tocParser->setBaseUrl($this->config['url']);
-        $hrefs = $tocParser->parseTocDirectory($this->config['toc_dir']);
-        foreach ($hrefs as $href) {
-            $path = $href['href'];
-            $url = $href['url'];
-            $destFile = PathHelper::getConversionFilename($url, $outputDir,
-                true);
+        $dir = $this->config['base_dir'];
+        foreach (glob($dir . '/*/*/*.html') as $filename) {
             $pageStats = new PageStatistics();
-            $pageStats->addValueStat(PageStatistics::PATH_LABEL, $path);
-            $pageData = $this->processor->processPage($url, $destFile,
+            $pageStats->addValueStat(PageStatistics::PATH_LABEL, $filename);
+            $pageData = $this->processor->processPage($filename, $filename,
                 $pageStats, false);
 
             $statsObj = $pageData->getStats();
             if (isset($statsObj)) {
-                $stats[$path] = $statsObj->getStats();
+                $stats[$filename] = $statsObj->getStats();
                 $statsBytes = $this->saveStats($this->config['stats_file'],
                     $stats);
             }

@@ -8,7 +8,8 @@
     "psr-0": {
       "RtfmCompare": "src/",
       "RtfmConvert": "src/",
-      "RtfmImport": "src/"
+      "RtfmImport": "src/",
+      "RtfmMerge": "src/"
     }
   }
 }

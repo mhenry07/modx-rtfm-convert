@@ -5,7 +5,7 @@
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
-use RtfmConvert\ConvertedContentExtractor;
+use RtfmMerge\ConvertedContentExtractor;
 
 function extract4($config) {
     $dateString = date('Ymd\THi');

@@ -2,18 +2,20 @@
 /**
  * @author: Mike Henry
  *
- * Replace confluence html files with extracted content.
+ * Convert MODX tags to entities.
  */
 
-namespace RtfmConvert;
+namespace RtfmMerge;
 
 
 use RtfmConvert\Infrastructure\FileIo;
 use RtfmConvert\Infrastructure\PageLoader;
-use RtfmConvert\TextTransformers\CharsetDeclarationTextTransformer;
-use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
+use RtfmConvert\PageProcessor;
+use RtfmConvert\PageStatistics;
+use RtfmConvert\PathHelper;
+use RtfmConvert\TextTransformers\ModxTagsToEntitiesTextTransformer;
 
-class ConvertedContentExtractor {
+class MergedContentCleaner {
     protected $config;
 
     /** @var PageProcessor */
@@ -28,21 +30,15 @@ class ConvertedContentExtractor {
 
         $pageLoader = new PageLoader();
         $processor = new PageProcessor($pageLoader);
-//        $processor->register(new CharsetDeclarationTextTransformer());
 
-        $tidyConfig = array(
-            'show-body-only' => true,
-            'indent' => true,
-            'indent-spaces' => 0
-        );
-        $processor->register(new HtmlTidyTextTransformer($tidyConfig));
+        $processor->register(new ModxTagsToEntitiesTextTransformer());
 
         $this->processor = $processor;
     }
 
-    public function extractSiteContent() {
+    public function cleanSiteContent() {
         $startTime = time();
-        echo 'Extracting MODX RTFM site content', PHP_EOL;
+        echo 'Cleaning MODX RTFM site content', PHP_EOL;
         echo date('D M d H:i:s Y'), PHP_EOL;
         echo PHP_EOL;
 
@@ -50,13 +46,11 @@ class ConvertedContentExtractor {
         $statsBytes = false;
 
         $dir = $this->config['base_dir'];
-        foreach (glob($dir . '/*/*/*') as $filename) {
-            $filenameHtml = $filename . '.html';
+        foreach (glob($dir . '/*/*/*.html') as $filename) {
             $pageStats = new PageStatistics();
-            $pageStats->addValueStat(PageStatistics::PATH_LABEL, $filenameHtml);
-            $pageData = $this->processor->processPage($filename, $filenameHtml,
+            $pageStats->addValueStat(PageStatistics::PATH_LABEL, $filename);
+            $pageData = $this->processor->processPage($filename, $filename,
                 $pageStats, false);
-            unlink($filename);
 
             $statsObj = $pageData->getStats();
             if (isset($statsObj)) {

@@ -5,18 +5,19 @@
  * Replace confluence html files with extracted content.
  */
 
-namespace RtfmConvert;
+namespace RtfmMerge;
 
 
-use RtfmConvert\ContentExtractors\ConfluenceRegexContentExtractor;
-use RtfmConvert\HtmlTransformers\PageTreeHtmlTransformer;
+use RtfmConvert\ContentExtractors\ModxRtfmContentExtractor;
 use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\Infrastructure\FileIo;
-use RtfmConvert\Infrastructure\PageLoader;
-use RtfmConvert\TextTransformers\CharsetDeclarationTextTransformer;
+use RtfmConvert\OldRtfmTocParser;
+use RtfmConvert\PageProcessor;
+use RtfmConvert\PageStatistics;
+use RtfmConvert\PathHelper;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
 
-class ConfluenceContentExtractor {
+class ModxWebContentExtractor {
     protected $config;
 
     /** @var PageProcessor */
@@ -29,13 +30,10 @@ class ConfluenceContentExtractor {
         $this->config = $config;
         $this->fileIo = new FileIo();
 
-        $pageLoader = new PageLoader();
+        $pageLoader = new CachedPageLoader();
+        $pageLoader->setBaseDirectory($this->config['cache_dir']);
         $processor = new PageProcessor($pageLoader);
-//        $processor->register(new CharsetDeclarationTextTransformer());
-        $processor->register(new ConfluenceRegexContentExtractor());
-
-//        if ($this->config['build_pagetrees'])
-//            $processor->register($this->createPageTreeHtmlTransformer());
+        $processor->register(new ModxRtfmContentExtractor('', true));
 
         $tidyConfig = array(
             'show-body-only' => true,
@@ -56,16 +54,23 @@ class ConfluenceContentExtractor {
         $stats = array();
         $statsBytes = false;
 
-        $dir = $this->config['base_dir'];
-        foreach (glob($dir . '/*/*/*.html') as $filename) {
+        $outputDir = $this->config['output_dir'];
+        $tocParser = new OldRtfmTocParser();
+        $tocParser->setBaseUrl($this->config['url']);
+        $hrefs = $tocParser->parseTocDirectory($this->config['toc_dir']);
+        foreach ($hrefs as $href) {
+            $path = $href['href'];
+            $url = $href['url'];
+            $destFile = PathHelper::getConversionFilename($url, $outputDir,
+                true);
             $pageStats = new PageStatistics();
-            $pageStats->addValueStat(PageStatistics::PATH_LABEL, $filename);
-            $pageData = $this->processor->processPage($filename, $filename,
+            $pageStats->addValueStat(PageStatistics::PATH_LABEL, $path);
+            $pageData = $this->processor->processPage($url, $destFile,
                 $pageStats, false);
 
             $statsObj = $pageData->getStats();
             if (isset($statsObj)) {
-                $stats[$filename] = $statsObj->getStats();
+                $stats[$path] = $statsObj->getStats();
                 $statsBytes = $this->saveStats($this->config['stats_file'],
                     $stats);
             }
@@ -126,12 +131,5 @@ class ConfluenceContentExtractor {
         if ($count > 0)
             echo ' (avg. ' . $elapsedTime * 1.0 / $count . ' seconds/page)';
         echo PHP_EOL;
-    }
-
-    protected function createPageTreeHtmlTransformer() {
-        $pageLoader = new CachedPageLoader();
-        $pageLoader->setBaseDirectory($this->config['cache_dir']);
-        $pagetreeTransformer = new PageTreeHtmlTransformer($pageLoader);
-        return $pagetreeTransformer;
     }
 }

@@ -6,7 +6,7 @@
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 
-use RtfmConvert\ChangedContentCleaner;
+use RtfmMerge\ChangedContentCleaner;
 
 function cleanup($config) {
     $dateString = date('Ymd\THi');

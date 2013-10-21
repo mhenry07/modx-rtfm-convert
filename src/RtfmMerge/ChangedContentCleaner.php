@@ -2,17 +2,21 @@
 /**
  * @author: Mike Henry
  *
- * Convert MODX tags to entities.
+ * Replace confluence html files with extracted content.
  */
 
-namespace RtfmConvert;
+namespace RtfmMerge;
 
 
 use RtfmConvert\Infrastructure\FileIo;
 use RtfmConvert\Infrastructure\PageLoader;
-use RtfmConvert\TextTransformers\ModxTagsToEntitiesTextTransformer;
+use RtfmConvert\PageProcessor;
+use RtfmConvert\PageStatistics;
+use RtfmConvert\PathHelper;
+use RtfmConvert\TextTransformers\RegexTextTransformer;
+use RtfmConvert\TextTransformers\ReplaceTextTransformer;
 
-class MergedContentCleaner {
+class ChangedContentCleaner {
     protected $config;
 
     /** @var PageProcessor */
@@ -28,12 +32,29 @@ class MergedContentCleaner {
         $pageLoader = new PageLoader();
         $processor = new PageProcessor($pageLoader);
 
-        $processor->register(new ModxTagsToEntitiesTextTransformer());
+        $transformers = array(
+            new ReplaceTextTransformer('<br class="atl-forced-newline" />', '<br />'),
+            new ReplaceTextTransformer('<table class="confluenceTable">', '<table>'),
+            new ReplaceTextTransformer('<td class="confluenceTd">', '<td>'),
+            new ReplaceTextTransformer('<th class="confluenceTh">', '<th>'),
+            new RegexTextTransformer('#<span class="image-wrap">(.*?)</span>#', '$1'),
+            new RegexTextTransformer('#<a href="http://oldrtfm.modx.com/([^"]*)"#', '<a href="$1"'),
+            new RegexTextTransformer("#<a href='http://oldrtfm.modx.com/([^']*)'#", "<a href='$1'"),
+            new RegexTextTransformer(
+                '#<(h[1-6])>\s*<a name="([^"]*)"(?: id="[^"]*")?></a>#',
+                "<$1 id=\"$2\">\n"),
+            new RegexTextTransformer(
+                "#<(h[1-6])>\\s*<a name='([^']*)'(?: id='[^']*')?></a>#",
+                "<$1 id='$2'>\n")
+        );
+
+        foreach ($transformers as $transformer)
+            $processor->register($transformer);
 
         $this->processor = $processor;
     }
 
-    public function cleanSiteContent() {
+    public function extractSiteContent() {
         $startTime = time();
         echo 'Cleaning MODX RTFM site content', PHP_EOL;
         echo date('D M d H:i:s Y'), PHP_EOL;

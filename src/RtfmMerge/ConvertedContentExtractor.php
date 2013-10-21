@@ -5,16 +5,18 @@
  * Replace confluence html files with extracted content.
  */
 
-namespace RtfmConvert;
+namespace RtfmMerge;
 
 
-use RtfmConvert\ContentExtractors\ModxRtfmContentExtractor;
 use RtfmConvert\Infrastructure\FileIo;
 use RtfmConvert\Infrastructure\PageLoader;
+use RtfmConvert\PageProcessor;
+use RtfmConvert\PageStatistics;
+use RtfmConvert\PathHelper;
 use RtfmConvert\TextTransformers\CharsetDeclarationTextTransformer;
 use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
 
-class ModxFileContentExtractor {
+class ConvertedContentExtractor {
     protected $config;
 
     /** @var PageProcessor */
@@ -30,7 +32,6 @@ class ModxFileContentExtractor {
         $pageLoader = new PageLoader();
         $processor = new PageProcessor($pageLoader);
 //        $processor->register(new CharsetDeclarationTextTransformer());
-        $processor->register(new ModxRtfmContentExtractor('', true));
 
         $tidyConfig = array(
             'show-body-only' => true,
@@ -52,11 +53,13 @@ class ModxFileContentExtractor {
         $statsBytes = false;
 
         $dir = $this->config['base_dir'];
-        foreach (glob($dir . '/*/*/*.html') as $filename) {
+        foreach (glob($dir . '/*/*/*') as $filename) {
+            $filenameHtml = $filename . '.html';
             $pageStats = new PageStatistics();
-            $pageStats->addValueStat(PageStatistics::PATH_LABEL, $filename);
-            $pageData = $this->processor->processPage($filename, $filename,
+            $pageStats->addValueStat(PageStatistics::PATH_LABEL, $filenameHtml);
+            $pageData = $this->processor->processPage($filename, $filenameHtml,
                 $pageStats, false);
+            unlink($filename);
 
             $statsObj = $pageData->getStats();
             if (isset($statsObj)) {

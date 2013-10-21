@@ -5,15 +5,21 @@
  * Replace confluence html files with extracted content.
  */
 
-namespace RtfmConvert;
+namespace RtfmMerge;
 
 
+use RtfmConvert\ContentExtractors\ConfluenceRegexContentExtractor;
+use RtfmConvert\HtmlTransformers\PageTreeHtmlTransformer;
+use RtfmConvert\Infrastructure\CachedPageLoader;
 use RtfmConvert\Infrastructure\FileIo;
 use RtfmConvert\Infrastructure\PageLoader;
-use RtfmConvert\TextTransformers\RegexTextTransformer;
-use RtfmConvert\TextTransformers\ReplaceTextTransformer;
+use RtfmConvert\PageProcessor;
+use RtfmConvert\PageStatistics;
+use RtfmConvert\PathHelper;
+use RtfmConvert\TextTransformers\CharsetDeclarationTextTransformer;
+use RtfmConvert\TextTransformers\HtmlTidyTextTransformer;
 
-class ChangedContentCleaner {
+class ConfluenceContentExtractor {
     protected $config;
 
     /** @var PageProcessor */
@@ -28,32 +34,25 @@ class ChangedContentCleaner {
 
         $pageLoader = new PageLoader();
         $processor = new PageProcessor($pageLoader);
+//        $processor->register(new CharsetDeclarationTextTransformer());
+        $processor->register(new ConfluenceRegexContentExtractor());
 
-        $transformers = array(
-            new ReplaceTextTransformer('<br class="atl-forced-newline" />', '<br />'),
-            new ReplaceTextTransformer('<table class="confluenceTable">', '<table>'),
-            new ReplaceTextTransformer('<td class="confluenceTd">', '<td>'),
-            new ReplaceTextTransformer('<th class="confluenceTh">', '<th>'),
-            new RegexTextTransformer('#<span class="image-wrap">(.*?)</span>#', '$1'),
-            new RegexTextTransformer('#<a href="http://oldrtfm.modx.com/([^"]*)"#', '<a href="$1"'),
-            new RegexTextTransformer("#<a href='http://oldrtfm.modx.com/([^']*)'#", "<a href='$1'"),
-            new RegexTextTransformer(
-                '#<(h[1-6])>\s*<a name="([^"]*)"(?: id="[^"]*")?></a>#',
-                "<$1 id=\"$2\">\n"),
-            new RegexTextTransformer(
-                "#<(h[1-6])>\\s*<a name='([^']*)'(?: id='[^']*')?></a>#",
-                "<$1 id='$2'>\n")
+//        if ($this->config['build_pagetrees'])
+//            $processor->register($this->createPageTreeHtmlTransformer());
+
+        $tidyConfig = array(
+            'show-body-only' => true,
+            'indent' => true,
+            'indent-spaces' => 0
         );
-
-        foreach ($transformers as $transformer)
-            $processor->register($transformer);
+        $processor->register(new HtmlTidyTextTransformer($tidyConfig));
 
         $this->processor = $processor;
     }
 
     public function extractSiteContent() {
         $startTime = time();
-        echo 'Cleaning MODX RTFM site content', PHP_EOL;
+        echo 'Extracting MODX RTFM site content', PHP_EOL;
         echo date('D M d H:i:s Y'), PHP_EOL;
         echo PHP_EOL;
 
@@ -130,5 +129,12 @@ class ChangedContentCleaner {
         if ($count > 0)
             echo ' (avg. ' . $elapsedTime * 1.0 / $count . ' seconds/page)';
         echo PHP_EOL;
+    }
+
+    protected function createPageTreeHtmlTransformer() {
+        $pageLoader = new CachedPageLoader();
+        $pageLoader->setBaseDirectory($this->config['cache_dir']);
+        $pagetreeTransformer = new PageTreeHtmlTransformer($pageLoader);
+        return $pagetreeTransformer;
     }
 }

@@ -9,8 +9,12 @@ namespace RtfmConvert\TextTransformers;
 use RtfmConvert\PageData;
 use tidy;
 
-// TODO: allow more flexible configuration of Html Tidy
 class HtmlTidyTextTransformer extends AbstractTextTransformer {
+    protected $tidyConfig;
+
+    public function __construct(array $tidyConfig = array()) {
+        $this->tidyConfig = $tidyConfig;
+    }
 
     /**
      * @param string|PageData $input The input string or page data.
@@ -22,9 +26,11 @@ class HtmlTidyTextTransformer extends AbstractTextTransformer {
             $html = $input;
         if (is_object($input))
             $html = $input->getHtmlDocument();
-        $config = array(
+        $defaultConfig = array(
             'doctype' => 'omit',
-            'new-blocklevel-tags' => 'figcaption figure',
+            'new-blocklevel-tags' => 'article aside audio details figcaption figure footer header hgroup nav section source summary track video',
+            'new-empty-tags' => 'command embed keygen source track wbr',
+            'new-inline-tags' => 'canvas command datalist embed keygen mark meter output progress time wbr',
             'output-xhtml' => true,
             'break-before-br' => true,
             'vertical-space' => true,
@@ -33,6 +39,7 @@ class HtmlTidyTextTransformer extends AbstractTextTransformer {
             'newline' => 'LF',
             'output-bom' => false,
             'tidy-mark' => false);
+        $config = array_merge($defaultConfig, $this->tidyConfig);
         $tidy = new tidy();
         $tidied = $tidy->repairString($html, $config, 'utf8');
         $tidied = $this->removeXmlNs($tidied);

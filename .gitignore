@@ -3,3 +3,4 @@ data/*
 vendor/*
 src/compare.config.php
 src/import.config.php
+src/merge.config.php

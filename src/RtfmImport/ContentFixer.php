@@ -40,10 +40,16 @@ class ContentFixer {
             $pageContent = $document->getContent();
 
             $count = 0;
+
             if ($this->config['update_confluence_hrefs'])
                 $pageContent = $this->fixRelativeLinks($imports, $document,
                     $pageContent, $count);
 
+            if ($this->config['normalize_links'])
+                $pageContent = $this->normalizeLinks($document, $pageContent,
+                    $count);
+
+            // note: fixLinksForBaseHref is redundant if normalizeLinks was called
             if ($this->config['fix_links_for_base_href'])
                 $pageContent = $this->fixLinksForBaseHref($document,
                     $pageContent, $count);
@@ -65,12 +71,76 @@ class ContentFixer {
         return $imports;
     }
 
+    protected function normalizeLinks(modDocument $document, $pageContent,
+                                      &$count) {
+        $useRootSlash = !$this->config['fix_links_for_base_href'];
+        $selfLink = $this->formatLink($document, $document, $useRootSlash);
+        $patterns = array(
+            '/(<\w+\b[^>]+\b(?:href|src)=")([^#"]+)((?:#[^"]*)?)(")/i',
+            "/(<\\w+\\b[^>]+\\b(?:href|src)=')([^#']+)((?:#[^']*)?)(')/i");
+        foreach ($patterns as $pattern) {
+            $matches = array();
+            if (!preg_match_all($pattern, $pageContent, $matches))
+                continue;
+            foreach ($matches[0] as $key => $match) {
+                $matchData = array(
+                    'match' => $match,
+                    'tagPrefix' => $matches[1][$key],
+                    'link' => $matches[2][$key],
+                    'anchor' => $matches[3][$key],
+                    'endQuote' => $matches[4][$key]
+                );
+                $pageContent = $this->normalizeLink($pageContent, $matchData,
+                    $selfLink, $useRootSlash, $count);
+            }
+        }
+        return $pageContent;
+    }
+
+    protected function normalizeLink($pageContent, $matchData, $selfLink,
+                                     $useRootSlash, &$count) {
+        $link = $matchData['link'];
+        $matches = array();
+        preg_match('/<(\w+)\b', $matchData['tagPrefix'], $matches);
+        $tag = strtolower($matches[1]);
+
+        if (in_array($tag, array('base', 'link')))
+            return $pageContent;
+
+        // strip http://rtfm.modx.com
+        $matches = array();
+        if (preg_match('#^http://rtfm\.modx\.com(/.+)#i', $link, $matches) === 1)
+            $link = $matches[1];
+        if (preg_match('#(?://|:)#', $link) === 1)
+            return $pageContent;
+
+        // normalize root slash
+        if ($useRootSlash && strlen($link) > 0 && $link[0] !== '/')
+            $link = "/{$link}";
+        if (!$useRootSlash && strlen($link) > 0 && $link[0] === '/')
+            $link = substr($link, 1);
+
+        // normalize anchors
+        // note: confluence urls with anchors should have already been handled by fixRelativeLinks
+        if (strtolower($link) == strtolower($selfLink) &&
+            strlen($matchData['anchor']) > 0)
+            $link = '';
+
+        if ($link === $matchData['link'])
+            return $pageContent;
+        $replaceWith = "{$matchData['tagPrefix']}{$link}{$matchData['anchor']}{$matchData['endQuote']}";
+        $replacedCount = 0;
+        $pageContent = str_replace($matchData['match'], $replaceWith, $pageContent, $replacedCount);
+        $count += $replacedCount;
+        return $pageContent;
+    }
+
     /* fix relative links and anchor links */
     protected function fixRelativeLinks(array $pages, modDocument $document,
                                         $pageContent, &$count) {
         $patterns = array(
             '/(<a\b[^>]+\bhref=")([^#"]+)((?:#[^"]+)?)(")/i',
-            "/(<a\b[^>]+\bhref=')([^#']+)((?:#[^']+)?)(')/i");
+            "/(<a\\b[^>]+\\bhref=')([^#']+)((?:#[^']+)?)(')/i");
         foreach ($patterns as $pattern) {
             $matches = array();
             if (preg_match_all($pattern, $pageContent, $matches)) {
@@ -136,6 +206,8 @@ class ContentFixer {
     }
 
     protected function getPageData(array $pages, $sourceHref) {
+        if (strlen($sourceHref) > 0 && $sourceHref[0] !== '/')
+            $sourceHref = "/{$sourceHref}";
         foreach ($pages as $data) {
             if ($data['source_href'] === $sourceHref)
                 return $data;
@@ -170,20 +242,13 @@ class ContentFixer {
     protected function fixLinksForBaseHref(modDocument $document, $pageContent, &$count) {
         $replaceCount = 0;
         $selfLink = $this->formatLink($document, $document, false);
-        $pageContent = str_replace(
-            array(
-                'href="/',
-                'src="/',
-                'href="#',
-            ),
-            array(
-                'href="',
-                'src="',
-                "href=\"{$selfLink}#",
-            ),
-            $pageContent,
-            $replaceCount
-        );
+        $pageContent = preg_replace(
+            '#(<\w+\b[^>]+\b(?:href|src)=[\'"]?)/(?!>)#i', '$1', $pageContent,
+            -1, $replaceCount);
+        $count += $replaceCount;
+        $pageContent = preg_replace(
+            '/(<(?:a|area|link)\b[^>]+\bhref=[\'"]?)#/i', "$1{$selfLink}#",
+            $pageContent, -1, $replaceCount);
         $count += $replaceCount;
         return $pageContent;
     }

@@ -7,6 +7,9 @@ src/convert.php is the main entry point, which calls
 
 src/import.php imports converted data into MODX. See rtfmimport-readme.md.
 
+src/merge.import.php re-imports merged changes into MODX. See
+rtfmmerge-readme.md.
+
 src/compare.php compares two RTFM sites page-by-page, including a text diff,
 pre element comparison and page outline comparison. Example usage:
 

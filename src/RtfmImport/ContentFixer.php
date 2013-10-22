@@ -90,7 +90,8 @@ class ContentFixer {
                     'anchor' => $matches[3][$key],
                     'endQuote' => $matches[4][$key]
                 );
-                $this->normalizeLink($pageContent, $matchData, $selfLink, $useRootSlash, $count);
+                $pageContent = $this->normalizeLink($pageContent, $matchData,
+                    $selfLink, $useRootSlash, $count);
             }
         }
         return $pageContent;
@@ -122,7 +123,7 @@ class ContentFixer {
         // normalize anchors
         // note: confluence urls with anchors should have already been handled by fixRelativeLinks
         if (strtolower($link) == strtolower($selfLink) &&
-            strlen($matchData['anchor']) > 1)
+            strlen($matchData['anchor']) > 0)
             $link = '';
 
         if ($link === $matchData['link'])

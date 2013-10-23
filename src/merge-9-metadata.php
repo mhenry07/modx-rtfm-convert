@@ -1,6 +1,8 @@
 <?php
 /**
  * @author: Mike Henry
+ *
+ * steps 9 and 13
  */
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';

@@ -101,7 +101,7 @@ class ContentFixer {
                                      $useRootSlash, &$count) {
         $link = $matchData['link'];
         $matches = array();
-        preg_match('/<(\w+)\b', $matchData['tagPrefix'], $matches);
+        preg_match('/<(\w+)\b/', $matchData['tagPrefix'], $matches);
         $tag = strtolower($matches[1]);
 
         if (in_array($tag, array('base', 'link')))
